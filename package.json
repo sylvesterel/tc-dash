@@ -1,0 +1,30 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sylvesterel/tc-dash.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/sylvesterel/tc-dash/issues"
+  },
+  "homepage": "https://github.com/sylvesterel/tc-dash#readme",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.18.2",
+    "mysql2": "^3.16.0",
+    "path": "^0.12.7",
+    "promise": "^8.3.0"
+  }
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="da">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tourcare Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style/login.css">
+</head>
+
+<body>
+<div class="login-side">
+    <div class="background">
+        <img src="img/login.jpg" alt="Koncert">
+        <div class="overlay"></div>
+    </div>
+
+    <div class="login-card">
+        <h1>Tourcare</h1>
+        <p>Velkommen! Log ind for at fortsætte</p>
+
+        <form class="login-form">
+            <input type="text" id="username" placeholder="Brugernavn" required>
+            <input type="password" id="password" placeholder="Kodeord" required>
+            <button id="loginBtn" type="submit">Log ind</button>
+        </form>
+
+        <div class="login-links">
+            <!--<a href="#">Glemt kodeord?</a>
+            <span>•</span>
+            <a href="#">Opret konto</a>-->
+            <span>app.tourcare.dk | v0.02</span>
+        </div>
+    </div>
+</div>
+<script src="js/login.js"></script>
+</body>
+
+</html>
