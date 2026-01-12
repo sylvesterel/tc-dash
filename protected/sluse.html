@@ -3,41 +3,67 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Tourcare Access</title>
+    <title>Sluse - Tourcare Access</title>
     <link rel="stylesheet" href="/style/dashboard.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
 
-<header>
-    <div class="header-url">
-        <h1>Generelt / Hjem</h1>
-    </div>
-    <div class="user-container">
-        <div class="user-content">
-            <h1>Velkommen tilbage</h1>
-            <h2>Sylvester</h2>
+    <header>
+        <div class="header-url">
+            <h1>Generelt / Sluse</h1>
         </div>
-        <img src="../public/img/user.png">
-    </div>
-</header>
-
-<div class="content-wrapper">
-    <nav id="navbar">
-    </nav>
-    <main>
-        <div class="dashboard-header">
-            <div>
-                <h1>Sluse Overblik</h1>
+        <div class="user-container">
+            <div class="user-content">
+                <h1>Velkommen tilbage</h1>
+                <h2>Sylvester</h2>
             </div>
+            <img src="./img/user.png">
         </div>
+    </header>
 
-    </main>
-</div>
+    <div class="content-wrapper">
+        <nav id="navbar">
+        </nav>
+        <main class="sluse-page">
+            <div class="sluse-header">
+                <div>
+                    <h1>Sluse Administration</h1>
+                    <p>Administrer og rediger information for alle 12 båse.</p>
+                </div>
+                <div class="header-actions">
+                    <input type="text" class="search-stalls" placeholder="Søg båse..." id="searchStalls">
+
+                </div>
+            </div>
+
+            <div class="sluse-layout">
+                <!-- Sidebar: Stall List -->
+                <aside class="stall-sidebar">
+                    <div class="sidebar-header">
+                        <h3>Båse Oversigt</h3>
+                        <span class="stall-count">12 båse</span>
+                    </div>
+                    <div class="stall-list" id="stallList">
+                        <!-- Stall items will be generated here -->
+                    </div>
+                </aside>
+
+                <!-- Main: Stall Editor -->
+                <div class="stall-editor" id="stallEditor">
+                    <div class="editor-placeholder">
+                        <h3>Vælg en bås</h3>
+                        <p>Vælg en bås fra listen til venstre for at redigere information.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
 <script src="/js/index.js"></script>
+<script src="/js/stalls.js"></script>
 </body>
 </html>

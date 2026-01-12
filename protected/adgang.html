@@ -3,41 +3,141 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Tourcare Access</title>
+    <title>Adgang - Tourcare Access</title>
     <link rel="stylesheet" href="/style/dashboard.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
 
-<header>
-    <div class="header-url">
-        <h1>Generelt / Hjem</h1>
-    </div>
-    <div class="user-container">
-        <div class="user-content">
-            <h1>Velkommen tilbage</h1>
-            <h2>Sylvester</h2>
+    <header>
+        <div class="header-url">
+            <h1>Generelt / Adgang</h1>
         </div>
-        <img src="../public/img/user.png">
-    </div>
-</header>
-
-<div class="content-wrapper">
-    <nav id="navbar">
-    </nav>
-    <main>
-        <div class="dashboard-header">
-            <div>
-                <h1>Salto Adgangskoder</h1>
+        <div class="user-container">
+            <div class="user-content">
+                <h1>Velkommen tilbage</h1>
+                <h2>Sylvester</h2>
             </div>
+            <img src="./img/user.png">
         </div>
+    </header>
 
-    </main>
-</div>
+    <div class="content-wrapper">
+        <nav id="navbar">
+        </nav>
+        <main class="adgang-page">
+            <div class="adgang-header">
+                <div>
+                    <h1>Adgangskode Administration</h1>
+                    <p>Opret og administrer adgangskoder til slusen.</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-pill">
+                        <span class="stat-label">Aktive</span>
+                        <span class="stat-value" id="activeCount">8</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="stat-label">Udløbet</span>
+                        <span class="stat-value expired" id="expiredCount">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adgang-layout">
+                <!-- Create New Access Card -->
+                <div class="create-access-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Opret Ny Adgangskode</h3>
+                            <p>Generer en ny adgangskode til sluse adgang</p>
+                        </div>
+                    </div>
+
+                    <form class="access-form" id="accessForm">
+                        <div class="form-field">
+                            <label for="artistName">
+                                Artist Navn
+                            </label>
+                            <input 
+                                type="text" 
+                                id="artistName" 
+                                placeholder="Indtast artist navn..." 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="startDate">
+                                    Start Dato
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="startDate" 
+                                    required
+                                >
+                            </div>
+                            <div class="form-field">
+                                <label for="endDate">
+                                    Slut Dato
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="endDate" 
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="rentmanProject">
+                                Rentman Projekt
+                            </label>
+                            <select id="rentmanProject">
+                                <option value="">Vælg projekt...</option>
+                            </select>
+                            <p class="field-hint">
+                                Ingen projekter tilgængelige - konfigurer Rentman integration først
+                            </p>
+                        </div>
+
+                        <button type="submit" class="btn-generate">
+                            Generer Adgangskode
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Active Access Codes List -->
+                <div class="access-list-section">
+                    <div class="section-header">
+                        <h3>Aktive Adgangskoder</h3>
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">Alle</button>
+                            <button class="filter-tab" data-filter="active">Aktive</button>
+                            <button class="filter-tab" data-filter="expired">Udløbet</button>
+                        </div>
+                    </div>
+
+                    <div class="search-bar">
+                        <input 
+                            type="text" 
+                            placeholder="Søg efter artist eller kode..." 
+                            id="searchAccess"
+                        >
+                    </div>
+
+                    <div class="access-list" id="accessList">
+                        <!-- Access codes will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
 <script src="/js/index.js"></script>
+<script src="/js/access.js"></script>
 </body>
 </html>
