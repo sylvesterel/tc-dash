@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Tourcare Access</title>
+    <script src="/js/profil.js"></script>
     <link rel="stylesheet" href="/style/dashboard.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +18,7 @@
 
     <header>
         <div class="header-url">
-            <h1>Generelt / Hjem</h1>
+            <h1>Generelt / Profil</h1>
         </div>
         <div class="user-container">
             <div class="user-content">
@@ -31,97 +32,16 @@
     <div class="content-wrapper">
         <nav id="navbar">
         </nav>
-        <main class="profile-page">
-
+        <main>
             <div class="dashboard-header">
                 <div>
                     <h1>Min profil</h1>
-                    <p>Opdater dine oplysninger og kontopræferencer</p>
                 </div>
-                <button class="refresh-btn">
-                    Gem ændringer
-                </button>
-            </div>
-
-            <div class="profile-grid">
-
-                <!-- VENSTRE KOLONNE -->
-                <div class="profile-main">
-
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Personlige oplysninger</h3>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Fornavn</label>
-                                <input type="text" value="Sylvester">
-                            </div>
-                            <div class="form-group">
-                                <label>Efternavn</label>
-                                <input type="text" value="Erbs Ledet">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" value="sylvester@example.com">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Telefon</label>
-                                <input type="tel" value="+45 12 34 56 78">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Brugernavn</label>
-                                <input type="text" value="SylvesterErbs" disabled>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Title</label>
-                                <input type="text" value="Drift & Administration" disabled>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Adgang & sikkerhed</h3>
-                        </div>
-
-                        <div class="security-grid">
-                            <div class="security-card">
-                                <span>Adgangskode</span>
-                                <p>Sidst ændret for 3 måneder siden</p>
-                                <button>Skift adgangskode</button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- HØJRE SIDEBAR -->
-                <div class="profile-sidebar">
-
-                    <div class="card profile-summary">
-                        <img src="./img/user.png" alt="Profilbillede">
-                        <h2>Sylvester</h2>
-                        <p>Standardbruger</p>
-                    </div>
-
-
-                </div>
-
             </div>
         </main>
-
-
-
-
     </div>
-
     <script src="/js/index.js"></script>
+
 </body>
 
 </html>

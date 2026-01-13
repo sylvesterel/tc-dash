@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>users - Tourcare Access</title>
+    <script src="/js/users.js"></script>
     <link rel="stylesheet" href="/style/dashboard.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,106 +30,18 @@
     <div class="content-wrapper">
         <nav id="navbar">
         </nav>
-        <main class="users-page">
-            <div class="users-header">
+        <main>
+            <div class="dashboard-header">
                 <div>
-                    <h1>Brugere Administration</h1>
-                    <p>Opret og administrer usersskoder brugere</p>
-                </div>
-                <div class="header-stats">
-                    <div class="stat-pill">
-                        <span class="stat-label">Aktive</span>
-                        <span class="stat-value" id="activeCount">8</span>
-                    </div>
-                    <div class="stat-pill">
-                        <span class="stat-label">Udløbet</span>
-                        <span class="stat-value expired" id="expiredCount">3</span>
-                    </div>
+                    <h1>Brugere</h1>
                 </div>
             </div>
 
-            <div class="users-layout">
-                <!-- Create New Access Card -->
-                <div class="create-access-card">
-                    <div class="card-header">
-                        <div>
-                            <h3>Opret</h3>
-                            <p>Opret en ny bruger users</p>
-                        </div>
-                    </div>
-
-                    <form class="access-form" id="accessForm">
-                        <div class="form-field">
-                            <label for="firstName">
-                                Fornavn
-                            </label>
-                            <input type="text" id="firstName" placeholder="Indtast fornavn..." required>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="lastName">
-                                Efternavn
-                            </label>
-                            <input type="text" id="lastName" placeholder="Indtast efternavn..." required>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="username">
-                                Brugernavn
-                            </label>
-                            <input type="text" id="username" placeholder="Indtast brugernavn..." required>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="email">
-                                E-Mail
-                            </label>
-                            <input type="email" id="email" placeholder="Indtast email..." required>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="rentmanProject">
-                                Brugertype
-                            </label>
-                            <select id="rentmanProject">
-                                <option value="">Vælg brugertype...</option>
-                            </select>
-                            <p class="field-hint">
-                                Ingen tilgængelige brugertyper
-                            </p>
-                        </div>
-
-                        <button type="submit" class="btn-generate">
-                            Opret bruger
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Active Access Codes List -->
-                <div class="access-list-section">
-                    <div class="section-header">
-                        <h3>Aktive brugere</h3>
-                        <div class="filter-tabs">
-                            <button class="filter-tab active" data-filter="all">Alle</button>
-                            <button class="filter-tab" data-filter="active">Aktive</button>
-                            <button class="filter-tab" data-filter="expired">Inaktive</button>
-                        </div>
-                    </div>
-
-                    <div class="search-bar">
-                        <input type="text" placeholder="Søg efter bruger" id="searchAccess">
-                    </div>
-
-                    <div class="access-list" id="accessList">
-                        <!-- Access codes will be rendered here -->
-                    </div>
-                </div>
-            </div>
         </main>
     </div>
 
     <script src="/js/index.js"></script>
-    <script src="/js/users.js"></script>
+
 </body>
 
 </html>
