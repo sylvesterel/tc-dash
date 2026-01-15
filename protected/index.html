@@ -3,12 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Tourcare Access</title>
+    <title>Appcare | Hjem</title>
     <link rel="stylesheet" href="/style/dashboard.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
@@ -19,7 +20,7 @@
     <div class="user-container">
         <div class="user-content">
             <h1>Velkommen tilbage</h1>
-            <h2>Sylvester</h2>
+            <h2 id="user-name">...</h2>
         </div>
         <img src="./img/user.png">
     </div>
@@ -34,7 +35,7 @@
                 <h1>Velkommen tilbage</h1>
                 <p>Her er et overblik over dagens aktiviteter.</p>
             </div>
-            <button class="refresh-btn">
+            <button class="refresh-btn" onclick="loadDashboardData()">
                 <span>↻</span>
                 Opdater data
             </button>
@@ -43,117 +44,104 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon primary">S</div>
-                    <span class="stat-badge success">+12.5%</span>
+                    <div class="stat-icon primary"><i class="fa-solid fa-headphones"></i></div>
+                    <span class="stat-badge neutral" id="projects-badge">-</span>
                 </div>
-                <p class="stat-label">Ugens projecter</p>
-                <h2 class="stat-value">24</h2>
-                <p class="stat-footer">Sidste opdatering: For 5 min siden</p>
+                <p class="stat-label">Ugens projekter</p>
+                <h2 class="stat-value" id="projects-count">-</h2>
+                <p class="stat-footer" id="projects-footer">Indlaser...</p>
             </div>
 
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon success">✓</div>
-                    <span class="stat-badge neutral">Stabil</span>
+                    <div class="stat-icon warning"><i class="fa-solid fa-bug"></i></div>
+                    <span class="stat-badge neutral" id="errors-badge">-</span>
                 </div>
-                <p class="stat-label">Integration Status</p>
-                <h2 class="stat-value">99.9%</h2>
-                <p class="stat-footer">Alt køre normalt</p>
+                <p class="stat-label">Uloste Fejl</p>
+                <h2 class="stat-value" id="errors-count">-</h2>
+                <p class="stat-footer" id="errors-footer">Indlaser...</p>
             </div>
 
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon warning">⏱</div>
-                    <!--<span class="stat-badge warning">-5%</span>-->
+                    <div class="stat-icon info"><i class="fa-solid fa-chart-line"></i></div>
                 </div>
                 <p class="stat-label">24h Aktiviteter</p>
-                <h2 class="stat-value">482</h2>
+                <h2 class="stat-value" id="activity-count">-</h2>
                 <p class="stat-footer">Handlinger logget i systemet</p>
             </div>
         </div>
 
         <div class="dashboard-content">
             <div class="main-content">
-                <div class="card lunch-menu">
+                <div class="card weekly-menu-card">
                     <div class="card-header">
-                        <h3>Ugens Menu</h3>
+                        <div class="menu-header-left">
+                            <h3>Ugens Menu</h3>
+                            <div class="week-nav">
+                                <button class="week-nav-btn" id="prevWeekBtn" onclick="changeWeek(-1)">←</button>
+                                <span class="week-badge" id="week-number">Uge -</span>
+                                <button class="week-nav-btn" id="nextWeekBtn" onclick="changeWeek(1)">→</button>
+                            </div>
+                        </div>
+                        <button class="btn-edit-menu" onclick="openMenuEditor()">
+                            <span><i class="fa-solid fa-pen-to-square"></i></span>
+                            Rediger
+                        </button>
                     </div>
 
-                    <div class="menu-day today">
-                        <div class="menu-header">
-                            <span class="day-name">Mandag</span>
-                            <span class="today-badge">I dag</span>
-                        </div>
-                        <p class="menu-item">Kylling i rød karry</p>
-                    </div>
-
-                    <div class="menu-day">
-                        <div class="menu-header">
-                            <span class="day-name">Tirsdag</span>
-                        </div>
-                        <p class="menu-item">Pasta Carbonara med bacon</p>
-                    </div>
-
-                    <div class="menu-day">
-                        <div class="menu-header">
-                            <span class="day-name">Onsdag</span>
-                        </div>
-                        <p class="menu-item">Thai red curry med kylling</p>
-                    </div>
-
-                    <div class="menu-day">
-                        <div class="menu-header">
-                            <span class="day-name">Torsdag</span>
-                        </div>
-                        <p class="menu-item">Bøf med kartofler & bearnaise</p>
-                    </div>
-
-                    <div class="menu-day">
-                        <div class="menu-header">
-                            <span class="day-name">Fredag</span>
-                        </div>
-                        <p class="menu-item">Pizza Margherita</p>
+                    <div id="menu-container">
+                        <!-- Menu days will be loaded here dynamically -->
+                        <div class="menu-loading">Indlaser menu...</div>
                     </div>
                 </div>
             </div>
 
             <div class="sidebar-content">
-                <div class="card daily-menu">
-                    <h3>I dag</h3>
-                    <p class="menu-date">Mandag, 13. Januar 2026</p>
-                    <div class="daily-items">
-                        <div class="daily-item">
-                            <div class="item-label">Varm ret</div>
-                            <div class="item-name">Kylling i rød karry med stegte gulerødder, knoldselleri, rød chili og ris</div>
-                        </div>
-                        <div class="daily-item">
-                            <div class="item-label">Pålæg</div>
-                            <div class="item-name">Grillet broccoli</div>
-                            <div class="item-name">Fiskesalat</div>
-                            <div class="item-name">Stegt svinebryst</div>
-                        </div>
-                        <div class="daily-item">
-                            <div class="item-label">Salat</div>
-                            <div class="item-name">Pastasalat med pesto, mungbønner og basilikum.</div>
-                            <div class="item-name">Dagens sals.</div>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div class="card">
+                <div class="card notes-card">
                     <div class="card-header">
-                        <h3>Systemopdatering</h3>
+                        <h3>Noter</h3>
+                        <button class="btn-add-note" onclick="openNoteEditor()">
+                            <span><i class="fa-solid fa-plus"></i></span>
+                            Tilføj
+                        </button>
                     </div>
-                    <p class="info-text">Velkommen til version 1 af dashboard!</p>
-                    <!-- <a href="#" class="link-button">Læs release notes →</a> -->
+                    <div id="notes-container">
+                        <div class="notes-loading">Indlaser noter...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 </div>
 
+<!-- Menu Editor Modal -->
+<div class="modal-overlay" id="menu-modal" style="display: none;">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h2>Rediger Ugens Menu</h2>
+            <button class="btn-close" onclick="closeMenuEditor()">×</button>
+        </div>
+        <div class="modal-form" id="menu-editor-form">
+            <!-- Editor content loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Note Editor Modal -->
+<div class="modal-overlay" id="note-modal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2 id="note-modal-title">Tilføj Note</h2>
+            <button class="btn-close" onclick="closeNoteEditor()">×</button>
+        </div>
+        <div class="modal-form" id="note-editor-form">
+            <!-- Editor content loaded dynamically -->
+        </div>
+    </div>
+</div>
+
 <script src="/js/index.js"></script>
+<script src="/js/generel.js"></script>
 </body>
 </html>

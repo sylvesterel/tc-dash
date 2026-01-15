@@ -1,369 +1,553 @@
 // ============================================
-// Access Codes Management JavaScript
+// SEAM Access Management - Kun oprettelse
 // ============================================
-// Handles access code (adgangskoder) CRUD operations with database integration
+
+// Modal System
+const Modal = {
+    overlay: null,
+    modal: null,
+    icon: null,
+    title: null,
+    message: null,
+    buttons: null,
+    cancelBtn: null,
+    confirmBtn: null,
+    resolvePromise: null,
+
+    init() {
+        this.overlay = document.getElementById('modalOverlay');
+        this.modal = document.getElementById('modal');
+        this.icon = document.getElementById('modalIcon');
+        this.title = document.getElementById('modalTitle');
+        this.message = document.getElementById('modalMessage');
+        this.buttons = document.getElementById('modalButtons');
+        this.cancelBtn = document.getElementById('modalCancel');
+        this.confirmBtn = document.getElementById('modalConfirm');
+
+        // Event listeners
+        this.cancelBtn.addEventListener('click', () => this.close(false));
+        this.confirmBtn.addEventListener('click', () => this.close(true));
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) this.close(false);
+        });
+
+        // Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.overlay.classList.contains('show')) {
+                this.close(false);
+            }
+        });
+    },
+
+    show(options) {
+        const {
+            type = 'info',
+            title = 'Information',
+            message = '',
+            confirmText = 'OK',
+            cancelText = 'Annuller',
+            showCancel = true
+        } = options;
+
+        // Set icon
+        const icons = {
+            warning: '⚠️',
+            danger: '🗑️',
+            success: '✓',
+            info: 'ℹ️'
+        };
+
+        this.icon.innerHTML = icons[type] || icons.info;
+        this.icon.className = 'modal-icon ' + type;
+
+        // Set content
+        this.title.textContent = title;
+        this.message.innerHTML = message;
+
+        // Set buttons
+        this.confirmBtn.textContent = confirmText;
+        this.confirmBtn.className = 'modal-btn modal-btn-confirm ' + type;
+
+        if (showCancel) {
+            this.cancelBtn.style.display = 'block';
+            this.cancelBtn.textContent = cancelText;
+            this.buttons.classList.remove('single');
+        } else {
+            this.cancelBtn.style.display = 'none';
+            this.buttons.classList.add('single');
+        }
+
+        // Show modal
+        this.overlay.classList.add('show');
+
+        // Focus confirm button
+        this.confirmBtn.focus();
+
+        // Return promise
+        return new Promise((resolve) => {
+            this.resolvePromise = resolve;
+        });
+    },
+
+    close(result) {
+        this.overlay.classList.remove('show');
+        if (this.resolvePromise) {
+            this.resolvePromise(result);
+            this.resolvePromise = null;
+        }
+    },
+
+    // Shortcut methods
+    async confirm(title, message, type = 'warning') {
+        return this.show({
+            type,
+            title,
+            message,
+            confirmText: 'Ja, fortsaet',
+            cancelText: 'Annuller',
+            showCancel: true
+        });
+    },
+
+    async alert(title, message, type = 'info') {
+        return this.show({
+            type,
+            title,
+            message,
+            confirmText: 'OK',
+            showCancel: false
+        });
+    },
+
+    async success(title, message) {
+        return this.alert(title, message, 'success');
+    },
+
+    async error(title, message) {
+        return this.alert(title, message, 'danger');
+    }
+};
 
 const AccessManager = {
-    accessCodes: [],
-    currentFilter: 'all',
-    apiEndpoint: '/api/access-codes',
+    seamUsers: [],
+    projects: [],
+    projectsLoaded: false,
 
-    // ============================================
-    // Initialize
-    // ============================================
     init() {
-        this.loadAccessCodes();
+        Modal.init();
         this.attachEventListeners();
+        this.loadSeamUsers();
+        this.setDefaultDates();
+        this.loadProjects();
+        this.initProjectPicker();
     },
 
-    // ============================================
-    // API Calls
-    // ============================================
-    async loadAccessCodes() {
-        try {
-            const response = await fetch(this.apiEndpoint);
-            if (!response.ok) throw new Error('Failed to load access codes');
-            
-            const data = await response.json();
-            this.accessCodes = data.access_codes || [];
-            this.updateCounts();
-            this.renderAccessList(this.currentFilter);
-        } catch (error) {
-            console.error('Error loading access codes:', error);
-            this.showError('Kunne ikke indlæse adgangskoder. Prøv igen.');
+    setDefaultDates() {
+        const today = new Date();
+        const startInput = document.getElementById('startDate');
+        const endInput = document.getElementById('endDate');
+
+        if (startInput) {
+            startInput.value = today.toISOString().split('T')[0];
+        }
+        if (endInput) {
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            endInput.value = tomorrow.toISOString().split('T')[0];
         }
     },
 
-    async createAccessCode(accessData) {
-        try {
-            const response = await fetch(this.apiEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(accessData)
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to create access code');
-            }
-
-            const result = await response.json();
-            this.showSuccess(`Adgangskode oprettet!\n\nKode: ${result.access_code.access_code}\nArtist: ${result.access_code.artist_name}`);
-            await this.loadAccessCodes();
-            
-            return result;
-        } catch (error) {
-            console.error('Error creating access code:', error);
-            this.showError(error.message || 'Kunne ikke oprette adgangskode. Prøv igen.');
-            throw error;
-        }
-    },
-
-    async updateAccessCode(id, accessData) {
-        try {
-            const response = await fetch(`${this.apiEndpoint}/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(accessData)
-            });
-
-            if (!response.ok) throw new Error('Failed to update access code');
-
-            const result = await response.json();
-            this.showSuccess('Adgangskode opdateret!');
-            await this.loadAccessCodes();
-            
-            return result;
-        } catch (error) {
-            console.error('Error updating access code:', error);
-            this.showError('Kunne ikke opdatere adgangskode. Prøv igen.');
-            throw error;
-        }
-    },
-
-    async deleteAccessCode(id) {
-        try {
-            const response = await fetch(`${this.apiEndpoint}/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) throw new Error('Failed to delete access code');
-
-            this.showSuccess('Adgangskode slettet!');
-            await this.loadAccessCodes();
-        } catch (error) {
-            console.error('Error deleting access code:', error);
-            this.showError('Kunne ikke slette adgangskode. Prøv igen.');
-        }
-    },
-
-    async revokeAccessCode(id) {
-        try {
-            const response = await fetch(`${this.apiEndpoint}/${id}/revoke`, {
-                method: 'POST'
-            });
-
-            if (!response.ok) throw new Error('Failed to revoke access code');
-
-            this.showSuccess('Adgangskode tilbagekaldt!');
-            await this.loadAccessCodes();
-        } catch (error) {
-            console.error('Error revoking access code:', error);
-            this.showError('Kunne ikke tilbagekalde adgangskode. Prøv igen.');
-        }
-    },
-
-    // ============================================
-    // Event Listeners
-    // ============================================
     attachEventListeners() {
-        // Form submission
         const form = document.getElementById('accessForm');
         if (form) {
             form.addEventListener('submit', (e) => this.handleFormSubmit(e));
         }
 
-        // Filter tabs
-        document.querySelectorAll('.filter-tab').forEach(tab => {
-            tab.addEventListener('click', () => this.handleFilterClick(tab));
-        });
-
-        // Search
-        const searchInput = document.getElementById('searchAccess');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.renderAccessList(this.currentFilter, e.target.value);
-            });
-        }
-
-        // Navigation buttons
-        document.querySelectorAll('.nav-content button').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('.nav-content button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-            });
-        });
+        // Enter key support
+        const inputs = document.querySelectorAll("#artistName, #startDate, #endDate");
+        inputs.forEach(input => input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                form?.requestSubmit();
+            }
+        }));
     },
 
-    handleFilterClick(tab) {
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        this.currentFilter = tab.dataset.filter;
-        const searchValue = document.getElementById('searchAccess')?.value || '';
-        this.renderAccessList(this.currentFilter, searchValue);
+    // Status box opdatering
+    updateStatus(message, type = 'info') {
+        const statusList = document.getElementById('statusList');
+        if (!statusList) return;
+
+        const statusItem = document.createElement('div');
+        statusItem.className = `status-item ${type}`;
+
+        const now = new Date();
+        const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+        statusItem.innerHTML = `
+            <span class="status-time">${time}</span>
+            <span class="status-message">${message}</span>
+        `;
+
+        statusList.appendChild(statusItem);
+        statusList.scrollTop = statusList.scrollHeight;
+    },
+
+    clearStatus() {
+        const statusList = document.getElementById('statusList');
+        if (statusList) {
+            statusList.innerHTML = '';
+        }
+    },
+
+    showStatusBox() {
+        const statusBox = document.getElementById('statusBox');
+        if (statusBox) {
+            statusBox.style.display = 'block';
+        }
     },
 
     async handleFormSubmit(e) {
         e.preventDefault();
 
-        const artist = document.getElementById('artistName').value.trim();
+        const artistName = document.getElementById('artistName').value.trim();
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
-        const rentmanProject = document.getElementById('rentmanProject').value || null;
+        const submitBtn = document.querySelector('.btn-generate');
 
-        // Validate dates
-        if (new Date(startDate) > new Date(endDate)) {
-            this.showError('Start dato skal være før slut dato.');
+        if (!artistName || !startDate || !endDate) {
+            this.showError('Udfyld alle felter!');
             return;
         }
 
-        // Generate code
-        const code = this.generateCode(artist);
+        if (new Date(startDate) > new Date(endDate)) {
+            this.showError('Start dato skal vaere foer slut dato.');
+            return;
+        }
 
-        const accessData = {
-            artist_name: artist,
-            access_code: code,
-            start_date: startDate,
-            end_date: endDate,
-            rentman_project: rentmanProject
-        };
+        // Disable button and show status
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Opretter...';
+
+        this.showStatusBox();
+        this.clearStatus();
+        this.updateStatus('Starter oprettelse...', 'info');
 
         try {
-            await this.createAccessCode(accessData);
-            e.target.reset();
-        } catch (error) {
-            // Error already handled in createAccessCode
+            const res = await fetch("/api/seam/create-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    artist_name: artistName,
+                    start_date: new Date(startDate).toISOString(),
+                    end_date: new Date(endDate).toISOString()
+                })
+            });
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let done = false;
+            let credentialId = null;
+
+            while (!done) {
+                const { value, done: readerDone } = await reader.read();
+                done = readerDone;
+                if (value) {
+                    const text = decoder.decode(value);
+                    text.split("\n").forEach(line => {
+                        if (!line.trim()) return;
+
+                        if (line.startsWith("STATUS:")) {
+                            this.updateStatus(line.replace("STATUS:", ""), 'info');
+                        } else if (line.startsWith("CREDENTIAL_ID:")) {
+                            credentialId = line.replace("CREDENTIAL_ID:", "").trim();
+                        } else if (line.startsWith("USER_ID:")) {
+                            // User ID received
+                        } else if (line.startsWith("ERROR:")) {
+                            this.updateStatus(line.replace("ERROR:", ""), 'error');
+                        }
+                    });
+                }
+            }
+
+            if (credentialId) {
+                this.updateStatus('Poller for pinkode...', 'info');
+                await this.pollForPin(credentialId);
+            }
+
+            // Reload users list
+            await this.loadSeamUsers();
+
+            // Reset form
+            document.getElementById('accessForm').reset();
+            this.setDefaultDates();
+
+        } catch (err) {
+            console.error('Create user error:', err);
+            this.updateStatus('Fejl: ' + err.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Opret Adgang';
         }
     },
 
-    // ============================================
-    // Render Functions
-    // ============================================
+    async pollForPin(credentialId) {
+        let attempts = 0;
+        const maxAttempts = 60; // 5 min max
+
+        return new Promise((resolve) => {
+            const interval = setInterval(async () => {
+                attempts++;
+
+                if (attempts > maxAttempts) {
+                    this.updateStatus('Timeout - pinkode blev ikke genereret i tide', 'error');
+                    clearInterval(interval);
+                    resolve();
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`/api/seam/check-pin?credential_id=${credentialId}`);
+                    const data = await res.json();
+
+                    if (data.pin) {
+                        this.updateStatus(`PINKODE: ${data.pin} + #`, 'success');
+                        this.showPinResult(data.pin);
+                        clearInterval(interval);
+                        resolve();
+                    }
+                } catch (err) {
+                    this.updateStatus('Fejl ved hentning af pinkode', 'error');
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 5000);
+        });
+    },
+
+    showPinResult(pin) {
+        const pinDisplay = document.getElementById('pinResult');
+        if (pinDisplay) {
+            pinDisplay.innerHTML = `
+                <div class="pin-success">
+                    <span class="pin-label">Pinkode:</span>
+                    <span class="pin-code">${pin} + #</span>
+                    <button class="btn-copy-pin" onclick="AccessManager.copyPin('${pin}')">Kopier</button>
+                </div>
+            `;
+            pinDisplay.style.display = 'block';
+        }
+    },
+
+    async copyPin(pin) {
+        try {
+            await navigator.clipboard.writeText(pin);
+            this.updateStatus('Pinkode kopieret til udklipsholder', 'success');
+        } catch (err) {
+            this.updateStatus('Kunne ikke kopiere pinkode', 'error');
+        }
+    },
+
+    // Suspend bruger
+    async suspendUser(userId, userName) {
+        const confirmed = await Modal.show({
+            type: 'warning',
+            title: 'Suspender bruger',
+            message: `Er du sikker paa at du vil suspendere<br><strong>${userName}</strong>?<br><br>Brugeren vil miste adgang indtil de genaktiveres.`,
+            confirmText: 'Suspender',
+            cancelText: 'Annuller'
+        });
+
+        if (!confirmed) return;
+
+        try {
+            const res = await fetch(`/api/seam/users/${userId}/suspend`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                this.showStatusBox();
+                this.updateStatus(`Bruger "${userName}" er suspenderet`, 'success');
+                await Modal.success('Bruger suspenderet', `<strong>${userName}</strong> er nu suspenderet og har ikke længere adgang.`);
+                await this.loadSeamUsers();
+            } else {
+                await Modal.error('Fejl', data.error || 'Kunne ikke suspendere bruger');
+            }
+        } catch (err) {
+            console.error('Suspend error:', err);
+            await Modal.error('Fejl', 'Fejl ved suspendering: ' + err.message);
+        }
+    },
+
+    // Genaktiver bruger
+    async unsuspendUser(userId, userName) {
+        const confirmed = await Modal.show({
+            type: 'success',
+            title: 'Genaktiver bruger',
+            message: `Er du sikker paa at du vil genaktivere<br><strong>${userName}</strong>?<br><br>Brugeren vil få adgang igen.`,
+            confirmText: 'Genaktiver',
+            cancelText: 'Annuller'
+        });
+
+        if (!confirmed) return;
+
+        try {
+            const res = await fetch(`/api/seam/users/${userId}/unsuspend`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                this.showStatusBox();
+                this.updateStatus(`Bruger "${userName}" er genaktiveret`, 'success');
+                await Modal.success('Bruger genaktiveret', `<strong>${userName}</strong> er nu genaktiveret og har adgang igen.`);
+                await this.loadSeamUsers();
+            } else {
+                await Modal.error('Fejl', data.error || 'Kunne ikke genaktivere bruger');
+            }
+        } catch (err) {
+            console.error('Unsuspend error:', err);
+            await Modal.error('Fejl', 'Fejl ved genaktivering: ' + err.message);
+        }
+    },
+
+    // Slet bruger
+    async deleteUser(userId, userName) {
+        const confirmed = await Modal.show({
+            type: 'danger',
+            title: 'Slet bruger permanent',
+            message: `Er du sikker paa at du vil slette<br><strong>${userName}</strong>?<br><br><span style="color: #ef4444;">Denne handling kan IKKE fortrydes!</span>`,
+            confirmText: 'Ja, slet bruger',
+            cancelText: 'Annuller'
+        });
+
+        if (!confirmed) return;
+
+        try {
+            const res = await fetch(`/api/seam/users/${userId}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                this.showStatusBox();
+                this.updateStatus(`Bruger "${userName}" er slettet`, 'success');
+                await Modal.success('Bruger slettet', `<strong>${userName}</strong> er blevet slettet permanent.`);
+                await this.loadSeamUsers();
+            } else {
+                await Modal.error('Fejl', data.error || 'Kunne ikke slette bruger');
+            }
+        } catch (err) {
+            console.error('Delete error:', err);
+            await Modal.error('Fejl', 'Fejl ved sletning: ' + err.message);
+        }
+    },
+
+    async loadSeamUsers() {
+        try {
+            const res = await fetch('/api/seam/users');
+            const data = await res.json();
+
+            if (data.success) {
+                this.seamUsers = data.users || [];
+                this.renderUsersList();
+                this.updateCounts();
+            }
+        } catch (err) {
+            console.error('Error loading seam users:', err);
+        }
+    },
+
     updateCounts() {
-        const active = this.accessCodes.filter(a => a.status === 'active').length;
-        const expired = this.accessCodes.filter(a => a.status === 'expired').length;
-        
+        const now = new Date();
+        const active = this.seamUsers.filter(u => {
+            if (!u.access_schedule) return false;
+            const end = new Date(u.access_schedule.ends_at);
+            return end > now && !u.is_suspended;
+        }).length;
+
+        const expired = this.seamUsers.filter(u => {
+            if (!u.access_schedule) return true;
+            const end = new Date(u.access_schedule.ends_at);
+            return end <= now || u.is_suspended;
+        }).length;
+
         const activeEl = document.getElementById('activeCount');
         const expiredEl = document.getElementById('expiredCount');
-        
+
         if (activeEl) activeEl.textContent = active;
         if (expiredEl) expiredEl.textContent = expired;
     },
 
-    renderAccessList(filter = 'all', search = '') {
+    renderUsersList() {
         const list = document.getElementById('accessList');
         if (!list) return;
 
-        let filtered = this.accessCodes;
-
-        // Apply filter
-        if (filter === 'active') {
-            filtered = filtered.filter(a => a.status === 'active');
-        } else if (filter === 'expired') {
-            filtered = filtered.filter(a => a.status === 'expired');
-        }
-
-        // Apply search
-        if (search) {
-            const searchLower = search.toLowerCase();
-            filtered = filtered.filter(a =>
-                a.artist_name.toLowerCase().includes(searchLower) ||
-                a.access_code.toLowerCase().includes(searchLower)
-            );
-        }
-
-        if (filtered.length === 0) {
+        if (this.seamUsers.length === 0) {
             list.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">🔍</div>
-                    <h3>Ingen adgangskoder fundet</h3>
-                    <p>Prøv at justere dine søgekriterier</p>
+                    <div class="empty-icon">-</div>
+                    <h3>Ingen brugere fundet</h3>
+                    <p>Opret en ny adgang ovenfor</p>
                 </div>
             `;
             return;
         }
 
-        list.innerHTML = filtered.map(access => this.renderAccessCard(access)).join('');
-    },
+        const now = new Date();
 
-    renderAccessCard(access) {
-        const statusClass = access.status;
-        const statusText = this.getStatusText(access.status);
-        
-        return `
-            <div class="access-card ${statusClass}">
-                <div class="access-main">
-                    <div class="access-info">
-                        <div class="access-artist">
-                            <span class="artist-icon">🎤</span>
-                            <h4>${this.escapeHtml(access.artist_name)}</h4>
+        list.innerHTML = this.seamUsers.map(user => {
+            const isExpired = user.access_schedule
+                ? new Date(user.access_schedule.ends_at) <= now
+                : false;
+            const isSuspended = user.is_suspended;
+            const statusClass = isSuspended ? 'revoked' : (isExpired ? 'expired' : 'active');
+            const statusText = isSuspended ? 'Suspenderet' : (isExpired ? 'Udløbet' : 'Aktiv');
+            const escapedName = this.escapeHtml(user.full_name).replace(/'/g, "\\'");
+
+            return `
+                <div class="access-card ${statusClass}">
+                    <div class="access-main">
+                        <div class="access-info">
+                            <div class="access-artist">
+                                <h4>${this.escapeHtml(user.full_name)}</h4>
+                            </div>
                         </div>
-                        <div class="access-code-display">
-                            <code>${access.access_code}</code>
-                            <button class="btn-copy" onclick="AccessManager.copyCode('${access.access_code}')">
-                                📋
+                        <div class="access-meta">
+                            ${user.access_schedule ? `
+                                <div class="meta-item">
+                                    <span class="meta-label">Periode:</span>
+                                    <span class="meta-value">
+                                        ${this.formatDate(user.access_schedule.starts_at)} -
+                                        ${this.formatDate(user.access_schedule.ends_at)}
+                                    </span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="access-actions">
+                        <div class="status-badge ${statusClass}">
+                            ${statusText}
+                        </div>
+                        <div class="action-buttons">
+                            ${isSuspended ? `
+                                <button class="btn-action unsuspend" onclick="AccessManager.unsuspendUser('${user.acs_user_id}', '${escapedName}')" title="Genaktiver">
+                                    Genaktiver
+                                </button>
+                            ` : `
+                                <button class="btn-action suspend" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')" title="Suspender">
+                                    Suspender
+                                </button>
+                            `}
+                            <button class="btn-action delete" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')" title="Slet">
+                                Slet
                             </button>
                         </div>
                     </div>
-                    <div class="access-meta">
-                        <div class="meta-item">
-                            <span class="meta-label">Periode:</span>
-                            <span class="meta-value">${this.formatDate(access.start_date)} - ${this.formatDate(access.end_date)}</span>
-                        </div>
-                        ${access.rentman_project ? `
-                            <div class="meta-item">
-                                <span class="meta-label">Projekt:</span>
-                                <span class="meta-value">${this.escapeHtml(access.rentman_project)}</span>
-                            </div>
-                        ` : ''}
-                        ${access.usage_count > 0 ? `
-                            <div class="meta-item">
-                                <span class="meta-label">Brug:</span>
-                                <span class="meta-value">${access.usage_count} gange</span>
-                            </div>
-                        ` : ''}
-                    </div>
                 </div>
-                <div class="access-actions">
-                    <div class="status-badge ${statusClass}">
-                        ${statusText}
-                    </div>
-                    <div class="action-buttons">
-                        ${access.status === 'active' ? `
-                            <button class="btn-action revoke" onclick="AccessManager.confirmRevoke(${access.id})" title="Tilbagekald">
-                                🚫
-                            </button>
-                        ` : ''}
-                        <button class="btn-action delete" onclick="AccessManager.confirmDelete(${access.id})" title="Slet">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    },
-
-    // ============================================
-    // User Actions
-    // ============================================
-    async copyCode(code) {
-        try {
-            await navigator.clipboard.writeText(code);
-            
-            // Visual feedback
-            const btns = document.querySelectorAll('.btn-copy');
-            btns.forEach(btn => {
-                if (btn.onclick.toString().includes(code)) {
-                    const originalText = btn.textContent;
-                    btn.textContent = '✓';
-                    btn.style.background = 'var(--color-success)';
-                    setTimeout(() => {
-                        btn.textContent = originalText;
-                        btn.style.background = '';
-                    }, 1500);
-                }
-            });
-        } catch (error) {
-            console.error('Failed to copy:', error);
-            this.showError('Kunne ikke kopiere koden.');
-        }
-    },
-
-    confirmRevoke(id) {
-        const access = this.accessCodes.find(a => a.id === id);
-        if (!access) return;
-
-        if (confirm(`Er du sikker på at du vil tilbagekalde adgangskoden for ${access.artist_name}?\n\nKode: ${access.access_code}\n\nDenne handling kan ikke fortrydes.`)) {
-            this.revokeAccessCode(id);
-        }
-    },
-
-    confirmDelete(id) {
-        const access = this.accessCodes.find(a => a.id === id);
-        if (!access) return;
-
-        if (confirm(`Er du sikker på at du vil slette adgangskoden for ${access.artist_name}?\n\nKode: ${access.access_code}\n\nDenne handling kan ikke fortrydes.`)) {
-            this.deleteAccessCode(id);
-        }
-    },
-
-    // ============================================
-    // Utility Functions
-    // ============================================
-    generateCode(artistName) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        const prefix = this.getCodePrefix(artistName);
-        
-        // Generate two segments of 4 random characters
-        const segment1 = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-        const segment2 = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-        
-        return `${prefix}-${segment1}-${segment2}`;
-    },
-
-    getCodePrefix(artistName) {
-        const words = artistName.trim().split(/\s+/);
-        if (words.length === 1) {
-            return words[0].substring(0, 3).toUpperCase();
-        }
-        // Take first letter of first two words
-        return words.slice(0, 2).map(w => w[0]).join('').toUpperCase().padEnd(3, words[0][1] || 'X');
+            `;
+        }).join('');
     },
 
     formatDate(dateString) {
@@ -375,27 +559,191 @@ const AccessManager = {
         return `${day}/${month}/${year}`;
     },
 
-    getStatusText(status) {
-        const statusMap = {
-            'active': '● Aktiv',
-            'expired': '● Udløbet',
-            'revoked': '● Tilbagekaldt'
-        };
-        return statusMap[status] || status;
-    },
-
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     },
 
-    showSuccess(message) {
-        alert(`✅ ${message}`);
+    showError(message) {
+        Modal.error('Fejl', message);
     },
 
-    showError(message) {
-        alert(`❌ ${message}`);
+    // ============================================
+    // Project Picker
+    // ============================================
+
+    async loadProjects() {
+        try {
+            const res = await fetch('/api/projects');
+            const data = await res.json();
+
+            if (data.success) {
+                this.projects = data.projects || [];
+                this.projectsLoaded = true;
+                this.renderProjectList();
+            }
+        } catch (err) {
+            console.error('Error loading projects:', err);
+        }
+    },
+
+    initProjectPicker() {
+        const trigger = document.getElementById('projectPickerTrigger');
+        const dropdown = document.getElementById('projectPickerDropdown');
+        const search = document.getElementById('projectPickerSearch');
+
+        if (!trigger || !dropdown) return;
+
+        // Toggle dropdown
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.contains('show');
+            if (isOpen) {
+                this.closeProjectPicker();
+            } else {
+                this.openProjectPicker();
+            }
+        });
+
+        // Search functionality
+        if (search) {
+            search.addEventListener('input', (e) => {
+                this.filterProjects(e.target.value);
+            });
+        }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.project-picker-wrapper')) {
+                this.closeProjectPicker();
+            }
+        });
+
+        // Render initial list
+        this.renderProjectList();
+    },
+
+    openProjectPicker() {
+        const trigger = document.getElementById('projectPickerTrigger');
+        const dropdown = document.getElementById('projectPickerDropdown');
+        const search = document.getElementById('projectPickerSearch');
+
+        trigger?.classList.add('active');
+        dropdown?.classList.add('show');
+        search?.focus();
+    },
+
+    closeProjectPicker() {
+        const trigger = document.getElementById('projectPickerTrigger');
+        const dropdown = document.getElementById('projectPickerDropdown');
+
+        trigger?.classList.remove('active');
+        dropdown?.classList.remove('show');
+    },
+
+    filterProjects(searchTerm) {
+        const filtered = this.projects.filter(item => {
+            const name = (item.project_name || '').toLowerCase();
+            return name.includes(searchTerm.toLowerCase());
+        });
+        this.renderProjectList(filtered);
+    },
+
+    renderProjectList(items = null) {
+        const list = document.getElementById('projectPickerList');
+        if (!list) return;
+
+        const data = items || this.projects;
+
+        if (!this.projectsLoaded) {
+            list.innerHTML = `
+                <div class="project-picker-empty">
+                    <div class="empty-icon">-</div>
+                    <p>Indlæser projekter...</p>
+                </div>
+            `;
+            return;
+        }
+
+        if (data.length === 0) {
+            list.innerHTML = `
+                <div class="project-picker-empty">
+                    <div class="empty-icon">-</div>
+                    <p>Ingen projekter fundet</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = data.map((item, idx) => {
+            const originalIdx = this.projects.indexOf(item);
+            const startDate = item.start_date ? this.formatDateShort(item.start_date) : '?';
+            const endDate = item.end_date ? this.formatDateShort(item.end_date) : '?';
+
+            return `
+                <div class="project-picker-item" onclick="AccessManager.selectProject(${originalIdx})">
+                    <div class="project-name">${this.escapeHtml(item.project_name)}</div>
+                    <div class="project-meta">
+                        <span>${startDate} → ${endDate}</span>
+                        ${item.subproject_count > 1 ? `<span>${item.subproject_count} subprojekter</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    selectProject(idx) {
+        const item = this.projects[idx];
+        if (!item) return;
+
+        // Update trigger text
+        const trigger = document.getElementById('projectPickerTrigger');
+        if (trigger) {
+            trigger.innerHTML = `
+                <span class="selected-project">${this.escapeHtml(item.project_name)}</span>
+                <span class="chevron">▼</span>
+            `;
+        }
+
+        // Set form values
+        const nameInput = document.getElementById('artistName');
+        if (nameInput) nameInput.value = item.project_name || '';
+
+        const startInput = document.getElementById('startDate');
+        if (startInput && item.start_date) {
+            startInput.value = this.formatDateForInput(item.start_date);
+        }
+
+        const endInput = document.getElementById('endDate');
+        if (endInput && item.end_date) {
+            endInput.value = this.formatDateForInput(item.end_date);
+        }
+
+        // Close dropdown
+        this.closeProjectPicker();
+
+        // Clear search
+        const search = document.getElementById('projectPickerSearch');
+        if (search) search.value = '';
+        this.renderProjectList();
+    },
+
+    formatDateShort(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}`;
+    },
+
+    formatDateForInput(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 };
 

@@ -145,7 +145,6 @@ const ProfileManager = {
                     <div class="profile-section">
                         <div class="section-header">
                             <h3>
-                                <span class="section-icon">👤</span>
                                 Personlige Oplysninger
                             </h3>
                             <button class="btn-edit" onclick="ProfileManager.enableEdit()">
@@ -236,7 +235,7 @@ const ProfileManager = {
                     <div class="profile-section info-section">
                         <div class="info-content">
                             <div>
-                                <h4>Kan ikke ændre brugernavn eller rolle?</h4>
+                                <h4>Vil du ændre brugernavn eller rolle?</h4>
                                 <p>Kontakt en administrator for at ændre dit brugernavn eller din rolle.</p>
                             </div>
                         </div>
