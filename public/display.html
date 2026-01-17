@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="dark" lang="da">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>TourCare | Sluse System</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#1c232d",
+                        "secondary-text": "#9dabb9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* Desktop: 4 kolonner x 3 rækker */
+        @media (min-width: 1024px) {
+            #stallsGrid {
+                grid-template-columns: repeat(4, 1fr);
+                grid-template-rows: repeat(3, 1fr);
+            }
+        }
+
+        /* Tablet: 3 kolonner */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            #stallsGrid {
+                grid-template-columns: repeat(3, 1fr);
+                grid-auto-rows: minmax(180px, auto);
+            }
+        }
+
+        /* Mobil: 2 kolonner */
+        @media (max-width: 767px) {
+            #stallsGrid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-auto-rows: minmax(160px, auto);
+            }
+        }
+
+        /* Lille mobil: 1 kolonne */
+        @media (max-width: 480px) {
+            #stallsGrid {
+                grid-template-columns: 1fr;
+                grid-auto-rows: minmax(140px, auto);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="flex-none border-b border-gray-200 dark:border-[#283039] bg-white dark:bg-[#111418] px-4 sm:px-6 lg:px-8 py-3 sm:py-4 shadow-sm z-10">
+    <div class="flex items-center justify-between gap-4">
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3 sm:gap-4">
+            <div class="size-8 sm:size-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-xl sm:text-2xl">grid_view</span>
+            </div>
+            <div>
+                <h1 class="text-base sm:text-xl font-bold tracking-tight leading-tight">Sluse System</h1>
+                <p class="text-[10px] sm:text-xs text-secondary-text font-medium uppercase tracking-wider hidden sm:block">Storage Overview</p>
+            </div>
+        </div>
+
+        <!-- Status & Time -->
+        <div class="flex items-center gap-3 sm:gap-6">
+            <div class="flex flex-col items-end">
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-full w-full bg-emerald-500"></span>
+                    </span>
+                    <span class="text-[10px] sm:text-xs font-bold text-emerald-500 uppercase tracking-wide">Live</span>
+                </div>
+                <p class="text-secondary-text text-[10px] sm:text-xs mt-0.5 hidden sm:block" id="updateStatus">Opdateret: Lige nu</p>
+            </div>
+            <div class="h-8 sm:h-10 px-3 sm:px-5 bg-[#283039] rounded-lg flex items-center justify-center border border-[#3b4754]">
+                <span class="font-mono text-base sm:text-xl font-bold tracking-widest text-white" id="currentTime">--:--</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="flex-1 overflow-hidden p-4 sm:p-6 lg:p-8">
+    <div class="grid gap-3 sm:gap-4 h-full" id="stallsGrid">
+        <!-- Loading State -->
+        <div class="col-span-full row-span-full flex flex-col items-center justify-center text-secondary-text">
+            <div class="size-8 sm:size-10 border-2 border-secondary-text/30 border-t-primary rounded-full animate-spin mb-4"></div>
+            <span class="text-sm sm:text-base">Indlæser...</span>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="flex-none px-4 sm:px-8 py-3 sm:py-4 text-center border-t border-[#283039]">
+    <p class="text-[10px] sm:text-xs text-secondary-text">TourCare Sluse System | Automatisk opdatering hvert 30. sekund</p>
+</footer>
+
+<script>
+    const displayNames = {
+        'Sluse1': 'BÅS 01', 'Sluse2': 'BÅS 02', 'Sluse3': 'BÅS 03',
+        'Sluse4': 'BÅS 04', 'Sluse5': 'BÅS 05', 'Sluse6': 'BÅS 06',
+        'Sluse7': 'BÅS 07', 'Reol1': 'REOL 01', 'Reol2': 'REOL 02',
+    };
+
+    const stallColors = [
+        'red', 'blue', 'emerald', 'amber', 'purple',
+        'pink', 'cyan', 'orange', 'indigo', 'lime', 'rose', 'teal'
+    ];
+
+    function updateTime() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('currentTime').textContent = `${h}:${m}`;
+    }
+
+    function esc(text) {
+        if (!text) return '';
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    function render(data) {
+        const grid = document.getElementById('stallsGrid');
+
+        const html = data.map((s, index) => {
+            const hasCustomer = s.Kunde && s.Kunde.trim();
+            const name = displayNames[s.slusenavn] || s.slusenavn;
+            const color = stallColors[index % stallColors.length];
+
+            if (hasCustomer) {
+                return `
+                    <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500 shadow-lg hover:shadow-xl transition-shadow">
+                        <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
+                            <!-- Header -->
+                            <div class="flex justify-between items-start">
+                                <div class="flex flex-col">
+                                    <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
+                                    <h2 class="text-xl sm:text-2xl font-display font-bold text-white">${name}</h2>
+                                </div>
+                                <div class="size-8 sm:size-10 rounded-full bg-${color}-500/10 flex items-center justify-center text-${color}-500 flex-shrink-0">
+                                    <span class="material-symbols-outlined text-lg sm:text-xl">inventory_2</span>
+                                </div>
+                            </div>
+
+                            <!-- Customer Info -->
+                            <div class="flex-1 flex flex-col gap-3 sm:gap-4">
+                                <div class="p-3 sm:p-4 rounded-lg bg-[#283039]/50 border border-[#3b4754]/50">
+                                    <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kunde</p>
+                                    <p class="text-base sm:text-xl font-bold text-white leading-tight">${esc(s.Kunde)}</p>
+                                </div>
+                                ${(s.Detaljer || s.Dato) ? `
+                                <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                                    ${s.Detaljer ? `
+                                    <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
+                                        <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Detaljer</p>
+                                        <p class="text-sm sm:text-base font-semibold text-white">${esc(s.Detaljer)}</p>
+                                    </div>
+                                    ` : ''}
+                                    ${s.Dato ? `
+                                    <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
+                                        <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Periode</p>
+                                        <p class="text-sm sm:text-base font-semibold text-white">${esc(s.Dato)}</p>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500/30 shadow-lg opacity-50 hover:opacity-70 transition-opacity">
+                        <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
+                            <!-- Header -->
+                            <div class="flex justify-between items-start">
+                                <div class="flex flex-col">
+                                    <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
+                                    <h2 class="text-xl sm:text-2xl font-display font-bold text-secondary-text">${name}</h2>
+                                </div>
+                                <div class="size-8 sm:size-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 flex-shrink-0">
+                                    <span class="material-symbols-outlined text-lg sm:text-xl">check_circle</span>
+                                </div>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div class="flex-1 flex flex-col items-center justify-center gap-1 sm:gap-2 py-4 sm:py-6">
+                                <p class="text-lg sm:text-xl font-bold text-secondary-text">Ledig</p>
+                                <p class="text-xs sm:text-sm text-[#3b4754]">Klar til reservation</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }).join('');
+
+        grid.innerHTML = html;
+        document.getElementById('updateStatus').textContent = 'Opdateret: Lige nu';
+    }
+
+    async function fetchData() {
+        try {
+            const res = await fetch('/api/sluse/public');
+            const json = await res.json();
+            if (json.success) render(json.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    updateTime();
+    fetchData();
+    setInterval(updateTime, 1000);
+    setInterval(fetchData, 30000);
+</script>
+
+</body>
+</html>

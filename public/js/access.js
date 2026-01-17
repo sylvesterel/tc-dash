@@ -531,15 +531,11 @@ const AccessManager = {
                             ${statusText}
                         </div>
                         <div class="action-buttons">
-                            ${isSuspended ? `
-                                <button class="btn-action unsuspend" onclick="AccessManager.unsuspendUser('${user.acs_user_id}', '${escapedName}')" title="Genaktiver">
-                                    Genaktiver
-                                </button>
-                            ` : `
+                            ${!isSuspended ? `
                                 <button class="btn-action suspend" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')" title="Suspender">
                                     Suspender
                                 </button>
-                            `}
+                            ` : ''}
                             <button class="btn-action delete" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')" title="Slet">
                                 Slet
                             </button>

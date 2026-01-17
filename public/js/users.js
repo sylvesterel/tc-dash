@@ -64,7 +64,6 @@ const UsersManager = {
             }
 
             const result = await response.json();
-            this.showSuccess('Bruger oprettet!');
             await this.loadUsers();
 
             return result;
@@ -224,47 +223,43 @@ const UsersManager = {
 
         return `
             <div class="user-card">
-                <div class="user-avatar">
-                    <span class="avatar-text">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
-                </div>
                 <div class="user-info">
-                    <div class="user-header">
-                        <h3>${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}</h3>
-                        ${isCurrentUser ? '<span class="you-badge">Du</span>' : ''}
+                    <div class="user-avatar">
+                        <span class="avatar-text">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
                     </div>
-                    <p class="user-username">@${this.escapeHtml(user.brugernavn)}</p>
-                    ${user.title ? `<p class="user-title">${this.escapeHtml(user.title)}</p>` : ''}
+                    <div class="user-details">
+                        <div class="user-header">
+                            <h3>${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}</h3>
+                            ${isCurrentUser ? '<span class="you-badge">Dig</span>' : ''}
+                        </div>
+                        <p class="user-username">@${this.escapeHtml(user.brugernavn)}</p>
+                        ${user.title ? `<p class="user-title">${this.escapeHtml(user.title)}</p>` : ''}
+                    </div>
                 </div>
                 <div class="user-meta">
                     <div class="meta-row">
                         <span class="meta-text">${this.escapeHtml(user.email)}</span>
                     </div>
+                    <div class="meta-row">
+                        <span class="role-badge ${rolleClass}">${rolleText}</span>
+                    </div>
                     ${user.telefon ? `
                         <div class="meta-row">
                             <span class="meta-text">${this.escapeHtml(user.telefon)}</span>
                         </div>
-                    ` : ''}
-                    <div class="meta-row">
-                        <span class="role-badge ${rolleClass}">${rolleText}</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-text">Oprettet ${this.formatDate(user.created_at)}</span>
-                    </div>
-                    ${user.last_login ? `
+                    ` : `
                         <div class="meta-row">
-                            <span class="meta-text">Sidst aktiv ${this.formatDateTime(user.last_login)}</span>
+                            <span class="meta-text" style="opacity: 0.5">Ingen telefon</span>
                         </div>
-                    ` : ''}
-                    ${user.created_by_fornavn ? `
-                        <div class="meta-row">
-                            <span class="meta-text">Oprettet af ${this.escapeHtml(user.created_by_fornavn)} ${this.escapeHtml(user.created_by_efternavn)}</span>
-                        </div>
-                    ` : ''}
+                    `}
+                    <div class="meta-row">
+                        <span class="meta-text">${user.last_login ? this.formatDateTime(user.last_login) : 'Aldrig logget ind'}</span>
+                    </div>
                 </div>
                 ${isAdmin && !isCurrentUser ? `
                     <div class="user-actions">
                         <button class="btn-action delete" onclick="UsersManager.confirmDelete(${user.id}, '${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}')" title="Slet bruger">
-                            🗑️ Slet
+                            Slet bruger
                         </button>
                     </div>
                 ` : ''}
@@ -387,6 +382,16 @@ const UsersManager = {
                         </span>
                     </div>
 
+                    <div class="form-field checkbox-field">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="sendWelcomeEmail" checked>
+                            <span class="checkbox-text">Send velkomst-email med login-oplysninger</span>
+                        </label>
+                        <span class="field-hint">
+                            Brugeren modtager en email med brugernavn, adgangskode og link til dashboard
+                        </span>
+                    </div>
+
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" onclick="UsersManager.closeModal()">
                             Annuller
@@ -433,12 +438,22 @@ const UsersManager = {
             telefon: document.getElementById('newTelefon').value.trim() || null,
             title: document.getElementById('newTitle').value.trim() || null,
             password: document.getElementById('newPassword').value,
-            rolle: document.getElementById('newRolle').value
+            rolle: document.getElementById('newRolle').value,
+            sendEmail: document.getElementById('sendWelcomeEmail').checked
         };
 
         try {
-            await this.createUser(userData);
+            const result = await this.createUser(userData);
             this.closeModal();
+
+            // Show email status
+            if (userData.sendEmail) {
+                if (result.emailSent) {
+                    this.showSuccess('Bruger oprettet og velkomst-email sendt!');
+                } else {
+                    this.showError('Bruger oprettet, men email kunne ikke sendes. Tjek email-konfiguration.');
+                }
+            }
         } catch (error) {
             // Error already handled
         }

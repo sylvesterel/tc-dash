@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import mysql from "mysql2/promise";
 import bcrypt from "bcrypt";
 import { Seam } from "seam";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -46,6 +48,213 @@ const crmPool = mysql.createPool(crmDatabaseConfig);
 
 // Rentman Integration Server URL
 const RENTMAN_INTEGRATION_URL = process.env.RENTMAN_INTEGRATION_URL || 'http://localhost:8081';
+
+// Email Configuration (Gmail)
+const emailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS // Use App Password for Gmail
+    }
+});
+
+// Dashboard URL for links in emails
+const DASHBOARD_URL = process.env.DASHBOARD_URL || 'http://localhost:8080';
+
+// Email helper function - Welcome email
+async function sendWelcomeEmail(userEmail, fornavn, brugernavn, password) {
+    const mailOptions = {
+        from: `"TourCare Dashboard" <${process.env.EMAIL_USER}>`,
+        to: userEmail,
+        subject: 'Velkommen til TourCare Dashboard - Din konto er oprettet',
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 40px 0;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">TourCare Dashboard</h1>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Din konto er klar!</p>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #333; margin: 0 0 20px 0; font-size: 22px;">Hej ${fornavn}!</h2>
+                            <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 25px 0;">
+                                Velkommen til TourCare Dashboard! Din konto er nu oprettet og klar til brug.
+                            </p>
+
+                            <!-- Credentials Box -->
+                            <table role="presentation" style="width: 100%; background-color: #f8f9fa; border-radius: 8px; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <h3 style="color: #333; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">Dine login-oplysninger:</h3>
+                                        <table role="presentation" style="width: 100%;">
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #666; font-size: 14px; width: 120px;">Brugernavn:</td>
+                                                <td style="padding: 8px 0; color: #333; font-size: 14px; font-weight: 600;">${brugernavn}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #666; font-size: 14px;">Adgangskode:</td>
+                                                <td style="padding: 8px 0; color: #333; font-size: 14px; font-weight: 600;">${password}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <a href="${DASHBOARD_URL}/login.html" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 35px; border-radius: 6px; font-size: 16px; font-weight: 600;">Log ind på Dashboard</a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Password Change Info -->
+                            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
+                                <h4 style="color: #856404; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Skift din adgangskode</h4>
+                                <p style="color: #856404; margin: 0; font-size: 13px; line-height: 1.5;">
+                                    Vi anbefaler, at du skifter din adgangskode ved første login.
+                                    Gå til <strong>Profil</strong> i menuen og klik på <strong>Skift adgangskode</strong>.
+                                </p>
+                            </div>
+
+                            <p style="color: #888; font-size: 13px; line-height: 1.5; margin: 0;">
+                                Hvis du har spørgsmål eller brug for hjælp, er du velkommen til at kontakte os.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #eee;">
+                            <p style="color: #888; font-size: 12px; margin: 0;">
+                                TourCare Dashboard &copy; ${new Date().getFullYear()}<br>
+                                Denne email blev sendt automatisk - svar venligst ikke på denne email.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        `
+    };
+
+    try {
+        await emailTransporter.sendMail(mailOptions);
+        console.log(`Welcome email sent to ${userEmail}`);
+        return true;
+    } catch (error) {
+        console.error('Error sending welcome email:', error);
+        return false;
+    }
+}
+
+// Email helper function - Password reset email
+async function sendPasswordResetEmail(userEmail, fornavn, resetToken) {
+    const resetLink = `${DASHBOARD_URL}/reset-password.html?token=${resetToken}`;
+
+    const mailOptions = {
+        from: `"TourCare Dashboard" <${process.env.EMAIL_USER}>`,
+        to: userEmail,
+        subject: 'Nulstil din adgangskode - TourCare Dashboard',
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 40px 0;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">TourCare Dashboard</h1>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Nulstil adgangskode</p>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #333; margin: 0 0 20px 0; font-size: 22px;">Hej ${fornavn}!</h2>
+                            <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 25px 0;">
+                                Vi har modtaget en anmodning om at nulstille din adgangskode. Klik på knappen nedenfor for at oprette en ny adgangskode.
+                            </p>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 35px; border-radius: 6px; font-size: 16px; font-weight: 600;">Nulstil adgangskode</a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Warning Box -->
+                            <div style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px 20px; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
+                                <h4 style="color: #721c24; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Vigtigt</h4>
+                                <p style="color: #721c24; margin: 0; font-size: 13px; line-height: 1.5;">
+                                    Dette link udløber om <strong>1 time</strong>. Hvis du ikke har anmodet om at nulstille din adgangskode, kan du ignorere denne email.
+                                </p>
+                            </div>
+
+                            <p style="color: #888; font-size: 13px; line-height: 1.5; margin: 0 0 15px 0;">
+                                Hvis knappen ikke virker, kan du kopiere og indsætte dette link i din browser:
+                            </p>
+                            <p style="color: #667eea; font-size: 12px; word-break: break-all; margin: 0; background-color: #f8f9fa; padding: 10px; border-radius: 4px;">
+                                ${resetLink}
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #eee;">
+                            <p style="color: #888; font-size: 12px; margin: 0;">
+                                TourCare Dashboard &copy; ${new Date().getFullYear()}<br>
+                                Denne email blev sendt automatisk - svar venligst ikke på denne email.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        `
+    };
+
+    try {
+        await emailTransporter.sendMail(mailOptions);
+        console.log(`Password reset email sent to ${userEmail}`);
+        return true;
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        return false;
+    }
+}
 
 // Sluse colors (fixed from old system)
 const SLUSE_COLORS = {
@@ -167,6 +376,168 @@ app.get("/me", authMiddleware, (req, res) => {
 });
 
 // ============================================
+// Password Reset Endpoints (No auth required)
+// ============================================
+
+// POST /api/forgot-password - Request password reset
+app.post("/api/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: "Email er påkrævet" });
+        }
+
+        // Find user by email
+        const [users] = await pool.query(
+            'SELECT id, fornavn, email FROM users WHERE email = ? AND is_active = TRUE',
+            [email]
+        );
+
+        // Always return success to prevent email enumeration
+        if (users.length === 0) {
+            return res.json({
+                success: true,
+                message: 'Hvis emailen findes i systemet, vil du modtage en nulstillingsmail.'
+            });
+        }
+
+        const user = users[0];
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        // Delete any existing reset tokens for this user
+        await pool.query(
+            'DELETE FROM password_reset_tokens WHERE user_id = ?',
+            [user.id]
+        );
+
+        // Store reset token
+        await pool.query(
+            'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+            [user.id, tokenHash, expiresAt]
+        );
+
+        // Send reset email
+        await sendPasswordResetEmail(user.email, user.fornavn, resetToken);
+
+        res.json({
+            success: true,
+            message: 'Hvis emailen findes i systemet, vil du modtage en nulstillingsmail.'
+        });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({
+            error: 'Der opstod en fejl. Prøv igen senere.'
+        });
+    }
+});
+
+// GET /api/verify-reset-token - Verify if reset token is valid
+app.get("/api/verify-reset-token", async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        if (!token) {
+            return res.status(400).json({ error: "Token er påkrævet", valid: false });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        const [tokens] = await pool.query(
+            `SELECT prt.*, u.fornavn, u.email
+             FROM password_reset_tokens prt
+             JOIN users u ON prt.user_id = u.id
+             WHERE prt.token_hash = ? AND prt.expires_at > NOW() AND prt.used = FALSE`,
+            [tokenHash]
+        );
+
+        if (tokens.length === 0) {
+            return res.json({
+                valid: false,
+                error: 'Ugyldigt eller udløbet link. Anmod om et nyt nulstillingslink.'
+            });
+        }
+
+        res.json({
+            valid: true,
+            fornavn: tokens[0].fornavn
+        });
+    } catch (error) {
+        console.error('Verify reset token error:', error);
+        res.status(500).json({
+            valid: false,
+            error: 'Der opstod en fejl. Prøv igen senere.'
+        });
+    }
+});
+
+// POST /api/reset-password - Reset password with token
+app.post("/api/reset-password", async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !password) {
+            return res.status(400).json({ error: "Token og ny adgangskode er påkrævet" });
+        }
+
+        // Validate password strength
+        if (password.length < 8) {
+            return res.status(400).json({
+                error: 'Adgangskode skal være mindst 8 tegn'
+            });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        // Find valid token
+        const [tokens] = await pool.query(
+            `SELECT prt.*, u.id as user_id
+             FROM password_reset_tokens prt
+             JOIN users u ON prt.user_id = u.id
+             WHERE prt.token_hash = ? AND prt.expires_at > NOW() AND prt.used = FALSE`,
+            [tokenHash]
+        );
+
+        if (tokens.length === 0) {
+            return res.status(400).json({
+                error: 'Ugyldigt eller udløbet link. Anmod om et nyt nulstillingslink.'
+            });
+        }
+
+        const tokenData = tokens[0];
+
+        // Hash new password
+        const password_hash = await bcrypt.hash(password, 10);
+
+        // Update user password
+        await pool.query(
+            'UPDATE users SET password_hash = ? WHERE id = ?',
+            [password_hash, tokenData.user_id]
+        );
+
+        // Mark token as used
+        await pool.query(
+            'UPDATE password_reset_tokens SET used = TRUE WHERE id = ?',
+            [tokenData.id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Din adgangskode er blevet nulstillet. Du kan nu logge ind.'
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            error: 'Der opstod en fejl. Prøv igen senere.'
+        });
+    }
+});
+
+// ============================================
 // User Management Endpoints
 // ============================================
 
@@ -260,7 +631,8 @@ app.post("/api/users", authMiddleware, adminMiddleware, async (req, res) => {
             telefon,
             password,
             title,
-            rolle
+            rolle,
+            sendEmail: shouldSendEmail
         } = req.body;
 
         // Validate required fields
@@ -337,10 +709,17 @@ app.post("/api/users", authMiddleware, adminMiddleware, async (req, res) => {
             [result.insertId]
         );
 
+        // Send welcome email if requested
+        let emailSent = false;
+        if (shouldSendEmail) {
+            emailSent = await sendWelcomeEmail(email, fornavn, brugernavn, password);
+        }
+
         res.status(201).json({
             success: true,
-            message: 'Bruger oprettet',
-            user: newUser[0]
+            message: emailSent ? 'Bruger oprettet og velkomst-email sendt' : 'Bruger oprettet',
+            user: newUser[0],
+            emailSent
         });
     } catch (error) {
         console.error('Error creating user:', error);
@@ -589,7 +968,9 @@ app.post("/api/seam/create-user", authMiddleware, async (req, res) => {
             access_method: "code",
         });
         writeStatus(`STATUS:Credential oprettet. Venter på pinkode...`);
-
+        const sync = await seam.connectedAccounts.sync({
+            connected_account_id: "d59e3cbd-b6fd-4b3f-b10d-e047c81e8db4"
+        })
         writeStatus(`CREDENTIAL_ID:${credential.acs_credential_id}`);
         writeStatus(`USER_ID:${acsUser.acs_user_id}`);
 
@@ -679,6 +1060,248 @@ app.delete("/api/seam/users/:id", authMiddleware, async (req, res) => {
 // ============================================
 // API Endpoints - Sluse (Old TourCare System)
 // ============================================
+
+// GET /api/sluse/public - Public endpoint for display screen (no auth required)
+app.get("/api/sluse/public", async (req, res) => {
+    try {
+        const [rows] = await slusePool.query('SELECT * FROM infoskaerm ORDER BY id');
+
+        const sluseData = rows.map(row => ({
+            slusenavn: row.slusenavn,
+            Kunde: row.Kunde,
+            Detaljer: row.Detaljer,
+            Dato: row.Dato,
+            color: SLUSE_COLORS[row.slusenavn] || '#808080'
+        }));
+
+        res.json({ success: true, data: sluseData });
+    } catch (err) {
+        console.error('Error fetching public sluse data:', err);
+        res.status(500).json({ error: "Kunne ikke hente data" });
+    }
+});
+
+// GET /api/office-dashboard - Public endpoint for office display screen
+app.get("/api/office-dashboard", async (req, res) => {
+    try {
+        const result = {
+            success: true,
+            timestamp: new Date().toISOString()
+        };
+
+        const now = new Date();
+        const weekNumber = getWeekNumber(now);
+        const year = now.getFullYear();
+        const todayName = getDayName(now.getDay());
+        const dayOrder = ['mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag', 'søndag'];
+        const todayIndex = dayOrder.indexOf(todayName);
+
+        // 1. Get menu - today or next available day
+        try {
+            // First try today's menu
+            const [menuRows] = await pool.query(`
+                SELECT * FROM weekly_menu
+                WHERE week_number = ? AND year = ? AND day_of_week = ?
+                AND main_dish IS NOT NULL AND main_dish != ''
+            `, [weekNumber, year, todayName]);
+
+            if (menuRows.length > 0 && menuRows[0].main_dish) {
+                const menu = menuRows[0];
+                let toppings = menu.toppings || [];
+                let salads = menu.salads || [];
+
+                if (typeof toppings === 'string') {
+                    try { toppings = JSON.parse(toppings); } catch (e) { toppings = []; }
+                }
+                if (typeof salads === 'string') {
+                    try { salads = JSON.parse(salads); } catch (e) { salads = []; }
+                }
+
+                result.todaysMenu = {
+                    day: todayName,
+                    isToday: true,
+                    main_dish: menu.main_dish,
+                    main_dish_description: menu.main_dish_description,
+                    toppings,
+                    salads
+                };
+            } else {
+                // Find next day with menu this week
+                const [allMenus] = await pool.query(`
+                    SELECT * FROM weekly_menu
+                    WHERE week_number = ? AND year = ?
+                    AND main_dish IS NOT NULL AND main_dish != ''
+                    ORDER BY FIELD(day_of_week, 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag', 'søndag')
+                `, [weekNumber, year]);
+
+                // Find next day after today
+                let nextMenu = null;
+                for (const menu of allMenus) {
+                    const menuDayIndex = dayOrder.indexOf(menu.day_of_week);
+                    if (menuDayIndex > todayIndex && menu.main_dish) {
+                        nextMenu = menu;
+                        break;
+                    }
+                }
+
+                if (nextMenu) {
+                    let toppings = nextMenu.toppings || [];
+                    let salads = nextMenu.salads || [];
+
+                    if (typeof toppings === 'string') {
+                        try { toppings = JSON.parse(toppings); } catch (e) { toppings = []; }
+                    }
+                    if (typeof salads === 'string') {
+                        try { salads = JSON.parse(salads); } catch (e) { salads = []; }
+                    }
+
+                    result.todaysMenu = {
+                        day: nextMenu.day_of_week,
+                        isToday: false,
+                        main_dish: nextMenu.main_dish,
+                        main_dish_description: nextMenu.main_dish_description,
+                        toppings,
+                        salads
+                    };
+                } else {
+                    result.todaysMenu = null;
+                }
+            }
+        } catch (e) {
+            console.error('Error fetching menu:', e);
+            result.todaysMenu = null;
+        }
+
+        // 2. Get sluse data and count occupied
+        try {
+            const [sluseRows] = await slusePool.query('SELECT * FROM infoskaerm ORDER BY id');
+            const occupiedSluser = sluseRows.filter(row => row.Kunde && row.Kunde.trim()).length;
+            const totalSluser = sluseRows.length;
+
+            result.sluser = {
+                occupied: occupiedSluser,
+                total: totalSluser,
+                data: sluseRows.map(row => ({
+                    slusenavn: row.slusenavn,
+                    Kunde: row.Kunde,
+                    Detaljer: row.Detaljer,
+                    Dato: row.Dato
+                }))
+            };
+        } catch (e) {
+            console.error('Error fetching sluse data:', e);
+            result.sluser = { occupied: 0, total: 0, data: [] };
+        }
+
+        // 3. Get Seam users count (those starting with date format like "01/15" or "01/15 - ")
+        try {
+            const seamUsers = await seam.acs.users.list({ acs_system_id: acsSystemId });
+            // Filter users whose name starts with date format (MM/DD) - dash is optional
+            const datePatternUsers = seamUsers.filter(user => {
+                const name = user.full_name || '';
+                return /^\d{2}\/\d{2}/.test(name);
+            });
+
+            result.seamUsers = {
+                withDatePrefix: datePatternUsers.length,
+                total: seamUsers.length,
+                users: datePatternUsers.map(u => ({
+                    name: u.full_name,
+                    id: u.acs_user_id,
+                    is_suspended: u.is_suspended
+                }))
+            };
+        } catch (e) {
+            console.error('Error fetching seam users:', e);
+            result.seamUsers = { withDatePrefix: 0, total: 0, users: [] };
+        }
+
+        // 4. Get weekly projects
+        try {
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay() + 1);
+            weekStart.setHours(0, 0, 0, 0);
+
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+
+            const [projectRows] = await pool.query(`
+                SELECT
+                    project_id,
+                    project_name,
+                    MIN(sp_start_pp) as start_date,
+                    MAX(sp_end_pp) as end_date
+                FROM project_with_sp
+                WHERE sp_start_pp <= ? AND sp_end_pp >= ?
+                AND sp_status NOT IN (1, 2, 8)
+                AND LOWER(project_name) NOT LIKE '%opbevaring%'
+                AND LOWER(subproject_name) NOT LIKE '%opbevaring%'
+                GROUP BY project_id, project_name
+                ORDER BY start_date ASC
+                LIMIT 20
+            `, [weekEnd, weekStart]);
+
+            result.weeklyProjects = {
+                count: projectRows.length,
+                projects: projectRows
+            };
+        } catch (e) {
+            console.error('Error fetching weekly projects:', e);
+            result.weeklyProjects = { count: 0, projects: [] };
+        }
+
+        // 5. Get integration errors and webhooks
+        result.integration = {
+            unresolvedErrors: 0,
+            recentErrors: [],
+            recentWebhooks: [],
+            error: null
+        };
+
+        try {
+            // Test connection first
+            const connection = await crmPool.getConnection();
+            connection.release();
+
+            // Unresolved errors count
+            const [[unresolvedCount]] = await crmPool.query(
+                'SELECT COUNT(*) as count FROM integration_errors WHERE resolved = FALSE'
+            );
+            result.integration.unresolvedErrors = unresolvedCount.count;
+
+            // Recent errors (last 10) - both resolved and unresolved for display
+            const [recentErrors] = await crmPool.query(`
+                SELECT id, error_type, severity, message, source_system, resolved, created_at
+                FROM integration_errors
+                ORDER BY created_at DESC
+                LIMIT 10
+            `);
+            result.integration.recentErrors = recentErrors;
+
+            // Recent webhooks (last 15)
+            const [recentWebhooks] = await crmPool.query(`
+                SELECT id, source, event_type, status, created_at
+                FROM webhook_events
+                ORDER BY created_at DESC
+                LIMIT 15
+            `);
+            result.integration.recentWebhooks = recentWebhooks;
+
+        } catch (e) {
+            console.error('Error fetching integration data:', e.message);
+            result.integration.error = e.message;
+        }
+
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching office dashboard data:', error);
+        res.status(500).json({
+            error: 'Kunne ikke hente kontor dashboard data',
+            message: error.message
+        });
+    }
+});
 
 // GET /api/sluse - Hent alle sluse data
 app.get("/api/sluse", authMiddleware, async (req, res) => {
