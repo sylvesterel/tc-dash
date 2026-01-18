@@ -79,12 +79,14 @@
     font-size: 12px;
     color: var(--text-secondary);
     font-weight: 500;
+    margin-bottom: 0;
 }
 
 .profile-stats .stat-value {
     font-size: 13px;
     color: var(--text-primary);
     font-weight: 600;
+    margin-bottom: 0;
 }
 
 /* Profile Main */
@@ -128,6 +130,16 @@
     font-size: 13px;
     color: var(--text-secondary);
     line-height: 1.5;
+}
+
+.profile-section button {
+    padding: 12px 24px;
+    border-radius: var(--radius-lg);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    gap: 8px;
 }
 
 .section-header {

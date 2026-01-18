@@ -530,15 +530,13 @@ const AccessManager = {
                         <div class="status-badge ${statusClass}">
                             ${statusText}
                         </div>
-                        <div class="action-buttons">
-                            ${!isSuspended ? `
-                                <button class="btn-action suspend" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')" title="Suspender">
+                        ${!isSuspended ? `
+                            <button class="btn-action suspend" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')" title="Suspender">
                                     Suspender
-                                </button>
-                            ` : ''}
-                            <button class="btn-action delete" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')" title="Slet">
-                                Slet
                             </button>
+                        ` : ''}
+                        <button class="btn-action delete" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')" title="Slet">
+                                Slet
                         </div>
                     </div>
                 </div>
