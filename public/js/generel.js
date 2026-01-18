@@ -2,9 +2,60 @@
 // Initialization
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
+    setupMobileNav();
     loadNavbar();
     loadUserInfo();
 });
+
+// ============================================
+// Mobile Navigation
+// ============================================
+function setupMobileNav() {
+    // Add hamburger button to header
+    const header = document.querySelector('header');
+    if (header) {
+        const hamburgerBtn = document.createElement('button');
+        hamburgerBtn.className = 'hamburger-btn';
+        hamburgerBtn.id = 'hamburgerBtn';
+        hamburgerBtn.setAttribute('aria-label', 'Abn menu');
+        hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        header.insertBefore(hamburgerBtn, header.firstChild);
+
+        hamburgerBtn.addEventListener('click', toggleMobileNav);
+    }
+
+    // Add overlay element
+    const overlay = document.createElement('div');
+    overlay.className = 'nav-overlay';
+    overlay.id = 'navOverlay';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', closeMobileNav);
+}
+
+function toggleMobileNav() {
+    const nav = document.getElementById('navbar');
+    const overlay = document.getElementById('navOverlay');
+
+    if (nav && overlay) {
+        const isOpen = nav.classList.contains('mobile-open');
+        if (isOpen) {
+            closeMobileNav();
+        } else {
+            nav.classList.add('mobile-open');
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+}
+
+function closeMobileNav() {
+    const nav = document.getElementById('navbar');
+    const overlay = document.getElementById('navOverlay');
+
+    if (nav) nav.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('show');
+    document.body.style.overflow = '';
+}
 
 // ============================================
 // Navigation
@@ -24,10 +75,21 @@ function loadNavbar() {
                 } else {
                     link.classList.remove('active');
                 }
+
+                // Close mobile nav when clicking a link
+                link.addEventListener('click', () => {
+                    closeMobileNav();
+                });
             });
 
             // Setup logout handler
             setupLogoutHandler();
+
+            // Setup mobile close button
+            const closeBtn = document.getElementById('hamburgerClose');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeMobileNav);
+            }
         })
         .catch(err => console.error('Fejl ved indlasning af navbar:', err));
 }

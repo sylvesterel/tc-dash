@@ -1,0 +1,401 @@
+/* ============================================
+   Access Control Page (adgang.html)
+   ============================================ */
+
+/* Header */
+.adgang-page .adgang-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.adgang-page .adgang-header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.adgang-page .adgang-header p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.header-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    min-width: 100px;
+}
+
+.stat-pill .stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.stat-pill .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.stat-pill .stat-value.expired {
+    color: var(--text-secondary);
+}
+
+/* Layout */
+.adgang-layout {
+    display: grid;
+    grid-template-columns: 450px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Create Access Card */
+.create-access-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 30px;
+    position: sticky;
+    top: 40px;
+}
+
+.create-access-card .card-header {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-dark);
+}
+
+.create-access-card .header-icon {
+    font-size: 40px;
+    flex-shrink: 0;
+}
+
+.create-access-card .card-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.create-access-card .card-header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* Access Form */
+.access-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.btn-generate {
+    padding: 16px 24px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-generate .btn-icon {
+    font-size: 20px;
+}
+
+.btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(19, 127, 236, 0.4);
+}
+
+.btn-generate:active {
+    transform: translateY(0);
+}
+
+/* Access List Section */
+.access-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.access-list-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.access-list-section .section-header h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-secondary);
+    padding: 6px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.filter-tab {
+    padding: 8px 20px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.filter-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+
+.filter-tab.active {
+    background: var(--color-primary);
+    color: #FFFFFF;
+}
+
+/* Search Bar */
+.search-bar input {
+    width: 100%;
+    padding: 14px 20px 14px 45px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all var(--transition-normal);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%239DABB9" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>');
+    background-repeat: no-repeat;
+    background-position: 15px center;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.1);
+}
+
+.search-bar input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Access List */
+.access-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Access Card */
+.access-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all var(--transition-normal);
+}
+
+.access-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.access-card.expired {
+    opacity: 0.6;
+}
+
+.access-card.expired:hover {
+    opacity: 1;
+}
+
+/* Access Main */
+.access-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.access-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.access-artist {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.access-artist .artist-icon {
+    font-size: 24px;
+}
+
+.access-artist h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Access Code Display */
+.access-code-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.access-code-display code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: rgba(19, 127, 236, 0.1);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(19, 127, 236, 0.2);
+}
+
+.btn-copy {
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    font-size: 16px;
+}
+
+.btn-copy:hover {
+    background: var(--color-primary);
+    transform: scale(1.1);
+}
+
+/* Access Meta */
+.access-meta {
+    display: flex;
+    gap: 30px;
+}
+
+.access-meta .meta-item {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.access-meta .meta-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.access-meta .meta-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Access Actions */
+.access-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.access-actions .status-badge {
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.access-actions .status-badge.active {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--color-success);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.access-actions .status-badge.expired {
+    background: rgba(157, 171, 185, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-buttons .btn-action {
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    font-size: 16px;
+}
+
+.action-buttons .btn-action:hover {
+    transform: scale(1.1);
+}
+
+.action-buttons .btn-action.edit:hover {
+    background: rgba(19, 127, 236, 0.1);
+    border-color: var(--color-primary);
+}
+
+.action-buttons .btn-action.delete:hover {
+    background: rgba(255, 82, 82, 0.1);
+    border-color: var(--color-error);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .adgang-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .create-access-card {
+        position: static;
+    }
+}

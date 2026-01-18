@@ -184,8 +184,16 @@ const SluseManager = {
                 this.rentmanLoaded = true;
                 // Update dropdown if editor is open
                 this.updateRentmanDropdown();
+            } else {
+                // API returned an error, still mark as loaded to show empty state
+                this.rentmanData = [];
+                this.rentmanLoaded = true;
+                console.warn('Rentman data not available:', result.error || 'Unknown error');
             }
         } catch (err) {
+            // Network or parsing error, mark as loaded to show empty state
+            this.rentmanData = [];
+            this.rentmanLoaded = true;
             console.error('Error loading Rentman data:', err);
         }
     },

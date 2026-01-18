@@ -1272,7 +1272,7 @@ app.get("/api/office-dashboard", async (req, res) => {
 
             // Recent errors (last 10) - both resolved and unresolved for display
             const [recentErrors] = await crmPool.query(`
-                SELECT id, error_type, severity, message, source_system, resolved, created_at
+                SELECT *
                 FROM integration_errors
                 ORDER BY created_at DESC
                 LIMIT 10
@@ -1395,12 +1395,33 @@ app.delete("/api/sluse/:slusenavn/clear", authMiddleware, async (req, res) => {
 app.get("/api/rentman/projects", authMiddleware, async (req, res) => {
     try {
         const apiKey = process.env.RENTMAN_API_KEY;
+
+        if (!apiKey) {
+            console.warn('RENTMAN_API_KEY is not configured');
+            return res.json({ success: false, data: [], error: "Rentman API nøgle ikke konfigureret" });
+        }
+
         const response = await fetch(
             `https://api.tourcare.dk/rentman/getdata.php?key=${apiKey}&format=json&target=sluse&stat=both`,
             { method: 'GET' }
         );
 
-        const data = await response.json();
+        // Check if response is OK
+        if (!response.ok) {
+            console.error('Rentman API returned status:', response.status);
+            return res.json({ success: false, data: [], error: "Rentman API fejlede" });
+        }
+
+        // Get response as text first to safely check if it's valid JSON
+        const responseText = await response.text();
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Rentman API returned invalid JSON:', responseText);
+            return res.json({ success: false, data: [], error: "Ugyldigt svar fra Rentman API" });
+        }
 
         if (data.responseKey === "i43dxDV2pzpUs2GsBNcs") {
             res.json({ success: true, data: data.data });
