@@ -102,13 +102,14 @@ function setupLogoutHandler() {
     if (logoutBtn) {
         logoutBtn.style.cursor = 'pointer';
         logoutBtn.addEventListener('click', async () => {
-            if (confirm('Er du sikker på at du vil logge ud?')) {
+            const confirmed = await Modal.confirm('Log ud', 'Er du sikker på at du vil logge ud?', 'warning');
+            if (confirmed) {
                 try {
                     await fetch('/logout', { method: 'POST' });
                     window.location.href = '/login.html';
                 } catch (error) {
                     console.error('Logout error:', error);
-                    alert('Kunne ikke logge ud. Prøv igen.');
+                    Modal.error('Fejl', 'Kunne ikke logge ud. Prøv igen.');
                 }
             }
         });

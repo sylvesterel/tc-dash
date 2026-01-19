@@ -363,11 +363,11 @@ async function saveMenu() {
             closeMenuEditor();
             loadWeeklyMenu();
         } else {
-            alert('Fejl: ' + (data.error || 'Kunne ikke gemme menu'));
+            Modal.error('Fejl', data.error || 'Kunne ikke gemme menu');
         }
     } catch (error) {
         console.error('Error saving menu:', error);
-        alert('Fejl ved gemning af menu');
+        Modal.error('Fejl', 'Der opstod en fejl ved gemning af menu');
     }
 }
 
@@ -491,7 +491,7 @@ async function saveNote() {
     const priority = parseInt(document.getElementById('note-priority').value);
 
     if (!title) {
-        alert('Titel er paakraevet');
+        Modal.alert('Manglende felt', 'Titel er påkrævet', 'warning');
         return;
     }
 
@@ -511,16 +511,17 @@ async function saveNote() {
             closeNoteEditor();
             loadNotes();
         } else {
-            alert('Fejl: ' + (data.error || 'Kunne ikke gemme note'));
+            Modal.error('Fejl', data.error || 'Kunne ikke gemme note');
         }
     } catch (error) {
         console.error('Error saving note:', error);
-        alert('Fejl ved gemning af note');
+        Modal.error('Fejl', 'Der opstod en fejl ved gemning af note');
     }
 }
 
 async function completeNote(noteId) {
-    if (!confirm('Marker denne note som faerdig?')) return;
+    const confirmed = await Modal.confirm('Færdiggør note', 'Marker denne note som færdig?', 'info');
+    if (!confirmed) return;
 
     try {
         const response = await fetch(`/api/notes/${noteId}/complete`, {
@@ -532,16 +533,23 @@ async function completeNote(noteId) {
         if (data.success) {
             loadNotes();
         } else {
-            alert('Fejl: ' + (data.error || 'Kunne ikke markere note som faerdig'));
+            Modal.error('Fejl', data.error || 'Kunne ikke markere note som færdig');
         }
     } catch (error) {
         console.error('Error completing note:', error);
-        alert('Fejl ved markering af note');
+        Modal.error('Fejl', 'Der opstod en fejl ved markering af note');
     }
 }
 
 async function deleteNote(noteId) {
-    if (!confirm('Er du sikker pa at du vil slette denne note?')) return;
+    const confirmed = await Modal.show({
+        type: 'danger',
+        title: 'Slet note',
+        message: 'Er du sikker på at du vil slette denne note?',
+        confirmText: 'Ja, slet',
+        cancelText: 'Annuller'
+    });
+    if (!confirmed) return;
 
     try {
         const response = await fetch(`/api/notes/${noteId}`, {
@@ -553,11 +561,11 @@ async function deleteNote(noteId) {
         if (data.success) {
             loadNotes();
         } else {
-            alert('Fejl: ' + (data.error || 'Kunne ikke slette note'));
+            Modal.error('Fejl', data.error || 'Kunne ikke slette note');
         }
     } catch (error) {
         console.error('Error deleting note:', error);
-        alert('Fejl ved sletning af note');
+        Modal.error('Fejl', 'Der opstod en fejl ved sletning af note');
     }
 }
 

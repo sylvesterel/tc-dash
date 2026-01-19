@@ -61,6 +61,50 @@ const emailTransporter = nodemailer.createTransport({
 // Dashboard URL for links in emails
 const DASHBOARD_URL = process.env.DASHBOARD_URL || 'http://localhost:8080';
 
+// Seam Webhook Secret for verification
+const SEAM_WEBHOOK_SECRET = process.env.SEAM_WEBHOOK_SECRET;
+
+// SSE clients for real-time access events
+const accessEventClients = new Set();
+
+// Initialize Seam database tables
+async function initSeamTables() {
+    try {
+        // Table for storing seam users with their acs_user_id
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS seam_users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                acs_user_id VARCHAR(255) NOT NULL UNIQUE,
+                name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_acs_user_id (acs_user_id)
+            )
+        `);
+
+        // Table for storing access events from webhooks
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS seam_access_events (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                event_type VARCHAR(100) NOT NULL,
+                acs_user_id VARCHAR(255),
+                user_name VARCHAR(255),
+                device_name VARCHAR(255),
+                occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                raw_payload JSON,
+                INDEX idx_occurred_at (occurred_at),
+                INDEX idx_acs_user_id (acs_user_id)
+            )
+        `);
+
+        console.log('Seam database tables initialized');
+    } catch (error) {
+        console.error('Error initializing seam tables:', error);
+    }
+}
+
+// Call on startup
+initSeamTables();
+
 // Email helper function - Welcome email
 async function sendWelcomeEmail(userEmail, fornavn, brugernavn, password) {
     const mailOptions = {
@@ -127,7 +171,7 @@ async function sendWelcomeEmail(userEmail, fornavn, brugernavn, password) {
                             <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; border-radius: 0 8px 8px 0; margin-bottom: 25px;">
                                 <h4 style="color: #856404; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Skift din adgangskode</h4>
                                 <p style="color: #856404; margin: 0; font-size: 13px; line-height: 1.5;">
-                                    Vi anbefaler, at du skifter din adgangskode ved første login.
+                                    Ved første login skal du skifte din adgangskode.
                                     Gå til <strong>Profil</strong> i menuen og klik på <strong>Skift adgangskode</strong>.
                                 </p>
                             </div>
@@ -199,7 +243,7 @@ async function sendPasswordResetEmail(userEmail, fornavn, resetToken) {
                         <td style="padding: 40px 30px;">
                             <h2 style="color: #333; margin: 0 0 20px 0; font-size: 22px;">Hej ${fornavn}!</h2>
                             <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 25px 0;">
-                                Vi har modtaget en anmodning om at nulstille din adgangskode. Klik på knappen nedenfor for at oprette en ny adgangskode.
+                                Du har anmodet om at nulstille din adgangskode.
                             </p>
 
                             <!-- CTA Button -->
@@ -971,6 +1015,19 @@ app.post("/api/seam/create-user", authMiddleware, async (req, res) => {
         const sync = await seam.connectedAccounts.sync({
             connected_account_id: "d59e3cbd-b6fd-4b3f-b10d-e047c81e8db4"
         })
+
+        // Gem bruger i database for webhook opslag
+        try {
+            await pool.query(
+                `INSERT INTO seam_users (acs_user_id, name) VALUES (?, ?)
+                 ON DUPLICATE KEY UPDATE name = VALUES(name)`,
+                [acsUser.acs_user_id, fullName]
+            );
+            writeStatus(`STATUS:Bruger gemt i database`);
+        } catch (dbErr) {
+            console.error('Error saving seam user to database:', dbErr);
+        }
+
         writeStatus(`CREDENTIAL_ID:${credential.acs_credential_id}`);
         writeStatus(`USER_ID:${acsUser.acs_user_id}`);
 
@@ -1054,6 +1111,178 @@ app.delete("/api/seam/users/:id", authMiddleware, async (req, res) => {
     } catch (err) {
         console.error('Error deleting seam user:', err);
         res.status(500).json({ error: "Kunne ikke slette bruger: " + err.message });
+    }
+});
+
+// GET /api/seam/access-events/stream - SSE endpoint for real-time access events
+app.get("/api/seam/access-events/stream", (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.flushHeaders();
+
+    // Send initial connection message
+    res.write('data: {"type":"connected"}\n\n');
+
+    // Add client to set
+    accessEventClients.add(res);
+    console.log(`SSE client connected. Total clients: ${accessEventClients.size}`);
+
+    // Remove client on disconnect
+    req.on('close', () => {
+        accessEventClients.delete(res);
+        console.log(`SSE client disconnected. Total clients: ${accessEventClients.size}`);
+    });
+});
+
+// Broadcast access event to all connected SSE clients
+function broadcastAccessEvent(eventData) {
+    const message = `data: ${JSON.stringify(eventData)}\n\n`;
+    accessEventClients.forEach(client => {
+        client.write(message);
+    });
+}
+
+// POST /api/seam/webhook - Modtag webhooks fra Seam (adgangs-events)
+app.post("/api/seam/webhook", async (req, res) => {
+    try {
+        const event = req.body;
+
+        console.log('Seam webhook received:', event.event_type);
+
+        // Handle access events (acs_user.* or acs_credential.* events)
+        // Common events: acs_user.entered, acs_user.exited, acs_credential.unlocked
+        const accessEventTypes = [
+            'acs_user.entered',
+            'acs_user.exited',
+            'acs_credential.used',
+            'lock.unlocked',
+            'lock.locked'
+        ];
+
+        if (accessEventTypes.includes(event.event_type) || event.event_type?.startsWith('acs_')) {
+            const payload = event.payload || {};
+
+            // Try to find user name from our database
+            let userName = null;
+            const acsUserId = payload.acs_user_id || payload.acs_user?.acs_user_id;
+
+            if (acsUserId) {
+                try {
+                    const [rows] = await pool.query(
+                        'SELECT name FROM seam_users WHERE acs_user_id = ?',
+                        [acsUserId]
+                    );
+                    if (rows.length > 0) {
+                        userName = rows[0].name;
+                    }
+                } catch (e) {
+                    console.error('Error looking up user:', e);
+                }
+            }
+
+            // Get device/lock name if available
+            const deviceName = payload.device?.name ||
+                              payload.lock?.name ||
+                              payload.acs_entrance?.display_name ||
+                              'Ukendt enhed';
+
+            // Save event to database
+            const [result] = await pool.query(
+                `INSERT INTO seam_access_events (event_type, acs_user_id, user_name, device_name, occurred_at, raw_payload)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    event.event_type,
+                    acsUserId || null,
+                    userName,
+                    deviceName,
+                    event.occurred_at ? new Date(event.occurred_at) : new Date(),
+                    JSON.stringify(event)
+                ]
+            );
+
+            // Broadcast to SSE clients instantly
+            broadcastAccessEvent({
+                type: 'access_event',
+                id: result.insertId,
+                event_type: event.event_type,
+                acs_user_id: acsUserId,
+                user_name: userName,
+                device_name: deviceName,
+                occurred_at: new Date().toISOString()
+            });
+
+            console.log(`Access event saved and broadcast: ${event.event_type} - ${userName || 'Unknown'} - ${deviceName}`);
+        }
+
+        // Always respond with 200 to acknowledge receipt
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error('Error processing seam webhook:', error);
+        // Still return 200 to avoid Seam retrying
+        res.status(200).json({ success: true, error: error.message });
+    }
+});
+
+// POST /api/seam/test-access - Test endpoint til at simulere dør-adgang (kun til udvikling)
+app.post("/api/seam/test-access", async (req, res) => {
+    try {
+        const { user_name, device_name, event_type } = req.body;
+
+        const eventTypes = ['acs_user.entered', 'lock.unlocked', 'acs_user.exited', 'lock.locked'];
+        const selectedEventType = event_type || eventTypes[Math.floor(Math.random() * 2)]; // Default til enter/unlock
+        const testUserName = user_name || 'Test Bruger';
+        const testDeviceName = device_name || 'Hoveddør';
+
+        const [result] = await pool.query(
+            `INSERT INTO seam_access_events (event_type, acs_user_id, user_name, device_name, occurred_at, raw_payload)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                selectedEventType,
+                'test-' + Date.now(),
+                testUserName,
+                testDeviceName,
+                new Date(),
+                JSON.stringify({ test: true })
+            ]
+        );
+
+        // Broadcast to SSE clients instantly
+        broadcastAccessEvent({
+            type: 'access_event',
+            id: result.insertId,
+            event_type: selectedEventType,
+            acs_user_id: null,
+            user_name: testUserName,
+            device_name: testDeviceName,
+            occurred_at: new Date().toISOString()
+        });
+
+        res.json({ success: true, message: 'Test adgangs-event oprettet og broadcast' });
+    } catch (error) {
+        console.error('Error creating test access event:', error);
+        res.status(500).json({ error: 'Kunne ikke oprette test event' });
+    }
+});
+
+// GET /api/seam/access-events - Hent seneste adgangs-events
+app.get("/api/seam/access-events", async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 20;
+
+        const [events] = await pool.query(
+            `SELECT * FROM seam_access_events
+             ORDER BY occurred_at DESC
+             LIMIT ?`,
+            [limit]
+        );
+
+        res.json({ success: true, events });
+    } catch (error) {
+        console.error('Error fetching access events:', error);
+        res.status(500).json({ error: 'Kunne ikke hente adgangs-events' });
     }
 });
 
@@ -1291,6 +1520,20 @@ app.get("/api/office-dashboard", async (req, res) => {
         } catch (e) {
             console.error('Error fetching integration data:', e.message);
             result.integration.error = e.message;
+        }
+
+        // 6. Get recent access events from Seam webhooks
+        try {
+            const [accessEvents] = await pool.query(`
+                SELECT id, event_type, acs_user_id, user_name, device_name, occurred_at
+                FROM seam_access_events
+                ORDER BY occurred_at DESC
+                LIMIT 15
+            `);
+            result.accessEvents = accessEvents;
+        } catch (e) {
+            console.error('Error fetching access events:', e);
+            result.accessEvents = [];
         }
 
         res.json(result);

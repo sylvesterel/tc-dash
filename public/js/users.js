@@ -462,8 +462,16 @@ const UsersManager = {
     // ============================================
     // User Actions
     // ============================================
-    confirmDelete(userId, userName) {
-        if (confirm(`Er du sikker på at du vil slette brugeren "${userName}"?\n\nDenne handling kan ikke fortrydes.`)) {
+    async confirmDelete(userId, userName) {
+        const confirmed = await Modal.show({
+            type: 'danger',
+            title: 'Slet bruger',
+            message: `Er du sikker på at du vil slette brugeren <strong>"${this.escapeHtml(userName)}"</strong>?<br><br>Denne handling kan ikke fortrydes.`,
+            confirmText: 'Ja, slet bruger',
+            cancelText: 'Annuller'
+        });
+
+        if (confirmed) {
             this.deleteUser(userId);
         }
     },
@@ -499,11 +507,11 @@ const UsersManager = {
     },
 
     showSuccess(message) {
-        alert(`${message}`);
+        Modal.success('Succes', message);
     },
 
     showError(message) {
-        alert(`${message}`);
+        Modal.error('Fejl', message);
     }
 };
 

@@ -260,7 +260,6 @@
 
 .stall-item.optaget .stall-status {
     color: var(--color-text, #fff);
-    font-weight: 500;
 }
 
 /* Modal Styles */

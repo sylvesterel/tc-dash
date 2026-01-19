@@ -3,6 +3,10 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="robots" content="noindex, nofollow"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
     <title>TourCare | Kontor Dashboard</title>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -30,11 +34,16 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #161b22; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+        body {
+            font-family: 'Inter', sans-serif;
+            cursor: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* Skjul scrollbars helt */
+        ::-webkit-scrollbar { display: none; }
+        * { scrollbar-width: none; }
 
         .glass-card {
             background: rgba(22, 27, 34, 0.9);
@@ -61,17 +70,170 @@
         }
         .animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
 
-        .list-scrollable {
-            max-height: calc(100% - 60px);
-            overflow-y: auto;
+        /* Auto-scroll container */
+        .auto-scroll-container {
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .auto-scroll-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: transform 0.5s ease-out;
+        }
+
+        /* Fade gradient for scroll indication */
+        .auto-scroll-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, rgba(22, 27, 34, 0.95));
+            pointer-events: none;
         }
 
         .future-day-badge {
             background: linear-gradient(135deg, #f0883e 0%, #d29922 100%);
         }
+
+        /* Menu kompakt styling */
+        .menu-compact {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .menu-compact .menu-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .menu-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .menu-tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* Door Access Popup */
+        .access-popup-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .access-popup {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(52, 211, 153, 0.5);
+            border-radius: 16px;
+            padding: 20px 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(16, 185, 129, 0.3);
+            animation: popupSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: auto;
+            min-width: 320px;
+        }
+
+        .access-popup.exit {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.95) 0%, rgba(75, 85, 99, 0.95) 100%);
+            border: 1px solid rgba(156, 163, 175, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(107, 114, 128, 0.3);
+        }
+
+        .access-popup.hiding {
+            animation: popupSlideOut 0.4s ease-in forwards;
+        }
+
+        @keyframes popupSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(100px) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes popupSlideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100px) scale(0.8);
+            }
+        }
+
+        .access-popup-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .access-popup-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .access-popup-icon span {
+            font-size: 28px;
+            color: white;
+        }
+
+        .access-popup-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .access-popup-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin-top: 4px;
+        }
+
+        .access-popup-device {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
 </head>
 <body class="bg-background-dark text-white min-h-screen">
+
+<!-- Access Popup Container -->
+<div class="access-popup-container" id="accessPopupContainer"></div>
 
 <!-- Main Grid Layout -->
 <div class="h-screen p-4 lg:p-6 grid grid-cols-12 grid-rows-6 gap-4 lg:gap-5">
@@ -126,22 +288,26 @@
         </div>
     </div>
 
-    <!-- Weekly Projects Card -->
+    <!-- Seam Users List -->
     <div class="col-span-12 lg:col-span-4 row-span-2 glass-card rounded-2xl p-5 flex flex-col">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
-                <span class="material-symbols-outlined text-indigo-400 text-xl">calendar_month</span>
-            </div>
-            <div>
-                <h2 class="text-lg font-bold">Ugens Projekter</h2>
-                <p class="text-secondary-text text-xs"><span id="projectCount">-</span> projekter denne uge</p>
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    <span class="material-symbols-outlined text-purple-400 text-xl">group</span>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold">Aktive Adgangskoder</h2>
+                    <p class="text-secondary-text text-xs">Brugere med dato-præfiks</p>
+                </div>
             </div>
         </div>
         <div class="flex-1 overflow-hidden">
-            <div class="list-scrollable h-full space-y-2" id="projectsList">
-                <div class="flex items-center justify-center h-full text-secondary-text">
-                    <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-                    Indlæser...
+            <div class="auto-scroll-container" id="seamUsersScroll">
+                <div class="auto-scroll-content" id="seamUsersList">
+                    <div class="flex items-center justify-center h-full text-secondary-text">
+                        <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+                        Indlæser...
+                    </div>
                 </div>
             </div>
         </div>
@@ -178,24 +344,24 @@
         </div>
     </div>
 
-    <!-- Seam Users List -->
+    <!-- Weekly Projects Card -->
     <div class="col-span-12 lg:col-span-4 row-span-3 glass-card rounded-2xl p-5 flex flex-col">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <span class="material-symbols-outlined text-purple-400 text-xl">group</span>
-                </div>
-                <div>
-                    <h2 class="text-lg font-bold">Aktive Adgangskoder</h2>
-                    <p class="text-secondary-text text-xs">Brugere med dato-præfiks</p>
-                </div>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-indigo-400 text-xl">calendar_month</span>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold">Ugens Projekter</h2>
+                <p class="text-secondary-text text-xs"><span id="projectCount">-</span> projekter denne uge</p>
             </div>
         </div>
         <div class="flex-1 overflow-hidden">
-            <div class="list-scrollable h-full space-y-2" id="seamUsersList">
-                <div class="flex items-center justify-center h-full text-secondary-text">
-                    <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-                    Indlæser...
+            <div class="auto-scroll-container" id="projectsScroll">
+                <div class="auto-scroll-content" id="projectsList">
+                    <div class="flex items-center justify-center h-full text-secondary-text">
+                        <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+                        Indlæser...
+                    </div>
                 </div>
             </div>
         </div>
@@ -237,33 +403,37 @@
             </div>
         </div>
         <div class="flex-1 overflow-hidden">
-            <div class="list-scrollable h-full space-y-2" id="errorsList">
-                <div class="flex items-center justify-center h-full text-secondary-text">
-                    <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-                    Indlæser...
+            <div class="auto-scroll-container" id="errorsScroll">
+                <div class="auto-scroll-content" id="errorsList">
+                    <div class="flex items-center justify-center h-full text-secondary-text">
+                        <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+                        Indlæser...
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Webhooks List -->
+    <!-- Access Events List (Dør adgang) -->
     <div class="col-span-12 lg:col-span-4 row-span-2 glass-card rounded-2xl p-5 flex flex-col">
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <span class="material-symbols-outlined text-green-400 text-xl">webhook</span>
+                <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                    <span class="material-symbols-outlined text-cyan-400 text-xl">door_open</span>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold">Webhooks</h2>
-                    <p class="text-secondary-text text-xs">Seneste events</p>
+                    <h2 class="text-lg font-bold">Dør Adgang</h2>
+                    <p class="text-secondary-text text-xs">Seneste åbninger</p>
                 </div>
             </div>
         </div>
         <div class="flex-1 overflow-hidden">
-            <div class="list-scrollable h-full space-y-2" id="webhooksList">
-                <div class="flex items-center justify-center h-full text-secondary-text">
-                    <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-                    Indlæser...
+            <div class="auto-scroll-container" id="accessEventsScroll">
+                <div class="auto-scroll-content" id="accessEventsList">
+                    <div class="flex items-center justify-center h-full text-secondary-text">
+                        <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+                        Indlæser...
+                    </div>
                 </div>
             </div>
         </div>
@@ -388,38 +558,38 @@ function renderMenu(menu) {
         badgeEl.classList.add('hidden');
     }
 
-    let toppingsHtml = '';
+    // Kompakt tilbehør og salater på samme linje
+    let tagsHtml = '';
+    const allTags = [];
+
     if (menu.toppings && menu.toppings.length > 0) {
-        toppingsHtml = `
-            <div class="mt-3">
-                <p class="text-secondary-text text-xs uppercase font-semibold mb-2">Tilbehør</p>
-                <div class="flex flex-wrap gap-1">
-                    ${menu.toppings.map(t => `<span class="px-2 py-0.5 bg-[#21262d] rounded text-xs">${esc(t)}</span>`).join('')}
-                </div>
-            </div>
-        `;
+        menu.toppings.forEach(t => allTags.push({ text: t, type: 'topping' }));
+    }
+    if (menu.salads && menu.salads.length > 0) {
+        menu.salads.forEach(s => allTags.push({ text: s, type: 'salad' }));
     }
 
-    let saladsHtml = '';
-    if (menu.salads && menu.salads.length > 0) {
-        saladsHtml = `
-            <div class="mt-3">
-                <p class="text-secondary-text text-xs uppercase font-semibold mb-2">Salater</p>
-                <div class="flex flex-wrap gap-1">
-                    ${menu.salads.map(s => `<span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-xs">${esc(s)}</span>`).join('')}
-                </div>
+    if (allTags.length > 0) {
+        tagsHtml = `
+            <div class="menu-tags mt-3">
+                ${allTags.map(tag =>
+                    tag.type === 'salad'
+                        ? `<span class="menu-tag bg-emerald-500/20 text-emerald-300">${esc(tag.text)}</span>`
+                        : `<span class="menu-tag bg-[#21262d] text-gray-300">${esc(tag.text)}</span>`
+                ).join('')}
             </div>
         `;
     }
 
     container.innerHTML = `
-        <div class="flex-1 overflow-auto">
-            <div class="bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-xl p-4 border border-orange-500/30">
-                <h3 class="text-lg font-bold text-orange-300">${esc(menu.main_dish)}</h3>
-                ${menu.main_dish_description ? `<p class="text-secondary-text text-sm mt-1">${esc(menu.main_dish_description)}</p>` : ''}
+        <div class="menu-compact">
+            <div class="menu-main">
+                <div class="bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-xl p-4 border border-orange-500/30">
+                    <h3 class="text-xl font-bold text-orange-300">${esc(menu.main_dish)}</h3>
+                    ${menu.main_dish_description ? `<p class="text-secondary-text text-sm mt-1 line-clamp-2">${esc(menu.main_dish_description)}</p>` : ''}
+                </div>
             </div>
-            ${toppingsHtml}
-            ${saladsHtml}
+            ${tagsHtml}
         </div>
     `;
 }
@@ -546,35 +716,53 @@ function renderErrors(integration) {
     `).join('');
 }
 
-function renderWebhooks(webhooks) {
-    const container = document.getElementById('webhooksList');
+function renderAccessEvents(events) {
+    const container = document.getElementById('accessEventsList');
 
-    if (!webhooks || webhooks.length === 0) {
+    if (!events || events.length === 0) {
         container.innerHTML = `
             <div class="flex items-center justify-center h-full text-secondary-text">
-                <span class="material-symbols-outlined mr-2">inbox</span>
-                Ingen webhooks modtaget
+                <span class="material-symbols-outlined mr-2">door_front</span>
+                Ingen adgangs-events endnu
             </div>
         `;
         return;
     }
 
-    container.innerHTML = webhooks.map(webhook => `
-        <div class="p-2 rounded-lg bg-[#21262d]/50 border-l-2 ${getWebhookClass(webhook.status)}">
-            <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2 min-w-0">
-                    <span class="material-symbols-outlined text-sm ${webhook.status === 'processed' ? 'text-emerald-400' : webhook.status === 'failed' ? 'text-red-400' : 'text-yellow-400'}">
-                        ${webhook.status === 'processed' ? 'check' : webhook.status === 'failed' ? 'close' : 'schedule'}
-                    </span>
-                    <div class="min-w-0">
-                        <p class="text-sm font-medium truncate">${esc(webhook.event_type)}</p>
-                        <p class="text-xs text-secondary-text">${esc(webhook.source)}</p>
+    container.innerHTML = events.map(event => {
+        // Determine icon and color based on event type
+        let icon = 'door_open';
+        let iconColor = 'text-cyan-400';
+        let borderColor = 'border-cyan-500';
+
+        if (event.event_type?.includes('exit') || event.event_type?.includes('locked')) {
+            icon = 'door_back';
+            iconColor = 'text-gray-400';
+            borderColor = 'border-gray-500';
+        } else if (event.event_type?.includes('unlock') || event.event_type?.includes('enter')) {
+            icon = 'door_open';
+            iconColor = 'text-emerald-400';
+            borderColor = 'border-emerald-500';
+        }
+
+        const userName = event.user_name || 'Ukendt bruger';
+        const deviceName = event.device_name || '';
+
+        return `
+            <div class="p-2 rounded-lg bg-[#21262d]/50 border-l-2 ${borderColor}">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="material-symbols-outlined text-sm ${iconColor}">${icon}</span>
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium truncate">${esc(userName)}</p>
+                            <p class="text-xs text-secondary-text">${esc(deviceName)}</p>
+                        </div>
                     </div>
+                    <span class="text-xs text-secondary-text flex-shrink-0">${formatRelativeTime(event.occurred_at)}</span>
                 </div>
-                <span class="text-xs text-secondary-text flex-shrink-0">${formatRelativeTime(webhook.created_at)}</span>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderSluser(sluser) {
@@ -583,6 +771,82 @@ function renderSluser(sluser) {
 
     const percentage = sluser.total > 0 ? (sluser.occupied / sluser.total) * 100 : 0;
     document.getElementById('sluserBar').style.width = `${percentage}%`;
+}
+
+// ============================================
+// Access Popup System (Real-time via SSE)
+// ============================================
+
+let accessEventSource = null;
+
+function showAccessPopup(event) {
+    const container = document.getElementById('accessPopupContainer');
+    if (!container) return;
+
+    const isExit = event.event_type?.includes('exit') || event.event_type?.includes('locked');
+    const userName = event.user_name || 'Ukendt bruger';
+    const deviceName = event.device_name || 'Dør';
+
+    const popup = document.createElement('div');
+    popup.className = `access-popup ${isExit ? 'exit' : ''}`;
+    popup.innerHTML = `
+        <div class="access-popup-header">
+            <div class="access-popup-icon">
+                <span class="material-symbols-outlined">${isExit ? 'door_back' : 'door_open'}</span>
+            </div>
+            <div>
+                <div class="access-popup-title">${isExit ? 'Dør lukket' : 'Dør åbnet'}</div>
+                <div class="access-popup-name">${esc(userName)}</div>
+            </div>
+        </div>
+        <div class="access-popup-device">
+            <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
+            ${esc(deviceName)}
+        </div>
+    `;
+
+    container.appendChild(popup);
+
+    // Fjern popup efter 6 sekunder
+    setTimeout(() => {
+        popup.classList.add('hiding');
+        setTimeout(() => popup.remove(), 400);
+    }, 6000);
+}
+
+function connectAccessEventStream() {
+    if (accessEventSource) {
+        accessEventSource.close();
+    }
+
+    accessEventSource = new EventSource('/api/seam/access-events/stream');
+
+    accessEventSource.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'connected') {
+                console.log('SSE connected for access events');
+                return;
+            }
+
+            if (data.type === 'access_event') {
+                // Vis popup med det samme
+                showAccessPopup(data);
+
+                // Opdater også listen
+                fetchData();
+            }
+        } catch (e) {
+            console.error('Error parsing SSE event:', e);
+        }
+    };
+
+    accessEventSource.onerror = (error) => {
+        console.error('SSE connection error:', error);
+        // Reconnect efter 5 sekunder
+        setTimeout(connectAccessEventStream, 5000);
+    };
 }
 
 // ============================================
@@ -606,11 +870,184 @@ async function fetchData() {
             renderSeamUsers(data.seamUsers || { withDatePrefix: 0, total: 0, users: [] });
             renderProjects(data.weeklyProjects || { count: 0, projects: [] });
             renderErrors(data.integration || { unresolvedErrors: 0, recentErrors: [], recentWebhooks: [] });
-            renderWebhooks(data.integration?.recentWebhooks || []);
+            renderAccessEvents(data.accessEvents || []);
         }
     } catch (error) {
         console.error('Error fetching data:', error);
     }
+}
+
+// ============================================
+// Synkroniseret Auto-Scroll System
+// ============================================
+
+const scrollState = {
+    scrollers: [],
+    interval: null,
+    scrollSpeed: 8000,      // 8 sekunder mellem hver scroll
+    pauseAtEnd: 4000,       // 4 sekunder pause ved bunden før reset
+    transitionDuration: 1000 // 1 sekund smooth scroll
+};
+
+class AutoScroller {
+    constructor(containerId, contentId) {
+        this.container = document.getElementById(containerId);
+        this.content = document.getElementById(contentId);
+        this.currentOffset = 0;
+        this.maxOffset = 0;
+        this.atEnd = false;
+    }
+
+    calculate() {
+        if (!this.container || !this.content) return;
+
+        const containerHeight = this.container.clientHeight;
+        const contentHeight = this.content.scrollHeight;
+
+        // Beregn max scroll offset
+        this.maxOffset = Math.max(0, contentHeight - containerHeight);
+        this.needsScroll = this.maxOffset > 10; // Kun scroll hvis der er mere end 10px at scrolle
+    }
+
+    scrollNext() {
+        if (!this.container || !this.content) return;
+
+        this.calculate();
+
+        if (!this.needsScroll) {
+            this.content.style.transform = 'translateY(0)';
+            this.atEnd = false;
+            return;
+        }
+
+        // Beregn scroll step (ca. 1 "side" af synligt indhold)
+        const containerHeight = this.container.clientHeight;
+        const scrollStep = containerHeight * 0.8; // Scroll 80% af synlig højde
+
+        // Næste position
+        this.currentOffset += scrollStep;
+
+        // Tjek om vi er ved enden
+        if (this.currentOffset >= this.maxOffset) {
+            this.currentOffset = this.maxOffset;
+            this.atEnd = true;
+        } else {
+            this.atEnd = false;
+        }
+
+        this.content.style.transform = `translateY(-${this.currentOffset}px)`;
+    }
+
+    reset() {
+        this.currentOffset = 0;
+        this.atEnd = false;
+        if (this.content) {
+            this.content.style.transition = 'none';
+            this.content.style.transform = 'translateY(0)';
+            // Genaktiver transition efter reset
+            setTimeout(() => {
+                if (this.content) {
+                    this.content.style.transition = `transform ${scrollState.transitionDuration}ms ease-out`;
+                }
+            }, 50);
+        }
+    }
+
+    isAtEnd() {
+        return this.atEnd;
+    }
+}
+
+function initAutoScrollers() {
+    // Opret scrollers for hver liste
+    scrollState.scrollers = [
+        new AutoScroller('projectsScroll', 'projectsList'),
+        new AutoScroller('seamUsersScroll', 'seamUsersList'),
+        new AutoScroller('errorsScroll', 'errorsList'),
+        new AutoScroller('accessEventsScroll', 'accessEventsList')
+    ];
+
+    // Sæt initial transition på alle
+    scrollState.scrollers.forEach(scroller => {
+        if (scroller.content) {
+            scroller.content.style.transition = `transform ${scrollState.transitionDuration}ms ease-out`;
+        }
+    });
+
+    // Start synkroniseret scroll
+    startSyncScroll();
+}
+
+function startSyncScroll() {
+    if (scrollState.interval) clearInterval(scrollState.interval);
+
+    scrollState.interval = setInterval(() => {
+        // Tjek om alle scrollers er ved enden
+        const allAtEnd = scrollState.scrollers.every(s => s.isAtEnd() || !s.needsScroll);
+
+        if (allAtEnd) {
+            // Pause og reset alle
+            setTimeout(() => {
+                scrollState.scrollers.forEach(s => s.reset());
+            }, scrollState.pauseAtEnd);
+        } else {
+            // Scroll alle synkront
+            scrollState.scrollers.forEach(s => s.scrollNext());
+        }
+    }, scrollState.scrollSpeed);
+}
+
+function resetAutoScrollers() {
+    scrollState.scrollers.forEach(s => s.reset());
+}
+
+// ============================================
+// Kiosk Mode - Forhindre sleep og interaktion
+// ============================================
+
+function enableKioskMode() {
+    // Forhindre højreklik
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Forhindre keyboard shortcuts
+    document.addEventListener('keydown', e => {
+        // Tillad F5 for manuel refresh og F11 for fullscreen
+        if (e.key !== 'F5' && e.key !== 'F11') {
+            e.preventDefault();
+        }
+    });
+
+    // Hold skærmen vågen med Wake Lock API (hvis understøttet)
+    if ('wakeLock' in navigator) {
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock aktiveret');
+
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock frigivet');
+                });
+            } catch (err) {
+                console.log('Wake Lock ikke tilgængelig:', err);
+            }
+        }
+
+        requestWakeLock();
+
+        // Genaktiver ved visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
+    }
+
+    // Auto-refresh siden hver 10. minut for at undgå memory leaks
+    setInterval(() => {
+        location.reload();
+    }, 10 * 60 * 1000);
 }
 
 // ============================================
@@ -619,12 +1056,21 @@ async function fetchData() {
 
 updateClock();
 fetchData();
+enableKioskMode();
+connectAccessEventStream(); // Real-time access events via SSE
+
+// Start auto-scrollers efter kort delay (så data er indlæst)
+setTimeout(initAutoScrollers, 2000);
 
 // Update clock every second
 setInterval(updateClock, 1000);
 
 // Refresh data every 30 seconds
-setInterval(fetchData, 30000);
+setInterval(() => {
+    fetchData();
+    // Reset scrollers efter data opdatering
+    setTimeout(resetAutoScrollers, 500);
+}, 30000);
 </script>
 
 </body>

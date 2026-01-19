@@ -335,9 +335,12 @@ async function runFullSync() {
         return;
     }
 
-    if (!confirm('Er du sikker på at du vil køre en fuld synkronisering? Dette kan tage flere minutter.')) {
-        return;
-    }
+    const confirmed = await Modal.confirm(
+        'Fuld synkronisering',
+        'Er du sikker på at du vil køre en fuld synkronisering?<br><br>Dette kan tage flere minutter.',
+        'warning'
+    );
+    if (!confirmed) return;
 
     try {
         isSyncRunning = true;

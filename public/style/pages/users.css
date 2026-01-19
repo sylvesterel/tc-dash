@@ -55,10 +55,6 @@
     color: var(--text-primary);
 }
 
-/* Users Content */
-.users-content {
-    /* Container for users */
-}
 
 .users-header {
     display: flex;
@@ -237,8 +233,10 @@
     gap: 8px;
     padding: 12px 24px;
     background: var(--color-primary);
+    margin-top: 15px;
     color: #FFFFFF;
     border: none;
+    outline: none;
     border-radius: var(--radius-lg);
     font-size: 15px;
     font-weight: 600;
@@ -253,6 +251,14 @@
 .add-user-btn:hover {
     background: var(--color-primary-hover);
     box-shadow: 0 4px 12px rgba(19, 127, 236, 0.3);
+}
+
+.add-user-btn:focus {
+    outline: none;
+}
+
+.add-user-btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.3);
 }
 
 /* Search Users */

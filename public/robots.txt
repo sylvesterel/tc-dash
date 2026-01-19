@@ -1,0 +1,17 @@
+# robots.txt for TC-Dash / Appcare Dashboard
+# Denne fil fortæller søgemaskiner hvilke sider der må indekseres
+
+User-agent: *
+Disallow: /protected/
+Disallow: /api/
+Disallow: /login.html
+Disallow: /forgot-password.html
+Disallow: /reset-password.html
+
+# Tillad crawlers at se offentlige ressourcer
+Allow: /style/
+Allow: /js/
+Allow: /img/
+
+# Sitemap
+# Sitemap: https://yourdomain.com/sitemap.xml

@@ -376,11 +376,11 @@ const ProfileManager = {
     },
 
     showSuccess(message) {
-        alert(`${message}`);
+        Modal.success('Succes', message);
     },
 
     showError(message) {
-        alert(`${message}`);
+        Modal.error('Fejl', message);
     }
 };
 

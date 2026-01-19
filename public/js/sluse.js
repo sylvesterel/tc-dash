@@ -1,122 +1,7 @@
 // ============================================
 // Sluse Management - Integration med gammel TourCare database
 // ============================================
-
-// Modal System
-const Modal = {
-    overlay: null,
-    modal: null,
-    icon: null,
-    title: null,
-    message: null,
-    buttons: null,
-    cancelBtn: null,
-    confirmBtn: null,
-    resolvePromise: null,
-
-    init() {
-        this.overlay = document.getElementById('modalOverlay');
-        this.modal = document.getElementById('modal');
-        this.icon = document.getElementById('modalIcon');
-        this.title = document.getElementById('modalTitle');
-        this.message = document.getElementById('modalMessage');
-        this.buttons = document.getElementById('modalButtons');
-        this.cancelBtn = document.getElementById('modalCancel');
-        this.confirmBtn = document.getElementById('modalConfirm');
-
-        if (!this.overlay) return;
-
-        this.cancelBtn.addEventListener('click', () => this.close(false));
-        this.confirmBtn.addEventListener('click', () => this.close(true));
-        this.overlay.addEventListener('click', (e) => {
-            if (e.target === this.overlay) this.close(false);
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.overlay.classList.contains('show')) {
-                this.close(false);
-            }
-        });
-    },
-
-    show(options) {
-        const {
-            type = 'info',
-            title = 'Information',
-            message = '',
-            confirmText = 'OK',
-            cancelText = 'Annuller',
-            showCancel = true
-        } = options;
-
-        const icons = {
-            warning: '!',
-            danger: 'X',
-            success: '✓',
-            info: 'i'
-        };
-
-        this.icon.innerHTML = icons[type] || icons.info;
-        this.icon.className = 'modal-icon ' + type;
-        this.title.textContent = title;
-        this.message.innerHTML = message;
-        this.confirmBtn.textContent = confirmText;
-        this.confirmBtn.className = 'modal-btn modal-btn-confirm ' + type;
-
-        if (showCancel) {
-            this.cancelBtn.style.display = 'block';
-            this.cancelBtn.textContent = cancelText;
-            this.buttons.classList.remove('single');
-        } else {
-            this.cancelBtn.style.display = 'none';
-            this.buttons.classList.add('single');
-        }
-
-        this.overlay.classList.add('show');
-        this.confirmBtn.focus();
-
-        return new Promise((resolve) => {
-            this.resolvePromise = resolve;
-        });
-    },
-
-    close(result) {
-        this.overlay.classList.remove('show');
-        if (this.resolvePromise) {
-            this.resolvePromise(result);
-            this.resolvePromise = null;
-        }
-    },
-
-    async confirm(title, message, type = 'warning') {
-        return this.show({
-            type,
-            title,
-            message,
-            confirmText: 'Ja, fortsaet',
-            cancelText: 'Annuller',
-            showCancel: true
-        });
-    },
-
-    async alert(title, message, type = 'info') {
-        return this.show({
-            type,
-            title,
-            message,
-            confirmText: 'OK',
-            showCancel: false
-        });
-    },
-
-    async success(title, message) {
-        return this.alert(title, message, 'success');
-    },
-
-    async error(title, message) {
-        return this.alert(title, message, 'danger');
-    }
-};
+// Bruger global Modal fra modal.js
 
 // ============================================
 // Sluse Manager
@@ -153,7 +38,6 @@ const SluseManager = {
     },
 
     init() {
-        Modal.init();
         this.loadData();
         this.loadRentmanData();
         this.attachEventListeners();

@@ -1,132 +1,7 @@
 // ============================================
 // SEAM Access Management - Kun oprettelse
 // ============================================
-
-// Modal System
-const Modal = {
-    overlay: null,
-    modal: null,
-    icon: null,
-    title: null,
-    message: null,
-    buttons: null,
-    cancelBtn: null,
-    confirmBtn: null,
-    resolvePromise: null,
-
-    init() {
-        this.overlay = document.getElementById('modalOverlay');
-        this.modal = document.getElementById('modal');
-        this.icon = document.getElementById('modalIcon');
-        this.title = document.getElementById('modalTitle');
-        this.message = document.getElementById('modalMessage');
-        this.buttons = document.getElementById('modalButtons');
-        this.cancelBtn = document.getElementById('modalCancel');
-        this.confirmBtn = document.getElementById('modalConfirm');
-
-        // Event listeners
-        this.cancelBtn.addEventListener('click', () => this.close(false));
-        this.confirmBtn.addEventListener('click', () => this.close(true));
-        this.overlay.addEventListener('click', (e) => {
-            if (e.target === this.overlay) this.close(false);
-        });
-
-        // Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.overlay.classList.contains('show')) {
-                this.close(false);
-            }
-        });
-    },
-
-    show(options) {
-        const {
-            type = 'info',
-            title = 'Information',
-            message = '',
-            confirmText = 'OK',
-            cancelText = 'Annuller',
-            showCancel = true
-        } = options;
-
-        // Set icon
-        const icons = {
-            warning: '⚠️',
-            danger: '🗑️',
-            success: '✓',
-            info: 'ℹ️'
-        };
-
-        this.icon.innerHTML = icons[type] || icons.info;
-        this.icon.className = 'modal-icon ' + type;
-
-        // Set content
-        this.title.textContent = title;
-        this.message.innerHTML = message;
-
-        // Set buttons
-        this.confirmBtn.textContent = confirmText;
-        this.confirmBtn.className = 'modal-btn modal-btn-confirm ' + type;
-
-        if (showCancel) {
-            this.cancelBtn.style.display = 'block';
-            this.cancelBtn.textContent = cancelText;
-            this.buttons.classList.remove('single');
-        } else {
-            this.cancelBtn.style.display = 'none';
-            this.buttons.classList.add('single');
-        }
-
-        // Show modal
-        this.overlay.classList.add('show');
-
-        // Focus confirm button
-        this.confirmBtn.focus();
-
-        // Return promise
-        return new Promise((resolve) => {
-            this.resolvePromise = resolve;
-        });
-    },
-
-    close(result) {
-        this.overlay.classList.remove('show');
-        if (this.resolvePromise) {
-            this.resolvePromise(result);
-            this.resolvePromise = null;
-        }
-    },
-
-    // Shortcut methods
-    async confirm(title, message, type = 'warning') {
-        return this.show({
-            type,
-            title,
-            message,
-            confirmText: 'Ja, fortsaet',
-            cancelText: 'Annuller',
-            showCancel: true
-        });
-    },
-
-    async alert(title, message, type = 'info') {
-        return this.show({
-            type,
-            title,
-            message,
-            confirmText: 'OK',
-            showCancel: false
-        });
-    },
-
-    async success(title, message) {
-        return this.alert(title, message, 'success');
-    },
-
-    async error(title, message) {
-        return this.alert(title, message, 'danger');
-    }
-};
+// Bruger global Modal fra modal.js
 
 const AccessManager = {
     seamUsers: [],
@@ -134,7 +9,6 @@ const AccessManager = {
     projectsLoaded: false,
 
     init() {
-        Modal.init();
         this.attachEventListeners();
         this.loadSeamUsers();
         this.setDefaultDates();
