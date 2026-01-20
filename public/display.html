@@ -237,20 +237,20 @@
                         <div class="flex-1 flex flex-col gap-3 sm:gap-4 overflow-hidden">
                             <div class="p-3 sm:p-4 rounded-lg bg-[#283039]/50 border border-[#3b4754]/50">
                                 <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kunde</p>
-                                <p class="text-base sm:text-2xl font-bold text-white leading-tight truncate">${esc(s.Kunde)}</p>
+                                <p class="text-base sm:text-4xl font-bold text-white leading-tight truncate">${esc(s.Kunde)}</p>
                             </div>
                             ${(s.Detaljer || s.Dato) ? `
-                            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div class="grid grid-cols-3 gap-2 sm:gap-3">
                                 ${s.Detaljer ? `
                                 <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
                                     <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kolli</p>
-                                    <p class="text-sm sm:text-s font-semibold text-white truncate">${esc(s.Detaljer)}</p>
+                                    <p class="text-sm sm:text-l font-semibold text-white truncate">${esc(s.Detaljer)}</p>
                                 </div>
                                 ` : ''}
                                     ${s.Dato ? `
-                                <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
+                                <div class="p-2 sm:p-3 col-span-2 rounded-lg bg-[#283039]/30">
                                     <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Periode</p>
-                                    <p class="text-sm sm:text-s font-semibold text-white truncate">${esc(s.Dato)}</p>
+                                    <p class="text-sm sm:text-l font-semibold text-white truncate">${esc(s.Dato)}</p>
                                 </div>
                                 ` : ''}
                             </div>
