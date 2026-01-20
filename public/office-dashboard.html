@@ -1011,8 +1011,8 @@ function enableKioskMode() {
 
     // Forhindre keyboard shortcuts
     document.addEventListener('keydown', e => {
-        // Tillad F5 for manuel refresh og F11 for fullscreen
-        if (e.key !== 'F5' && e.key !== 'F11') {
+        // Tillad F5 for manuel refresh, F11 for fullscreen, T for test popup
+        if (e.key !== 'F5' && e.key !== 'F11' && e.key !== 't' && e.key !== 'T') {
             e.preventDefault();
         }
     });
@@ -1071,6 +1071,49 @@ setInterval(() => {
     // Reset scrollers efter data opdatering
     setTimeout(resetAutoScrollers, 500);
 }, 30000);
+
+// ============================================
+// Test Functions (for debugging)
+// ============================================
+
+// Test popup directly (call from console: testPopup())
+window.testPopup = function(userName = 'Test Bruger', deviceName = 'Hoveddør', isExit = false) {
+    showAccessPopup({
+        event_type: isExit ? 'lock.locked' : 'lock.unlocked',
+        user_name: userName,
+        device_name: deviceName
+    });
+    console.log('Test popup triggered');
+};
+
+// Test via server (call from console: testServerPopup())
+window.testServerPopup = async function() {
+    try {
+        const res = await fetch('/api/seam/test-access', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_name: 'Test Bruger',
+                device_name: 'Hoveddør',
+                event_type: 'lock.unlocked'
+            })
+        });
+        const data = await res.json();
+        console.log('Server test result:', data);
+    } catch (e) {
+        console.error('Server test failed:', e);
+    }
+};
+
+// Press 'T' key to trigger test popup
+document.addEventListener('keydown', (e) => {
+    if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        window.testPopup();
+    }
+});
+
+console.log('Dashboard loaded. Press T to test popup, or call testPopup() / testServerPopup() from console');
 </script>
 
 </body>

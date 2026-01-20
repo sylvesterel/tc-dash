@@ -105,6 +105,46 @@ async function initSeamTables() {
 // Call on startup
 initSeamTables();
 
+// ============================================
+// Scheduled Task: Sync Seam Users every 5 minutes
+// ============================================
+
+async function syncSeamUsers() {
+    try {
+        console.log('[Seam Sync] Henter brugere fra Seam...');
+
+        const users = await seam.acs.users.list({ acs_system_id: acsSystemId });
+
+        if (!users || users.length === 0) {
+            console.log('[Seam Sync] Ingen brugere fundet i Seam');
+            return;
+        }
+
+        let syncedCount = 0;
+        for (const user of users) {
+            const acsUserId = user.acs_user_id;
+            const name = user.full_name || 'Ukendt';
+
+            if (acsUserId) {
+                await pool.query(
+                    `INSERT INTO seam_users (acs_user_id, name) VALUES (?, ?)
+                     ON DUPLICATE KEY UPDATE name = VALUES(name)`,
+                    [acsUserId, name]
+                );
+                syncedCount++;
+            }
+        }
+
+        console.log(`[Seam Sync] Synkroniseret ${syncedCount} brugere fra Seam`);
+    } catch (error) {
+        console.error('[Seam Sync] Fejl ved synkronisering af Seam brugere:', error.message);
+    }
+}
+
+// Run sync immediately on startup, then every 5 minutes
+syncSeamUsers();
+setInterval(syncSeamUsers, 5 * 60 * 1000);
+
 // Email helper function - Welcome email
 async function sendWelcomeEmail(userEmail, fornavn, brugernavn, password) {
     const mailOptions = {
@@ -1117,8 +1157,9 @@ app.delete("/api/seam/users/:id", authMiddleware, async (req, res) => {
 // GET /api/seam/access-events/stream - SSE endpoint for real-time access events
 app.get("/api/seam/access-events/stream", (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.flushHeaders();
 
@@ -1127,20 +1168,31 @@ app.get("/api/seam/access-events/stream", (req, res) => {
 
     // Add client to set
     accessEventClients.add(res);
-    console.log(`SSE client connected. Total clients: ${accessEventClients.size}`);
+    console.log(`[SSE] Client connected. Total clients: ${accessEventClients.size}`);
+
+    // Keep-alive ping every 30 seconds to prevent connection timeout
+    const keepAlive = setInterval(() => {
+        res.write(': ping\n\n');
+    }, 30000);
 
     // Remove client on disconnect
     req.on('close', () => {
+        clearInterval(keepAlive);
         accessEventClients.delete(res);
-        console.log(`SSE client disconnected. Total clients: ${accessEventClients.size}`);
+        console.log(`[SSE] Client disconnected. Total clients: ${accessEventClients.size}`);
     });
 });
 
 // Broadcast access event to all connected SSE clients
 function broadcastAccessEvent(eventData) {
     const message = `data: ${JSON.stringify(eventData)}\n\n`;
+    console.log(`[SSE] Broadcasting to ${accessEventClients.size} clients:`, eventData.event_type, eventData.user_name, eventData.device_name);
     accessEventClients.forEach(client => {
-        client.write(message);
+        try {
+            client.write(message);
+        } catch (e) {
+            console.error('[SSE] Error writing to client:', e);
+        }
     });
 }
 
