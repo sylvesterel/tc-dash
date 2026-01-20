@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html class="dark" lang="da">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>TourCare | Sluse System</title>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>
         tailwind.config = {
@@ -29,8 +31,17 @@
         }
     </script>
     <style>
-        html, body { height: 100vh; overflow: hidden; font-family: 'Inter', sans-serif; }
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
 
         /* Fast 3x3 layout */
         #stallsGrid {
@@ -40,134 +51,178 @@
             height: 100%;
             width: 100%;
         }
-        #stallsGrid > div { min-height: 0; }
+
+        #stallsGrid>div {
+            min-height: 0;
+        }
 
         /* Timer Glow Effects i Header */
-        .timer-active { box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.3); }
-        
-        .timer-warning-glow { 
+        .timer-active {
+            box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.3);
+        }
+
+        .timer-warning-glow {
             animation: warningGlow 1s ease-in-out infinite;
             border-color: #f59e0b !important;
         }
-        
-        .timer-critical-glow { 
+
+        .timer-critical-glow {
             animation: criticalGlow 0.5s ease-in-out infinite;
             border-color: #ef4444 !important;
         }
 
         @keyframes warningGlow {
-            0%, 100% { box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.2); transform: scale(1); }
-            50% { box-shadow: 0 0 25px 2px rgba(245, 158, 11, 0.4); transform: scale(1.02); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.2);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 0 25px 2px rgba(245, 158, 11, 0.4);
+                transform: scale(1.02);
+            }
         }
+
         @keyframes criticalGlow {
-            0%, 100% { box-shadow: 0 0 15px -2px rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
-            50% { box-shadow: 0 0 30px 5px rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.2); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 15px -2px rgba(239, 68, 68, 0.3);
+                background: rgba(239, 68, 68, 0.1);
+            }
+
+            50% {
+                box-shadow: 0 0 30px 5px rgba(239, 68, 68, 0.5);
+                background: rgba(239, 68, 68, 0.2);
+            }
         }
     </style>
 </head>
+
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white flex flex-col">
 
-<!-- Header - Optimeret til tydelig timer -->
-<header class="flex-none border-b border-gray-200 dark:border-[#283039] bg-white dark:bg-[#111418] px-6 py-4 shadow-sm z-10">
-    <div class="flex items-center justify-between">
-        
-        <!-- Venstre: Logo -->
-        <div class="flex items-center gap-4 w-1/4">
-            <div class="size-10 sm:size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                <span class="material-symbols-outlined text-2xl sm:text-3xl">grid_view</span>
-            </div>
-            <div class="hidden lg:block">
-                <h1 class="text-xl font-bold tracking-tight">Tourcare</h1>
-                <p class="text-[10px] text-secondary-text font-medium uppercase tracking-widest">Sluse overblik</p>
-            </div>
-        </div>
+    <!-- Header - Optimeret til tydelig timer -->
+    <header
+        class="flex-none border-b border-gray-200 dark:border-[#283039] bg-white dark:bg-[#111418] px-6 py-4 shadow-sm z-10">
+        <div class="flex items-center justify-between">
 
-        <!-- MIDTE: Stor Tydelig Timer -->
-        <div id="headerTimer" class="hidden flex items-center gap-6 px-10 py-3 rounded-2xl border-2 border-emerald-500/40 bg-black/20 timer-active transition-all duration-300">
-            <div class="text-right hidden sm:block">
-                <p id="timerLabel" class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-emerald-500 mb-0.5">Alarm tilkobles om</p>
-                <p class="text-[9px] text-secondary-text uppercase tracking-widest">Status: Aktiv nedtælling</p>
-            </div>
-            <div class="flex items-center gap-4 border-l border-white/10 pl-6">
-                <span class="material-symbols-outlined text-4xl text-emerald-400" id="timerIcon">timer</span>
-                <span class="font-mono text-5xl font-black tracking-tighter text-white" id="timerCountdown">00:00</span>
-            </div>
-        </div>
-        <div id="timerPlaceholder" class="flex-1 h-1"></div> <!-- Placeholder når timer er væk -->
-
-        <!-- Højre: Ur & Status -->
-        <div class="flex items-center justify-end gap-6 w-1/4">
-            <div class="flex flex-col items-end hidden sm:flex">
-                <div class="flex items-center gap-2">
-                    <span class="relative flex h-2.5 w-2.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-full w-full bg-emerald-500"></span>
-                    </span>
-                    <span class="text-[10px] font-bold text-emerald-500 uppercase">Live</span>
+            <!-- Venstre: Logo -->
+            <div class="flex items-center gap-4 w-1/4">
+                <div class="size-10 sm:size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-2xl sm:text-3xl">grid_view</span>
                 </div>
-                <p class="text-secondary-text text-[10px] mt-0.5" id="updateStatus">Lige nu</p>
+                <div class="hidden lg:block">
+                    <h1 class="text-xl font-bold tracking-tight">Tourcare</h1>
+                    <p class="text-[10px] text-secondary-text font-medium uppercase tracking-widest">Sluse overblik</p>
+                </div>
             </div>
-            <div class="h-12 px-6 bg-[#283039] rounded-xl flex items-center justify-center border border-[#3b4754]">
-                <span class="font-mono text-2xl font-bold tracking-widest text-white" id="currentTime">--:--</span>
+
+            <!-- MIDTE: Stor Tydelig Timer -->
+            <div id="headerTimer"
+                class="hidden flex items-center gap-6 px-10 py-3 rounded-2xl border-2 border-emerald-500/40 bg-black/20 timer-active transition-all duration-300">
+                <div class="text-right hidden sm:block">
+                    <p id="timerLabel"
+                        class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-emerald-500 mb-0.5">Alarm
+                        tilkobles om</p>
+                    <p class="text-[9px] text-secondary-text uppercase tracking-widest">Status: Aktiv nedtælling</p>
+                </div>
+                <div class="flex items-center gap-4 border-l border-white/10 pl-6">
+                    <span class="material-symbols-outlined text-4xl text-emerald-400" id="timerIcon">timer</span>
+                    <span class="font-mono text-5xl font-black tracking-tighter text-white"
+                        id="timerCountdown">00:00</span>
+                </div>
             </div>
+            <div id="timerPlaceholder" class="flex-1 h-1"></div> <!-- Placeholder når timer er væk -->
+
+            <!-- Højre: Ur & Status -->
+            <div class="flex items-center justify-end gap-6 w-1/4">
+                <div class="flex flex-col items-end hidden sm:flex">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-full w-full bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[10px] font-bold text-emerald-500 uppercase">Live</span>
+                    </div>
+                    <p class="text-secondary-text text-[10px] mt-0.5" id="updateStatus">Lige nu</p>
+                </div>
+                <div class="h-12 px-6 bg-[#283039] rounded-xl flex items-center justify-center border border-[#3b4754]">
+                    <span class="font-mono text-2xl font-bold tracking-widest text-white" id="currentTime">--:--</span>
+                </div>
+            </div>
+
         </div>
+    </header>
 
-    </div>
-</header>
-
-<!-- Main Content (3x3 Grid) -->
-<main class="flex-1 overflow-hidden p-4 lg:p-6">
-    <div id="stallsGrid" class="gap-4">
-        <!-- JS render -->
-    </div>
-</main>
-
-<footer class="flex-none px-8 py-2 text-center border-t border-[#283039] bg-[#0d1217]">
-    <p class="text-[10px] text-secondary-text uppercase tracking-[0.4em]">TourCare Sluse System</p>
-</footer>
-
-<!-- Audio & Overlay -->
-<audio id="warningSound" src="/files/tc_sluse.m4a" preload="auto"></audio>
-<div id="audioOverlay" class="fixed inset-0 z-[100] bg-background-dark/98 flex flex-col items-center justify-center cursor-pointer">
-    <div class="text-center">
-        <div class="size-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
-            <span class="material-symbols-outlined text-6xl text-primary animate-pulse">volume_up</span>
+    <!-- Main Content (3x3 Grid) -->
+    <main class="flex-1 overflow-hidden p-4 lg:p-6">
+        <div id="stallsGrid" class="gap-4">
+            <!-- JS render -->
         </div>
-        <h2 class="text-3xl font-black text-white mb-2 tracking-tight">AKTIVER SYSTEM</h2>
-        <p class="text-secondary-text mb-8 tracking-widest text-sm uppercase">Klik for at starte overblik med lyd</p>
-        <button class="px-10 py-4 bg-primary rounded-xl text-white font-bold text-lg shadow-2xl">START NU</button>
+    </main>
+
+    <footer class="flex-none px-8 py-2 text-center border-t border-[#283039] bg-[#0d1217]">
+        <p class="text-[10px] text-secondary-text uppercase tracking-[0.4em]">TourCare Sluse System</p>
+    </footer>
+
+    <!-- Audio & Overlay -->
+    <audio id="warningSound" src="/files/tc_sluse.m4a" preload="auto"></audio>
+    <div id="audioOverlay"
+        class="fixed inset-0 z-[100] bg-background-dark/98 flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-center">
+            <div class="size-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-6xl text-primary animate-pulse">volume_up</span>
+            </div>
+            <h2 class="text-3xl font-black text-white mb-2 tracking-tight">AKTIVER SYSTEM</h2>
+            <p class="text-secondary-text mb-8 tracking-widest text-sm uppercase">Klik for at starte overblik med lyd
+            </p>
+            <button class="px-10 py-4 bg-primary rounded-xl text-white font-bold text-lg shadow-2xl">START NU</button>
+        </div>
     </div>
-</div>
 
-<script>
-    const displayNames = {
-        'Sluse1': 'BÅS 01', 'Sluse2': 'BÅS 02', 'Sluse3': 'BÅS 03',
-        'Sluse4': 'BÅS 04', 'Sluse5': 'BÅS 05', 'Sluse6': 'BÅS 06',
-        'Sluse7': 'BÅS 07', 'Reol1': 'REOL 01', 'Reol2': 'REOL 02',
-    };
+    <script>
+        const displayNames = {
+            'Sluse1': 'BÅS 01', 'Sluse2': 'BÅS 02', 'Sluse3': 'BÅS 03',
+            'Sluse4': 'BÅS 04', 'Sluse5': 'BÅS 05', 'Sluse6': 'BÅS 06',
+            'Sluse7': 'BÅS 07', 'Reol1': 'REOL 01', 'Reol2': 'REOL 02',
+        };
 
-    const stallColors = ['red', 'blue', 'emerald', 'amber', 'purple', 'pink', 'cyan', 'orange', 'indigo'];
+        const stallColors = [
+            'amber',   // #703817 → mørk brun/amber
+            'red',     // #FF0000 → rød
+            'orange',  // #FFA500 → orange
+            'yellow',  // #FFFF00 → gul
+            'green',   // #008000 → grøn
+            'blue',    // #0000FF → blå
+            'purple',  // #EE82EE → violet/lilla
+            'gray',    // #808080 → grå
+            'black'    // #000000 → sort
+        ];
 
-    function updateTime() {
-        const now = new Date();
-        document.getElementById('currentTime').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    }
 
-    function esc(text) {
-        const d = document.createElement('div');
-        d.textContent = text || '';
-        return d.innerHTML;
-    }
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
 
-    function render(data) {
-        const grid = document.getElementById('stallsGrid');
-        let html = data.slice(0, 9).map((s, index) => {
-            const hasCustomer = s.Kunde && s.Kunde.trim();
-            const name = displayNames[s.slusenavn] || s.slusenavn;
-            const color = stallColors[index % stallColors.length];
+        function esc(text) {
+            const d = document.createElement('div');
+            d.textContent = text || '';
+            return d.innerHTML;
+        }
 
-            if (hasCustomer) {
-                return `
+        function render(data) {
+            const grid = document.getElementById('stallsGrid');
+            let html = data.slice(0, 9).map((s, index) => {
+                const hasCustomer = s.Kunde && s.Kunde.trim();
+                const name = displayNames[s.slusenavn] || s.slusenavn;
+                const color = stallColors[index % stallColors.length];
+
+                if (hasCustomer) {
+                    return `
                 <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500 shadow-lg h-full">
                     <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
                         <div class="flex justify-between items-start">
@@ -203,8 +258,8 @@
                         </div>
                     </div>
                 </div>`;
-            } else {
-                return `
+                } else {
+                    return `
                 <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500/30 shadow-lg opacity-50 h-full">
                     <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
                         <div class="flex justify-between items-start">
@@ -222,98 +277,99 @@
                         </div>
                     </div>
                 </div>`;
-            }
-        }).join('');
-        grid.innerHTML = html;
-    }
-
-    // --- Timer & Logic ---
-    let currentDifference = 0;
-    let warnThreshold = 50;
-    let audioPlaying = false;
-    let audioEnabled = false;
-    const audio = document.getElementById('warningSound');
-
-    document.getElementById('audioOverlay').addEventListener('click', () => {
-        audio.muted = true;
-        audio.play().then(() => {
-            audio.pause(); audio.muted = false; audioEnabled = true;
-            document.getElementById('audioOverlay').style.display = 'none';
-        });
-    });
-
-    function updateTimerDisplay(diff) {
-        const container = document.getElementById('headerTimer');
-        const countdown = document.getElementById('timerCountdown');
-        const label = document.getElementById('timerLabel');
-        const icon = document.getElementById('timerIcon');
-
-        const mins = Math.floor(Math.max(0, diff) / 60);
-        const secs = Math.max(0, diff) % 60;
-        countdown.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
-        container.classList.remove('timer-warning-glow', 'timer-critical-glow');
-        label.classList.remove('text-amber-500', 'text-red-500', 'text-emerald-500');
-        icon.classList.remove('text-amber-400', 'text-red-400', 'text-emerald-400');
-
-        if (diff <= 0) {
-            container.classList.add('timer-critical-glow');
-            label.textContent = 'Port lukker';
-            label.classList.add('text-red-500');
-            icon.classList.add('text-red-400');
-            icon.textContent = 'warning';
-            if (audioPlaying) { audio.pause(); audio.currentTime = 0; audioPlaying = false; }
-        } else if (diff <= warnThreshold) {
-            container.classList.add('timer-warning-glow');
-            label.textContent = 'Forlad slusen!';
-            label.classList.add('text-amber-500');
-            icon.classList.add('text-amber-400');
-            icon.textContent = 'alarm';
-            if (!audioPlaying && audioEnabled) {
-                audio.volume = 1.0; audio.loop = true; audio.play(); audioPlaying = true;
-            }
-        } else {
-            label.textContent = 'Alarm tilkobles om';
-            label.classList.add('text-emerald-500');
-            icon.classList.add('text-emerald-400');
-            icon.textContent = 'timer';
-            if (audioPlaying) { audio.pause(); audio.currentTime = 0; audioPlaying = false; }
+                }
+            }).join('');
+            grid.innerHTML = html;
         }
-    }
 
-    async function fetchTimerData() {
-        try {
-            const res = await fetch('/api/sluse/timer');
-            const data = await res.json();
+        // --- Timer & Logic ---
+        let currentDifference = 0;
+        let warnThreshold = 50;
+        let audioPlaying = false;
+        let audioEnabled = false;
+        const audio = document.getElementById('warningSound');
+
+        document.getElementById('audioOverlay').addEventListener('click', () => {
+            audio.muted = true;
+            audio.play().then(() => {
+                audio.pause(); audio.muted = false; audioEnabled = true;
+                document.getElementById('audioOverlay').style.display = 'none';
+            });
+        });
+
+        function updateTimerDisplay(diff) {
             const container = document.getElementById('headerTimer');
-            const placeholder = document.getElementById('timerPlaceholder');
+            const countdown = document.getElementById('timerCountdown');
+            const label = document.getElementById('timerLabel');
+            const icon = document.getElementById('timerIcon');
 
-            if (data.status === 0 && data.difference <= 0 && data.paused !== 1) {
-                container.classList.add('hidden');
-                placeholder.classList.remove('hidden');
-                return;
+            const mins = Math.floor(Math.max(0, diff) / 60);
+            const secs = Math.max(0, diff) % 60;
+            countdown.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            container.classList.remove('timer-warning-glow', 'timer-critical-glow');
+            label.classList.remove('text-amber-500', 'text-red-500', 'text-emerald-500');
+            icon.classList.remove('text-amber-400', 'text-red-400', 'text-emerald-400');
+
+            if (diff <= 0) {
+                container.classList.add('timer-critical-glow');
+                label.textContent = 'Port lukker';
+                label.classList.add('text-red-500');
+                icon.classList.add('text-red-400');
+                icon.textContent = 'warning';
+                if (audioPlaying) { audio.pause(); audio.currentTime = 0; audioPlaying = false; }
+            } else if (diff <= warnThreshold) {
+                container.classList.add('timer-warning-glow');
+                label.textContent = 'Forlad slusen!';
+                label.classList.add('text-amber-500');
+                icon.classList.add('text-amber-400');
+                icon.textContent = 'alarm';
+                if (!audioPlaying && audioEnabled) {
+                    audio.volume = 1.0; audio.loop = true; audio.play(); audioPlaying = true;
+                }
+            } else {
+                label.textContent = 'Alarm tilkobles om';
+                label.classList.add('text-emerald-500');
+                icon.classList.add('text-emerald-400');
+                icon.textContent = 'timer';
+                if (audioPlaying) { audio.pause(); audio.currentTime = 0; audioPlaying = false; }
             }
+        }
 
-            container.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            currentDifference = data.difference;
-            updateTimerDisplay(currentDifference);
-        } catch (e) { console.error(e); }
-    }
+        async function fetchTimerData() {
+            try {
+                const res = await fetch('/api/sluse/timer');
+                const data = await res.json();
+                const container = document.getElementById('headerTimer');
+                const placeholder = document.getElementById('timerPlaceholder');
 
-    async function fetchData() {
-        try {
-            const res = await fetch('/api/sluse/public');
-            const json = await res.json();
-            if (json.success && json.data) render(json.data);
-        } catch (e) { console.error(e); }
-    }
+                if (data.status === 0 && data.difference <= 0 && data.paused !== 1) {
+                    container.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                    return;
+                }
 
-    updateTime(); fetchData();
-    setInterval(updateTime, 1000);
-    setInterval(fetchData, 30000);
-    setInterval(fetchTimerData, 5000);
-    setInterval(() => { if (currentDifference > -10) { currentDifference--; updateTimerDisplay(currentDifference); } }, 1000);
-</script>
+                container.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                currentDifference = data.difference;
+                updateTimerDisplay(currentDifference);
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch('/api/sluse/public');
+                const json = await res.json();
+                if (json.success && json.data) render(json.data);
+            } catch (e) { console.error(e); }
+        }
+
+        updateTime(); fetchData();
+        setInterval(updateTime, 1000);
+        setInterval(fetchData, 30000);
+        setInterval(fetchTimerData, 5000);
+        setInterval(() => { if (currentDifference > -10) { currentDifference--; updateTimerDisplay(currentDifference); } }, 1000);
+    </script>
 </body>
+
 </html>
