@@ -1274,9 +1274,19 @@ function showLunchPopup({ source = 'auto' } = {}) {
         }
     }
 
-    // Auto-hide efter 60 sekunder (så den ikke bliver hængende i kiosk)
+    // Auto-hide:
+    // - Auto-trigger (kl. 12:10): hold åben til kl. 12:30
+    // - Test-trigger: auto-hide efter 60 sekunder
     if (lunchPopupAutoHideTimer) clearTimeout(lunchPopupAutoHideTimer);
-    lunchPopupAutoHideTimer = setTimeout(() => hideLunchPopup(), 60000);
+    let autoHideMs = 60000;
+    if (source === 'auto') {
+        const hideAt = new Date(now);
+        hideAt.setHours(12, 30, 0, 0);
+        const msTo1230 = hideAt.getTime() - now.getTime();
+        // Hvis vi er før 12:30, luk præcis 12:30. Ellers fallback til 60s.
+        if (msTo1230 > 0) autoHideMs = msTo1230;
+    }
+    lunchPopupAutoHideTimer = setTimeout(() => hideLunchPopup(), autoHideMs);
 }
 
 function hideLunchPopup() {
