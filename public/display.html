@@ -29,197 +29,115 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        html, body { height: 100vh; overflow: hidden; font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
-        /* Desktop: 4 kolonner x 3 rækker */
-        @media (min-width: 1024px) {
-            #stallsGrid {
-                grid-template-columns: repeat(4, 1fr);
-                grid-template-rows: repeat(3, 1fr);
-            }
+        /* Fast 3x3 layout */
+        #stallsGrid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            height: 100%;
+            width: 100%;
         }
+        #stallsGrid > div { min-height: 0; }
 
-        /* Tablet: 3 kolonner */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            #stallsGrid {
-                grid-template-columns: repeat(3, 1fr);
-                grid-auto-rows: minmax(180px, auto);
-            }
-        }
-
-        /* Mobil: 2 kolonner */
-        @media (max-width: 767px) {
-            #stallsGrid {
-                grid-template-columns: repeat(2, 1fr);
-                grid-auto-rows: minmax(160px, auto);
-            }
-        }
-
-        /* Lille mobil: 1 kolonne */
-        @media (max-width: 480px) {
-            #stallsGrid {
-                grid-template-columns: 1fr;
-                grid-auto-rows: minmax(140px, auto);
-            }
-        }
-
-        /* Timer States */
-        #timerContainer.timer-warning {
+        /* Timer Glow Effects i Header */
+        .timer-active { box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.3); }
+        
+        .timer-warning-glow { 
+            animation: warningGlow 1s ease-in-out infinite;
             border-color: #f59e0b !important;
-            animation: warningPulse 1s ease-in-out infinite;
         }
-
-        #timerContainer.timer-warning #timerIconBox {
-            background: rgba(245, 158, 11, 0.25) !important;
-        }
-
-        #timerContainer.timer-warning #timerIcon {
-            color: #f59e0b !important;
-            animation: iconBounce 0.5s ease-in-out infinite;
-        }
-
-        #timerContainer.timer-warning #timerLabel {
-            color: #f59e0b !important;
-        }
-
-        #timerContainer.timer-warning #timerCountdown {
-            color: #fbbf24 !important;
-        }
-
-        #timerContainer.timer-zero {
+        
+        .timer-critical-glow { 
+            animation: criticalGlow 0.5s ease-in-out infinite;
             border-color: #ef4444 !important;
-            animation: zeroPulse 0.5s ease-in-out infinite;
         }
 
-        #timerContainer.timer-zero #timerIconBox {
-            background: rgba(239, 68, 68, 0.3) !important;
+        @keyframes warningGlow {
+            0%, 100% { box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 25px 2px rgba(245, 158, 11, 0.4); transform: scale(1.02); }
         }
-
-        #timerContainer.timer-zero #timerIcon {
-            color: #ef4444 !important;
-        }
-
-        #timerContainer.timer-zero #timerLabel {
-            color: #ef4444 !important;
-        }
-
-        #timerContainer.timer-zero #timerCountdown {
-            color: #f87171 !important;
-        }
-
-        #timerContainer.timer-paused {
-            border-color: #818cf8 !important;
-        }
-
-        #timerContainer.timer-paused #timerIconBox {
-            background: rgba(99, 102, 241, 0.25) !important;
-        }
-
-        #timerContainer.timer-paused #timerIcon {
-            color: #818cf8 !important;
-        }
-
-        #timerContainer.timer-paused #timerLabel {
-            color: #818cf8 !important;
-        }
-
-        @keyframes warningPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.95; transform: scale(1.01); }
-        }
-
-        @keyframes zeroPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.85; }
-        }
-
-        @keyframes iconBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+        @keyframes criticalGlow {
+            0%, 100% { box-shadow: 0 0 15px -2px rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
+            50% { box-shadow: 0 0 30px 5px rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.2); }
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white flex flex-col">
 
-<!-- Header -->
-<header class="flex-none border-b border-gray-200 dark:border-[#283039] bg-white dark:bg-[#111418] px-4 sm:px-6 lg:px-8 py-3 sm:py-4 shadow-sm z-10">
-    <div class="flex items-center justify-between gap-4">
-        <!-- Logo & Title -->
-        <div class="flex items-center gap-3 sm:gap-4">
-            <div class="size-8 sm:size-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
-                <span class="material-symbols-outlined text-xl sm:text-2xl">grid_view</span>
+<!-- Header - Optimeret til tydelig timer -->
+<header class="flex-none border-b border-gray-200 dark:border-[#283039] bg-white dark:bg-[#111418] px-6 py-4 shadow-sm z-10">
+    <div class="flex items-center justify-between">
+        
+        <!-- Venstre: Logo -->
+        <div class="flex items-center gap-4 w-1/4">
+            <div class="size-10 sm:size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-2xl sm:text-3xl">grid_view</span>
             </div>
-            <div>
-                <h1 class="text-base sm:text-xl font-bold tracking-tight leading-tight">Tourcare</h1>
-                <p class="text-[10px] sm:text-xs text-secondary-text font-medium uppercase tracking-wider hidden sm:block">Sluse overblik</p>
+            <div class="hidden lg:block">
+                <h1 class="text-xl font-bold tracking-tight">Tourcare</h1>
+                <p class="text-[10px] text-secondary-text font-medium uppercase tracking-widest">Sluse overblik</p>
             </div>
         </div>
 
-        <!-- Status & Time -->
-        <div class="flex items-center gap-3 sm:gap-6">
-            <div class="flex flex-col items-end">
+        <!-- MIDTE: Stor Tydelig Timer -->
+        <div id="headerTimer" class="hidden flex items-center gap-6 px-10 py-3 rounded-2xl border-2 border-emerald-500/40 bg-black/20 timer-active transition-all duration-300">
+            <div class="text-right hidden sm:block">
+                <p id="timerLabel" class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-emerald-500 mb-0.5">Alarm tilkobles om</p>
+                <p class="text-[9px] text-secondary-text uppercase tracking-widest">Status: Aktiv nedtælling</p>
+            </div>
+            <div class="flex items-center gap-4 border-l border-white/10 pl-6">
+                <span class="material-symbols-outlined text-4xl text-emerald-400" id="timerIcon">timer</span>
+                <span class="font-mono text-5xl font-black tracking-tighter text-white" id="timerCountdown">00:00</span>
+            </div>
+        </div>
+        <div id="timerPlaceholder" class="flex-1 h-1"></div> <!-- Placeholder når timer er væk -->
+
+        <!-- Højre: Ur & Status -->
+        <div class="flex items-center justify-end gap-6 w-1/4">
+            <div class="flex flex-col items-end hidden sm:flex">
                 <div class="flex items-center gap-2">
-                    <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
+                    <span class="relative flex h-2.5 w-2.5">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-full w-full bg-emerald-500"></span>
                     </span>
-                    <span class="text-[10px] sm:text-xs font-bold text-emerald-500 uppercase tracking-wide">Live</span>
+                    <span class="text-[10px] font-bold text-emerald-500 uppercase">Live</span>
                 </div>
-                <p class="text-secondary-text text-[10px] sm:text-xs mt-0.5 hidden sm:block" id="updateStatus">Opdateret: Lige nu</p>
+                <p class="text-secondary-text text-[10px] mt-0.5" id="updateStatus">Lige nu</p>
             </div>
-            <div class="h-8 sm:h-10 px-3 sm:px-5 bg-[#283039] rounded-lg flex items-center justify-center border border-[#3b4754]">
-                <span class="font-mono text-base sm:text-xl font-bold tracking-widest text-white" id="currentTime">--:--</span>
+            <div class="h-12 px-6 bg-[#283039] rounded-xl flex items-center justify-center border border-[#3b4754]">
+                <span class="font-mono text-2xl font-bold tracking-widest text-white" id="currentTime">--:--</span>
             </div>
         </div>
+
     </div>
 </header>
 
-<!-- Main Content -->
-<main class="flex-1 overflow-hidden p-4 sm:p-6 lg:p-8">
-    <div class="grid gap-3 sm:gap-4 h-full" id="stallsGrid">
-        <!-- Loading State -->
-        <div class="col-span-full row-span-full flex flex-col items-center justify-center text-secondary-text">
-            <div class="size-8 sm:size-10 border-2 border-secondary-text/30 border-t-primary rounded-full animate-spin mb-4"></div>
-            <span class="text-sm sm:text-base">Indlæser...</span>
-        </div>
-    </div>
-
-    <!-- Timer Card - Fixed position, always in DOM -->
-    <div id="timerContainer" class="hidden fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl overflow-hidden bg-card-dark border-4 border-emerald-500 shadow-2xl transition-all duration-300">
-        <div id="timerBox" class="p-8 sm:p-10 flex flex-col justify-center items-center text-center">
-            <div id="timerIconBox" class="size-24 sm:size-28 rounded-2xl bg-emerald-500/20 flex items-center justify-center mb-5">
-                <span class="material-symbols-outlined text-6xl sm:text-7xl text-emerald-400" id="timerIcon">timer</span>
-            </div>
-            <span class="text-lg sm:text-xl uppercase tracking-wider text-emerald-400/90 font-semibold mb-3" id="timerLabel">Alarm tilkobles om</span>
-            <span class="font-mono text-7xl sm:text-8xl font-bold tracking-wider text-white" id="timerCountdown">--:--</span>
-        </div>
+<!-- Main Content (3x3 Grid) -->
+<main class="flex-1 overflow-hidden p-4 lg:p-6">
+    <div id="stallsGrid" class="gap-4">
+        <!-- JS render -->
     </div>
 </main>
 
-<!-- Footer -->
-<footer class="flex-none px-4 sm:px-8 py-3 sm:py-4 text-center border-t border-[#283039]">
-    <p class="text-[10px] sm:text-xs text-secondary-text">TourCare Sluse System | Automatisk opdatering hvert 30. sekund</p>
+<footer class="flex-none px-8 py-2 text-center border-t border-[#283039] bg-[#0d1217]">
+    <p class="text-[10px] text-secondary-text uppercase tracking-[0.4em]">TourCare Sluse System</p>
 </footer>
 
-<!-- Warning Sound -->
+<!-- Audio & Overlay -->
 <audio id="warningSound" src="/files/tc_sluse.m4a" preload="auto"></audio>
-
-<!-- Audio Permission Overlay -->
-<div id="audioOverlay" class="fixed inset-0 z-[100] bg-background-dark/95 flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
-    <div class="text-center p-8">
+<div id="audioOverlay" class="fixed inset-0 z-[100] bg-background-dark/98 flex flex-col items-center justify-center cursor-pointer">
+    <div class="text-center">
         <div class="size-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
-            <span class="material-symbols-outlined text-6xl text-primary">volume_up</span>
+            <span class="material-symbols-outlined text-6xl text-primary animate-pulse">volume_up</span>
         </div>
-        <h2 class="text-2xl font-bold text-white mb-3">Aktiver Lyd</h2>
-        <p class="text-secondary-text mb-6">Klik hvor som helst for at aktivere advarselslyden</p>
-        <div class="inline-flex items-center gap-2 px-6 py-3 bg-primary rounded-lg text-white font-semibold">
-            <span class="material-symbols-outlined">touch_app</span>
-            Klik for at fortsætte
-        </div>
+        <h2 class="text-3xl font-black text-white mb-2 tracking-tight">AKTIVER SYSTEM</h2>
+        <p class="text-secondary-text mb-8 tracking-widest text-sm uppercase">Klik for at starte overblik med lyd</p>
+        <button class="px-10 py-4 bg-primary rounded-xl text-white font-bold text-lg shadow-2xl">START NU</button>
     </div>
 </div>
-
 
 <script>
     const displayNames = {
@@ -228,381 +146,174 @@
         'Sluse7': 'BÅS 07', 'Reol1': 'REOL 01', 'Reol2': 'REOL 02',
     };
 
-    const stallColors = [
-        'red', 'blue', 'emerald', 'amber', 'purple',
-        'pink', 'cyan', 'orange', 'indigo', 'lime', 'rose', 'teal'
-    ];
+    const stallColors = ['red', 'blue', 'emerald', 'amber', 'purple', 'pink', 'cyan', 'orange', 'indigo'];
 
     function updateTime() {
         const now = new Date();
-        const h = String(now.getHours()).padStart(2, '0');
-        const m = String(now.getMinutes()).padStart(2, '0');
-        document.getElementById('currentTime').textContent = `${h}:${m}`;
+        document.getElementById('currentTime').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     }
 
     function esc(text) {
-        if (!text) return '';
         const d = document.createElement('div');
-        d.textContent = text;
+        d.textContent = text || '';
         return d.innerHTML;
     }
 
     function render(data) {
         const grid = document.getElementById('stallsGrid');
-
-        let html = data.map((s, index) => {
+        let html = data.slice(0, 9).map((s, index) => {
             const hasCustomer = s.Kunde && s.Kunde.trim();
             const name = displayNames[s.slusenavn] || s.slusenavn;
             const color = stallColors[index % stallColors.length];
 
             if (hasCustomer) {
                 return `
-                    <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500 shadow-lg hover:shadow-xl transition-shadow">
-                        <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
-                            <!-- Header -->
-                            <div class="flex justify-between items-start">
-                                <div class="flex flex-col">
-                                    <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
-                                    <h2 class="text-xl sm:text-2xl font-display font-bold text-white">${name}</h2>
-                                </div>
-                                <div class="size-8 sm:size-10 rounded-full bg-${color}-500/10 flex items-center justify-center text-${color}-500 flex-shrink-0">
-                                    <span class="material-symbols-outlined text-lg sm:text-xl">inventory_2</span>
-                                </div>
+                <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500 shadow-lg h-full">
+                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
+                        <div class="flex justify-between items-start">
+                            <div class="flex flex-col">
+                                <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
+                                <h2 class="text-xl sm:text-1xl font-display font-bold text-white">${name}</h2>
                             </div>
-
-                            <!-- Customer Info -->
-                            <div class="flex-1 flex flex-col gap-3 sm:gap-4">
-                                <div class="p-3 sm:p-4 rounded-lg bg-[#283039]/50 border border-[#3b4754]/50">
-                                    <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kunde</p>
-                                    <p class="text-base sm:text-xl font-bold text-white leading-tight">${esc(s.Kunde)}</p>
+                            <div class="size-8 sm:size-10 rounded-full bg-${color}-500/10 flex items-center justify-center text-${color}-500 flex-shrink-0">
+                                <span class="material-symbols-outlined text-lg sm:text-xl">inventory_2</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 flex flex-col gap-3 sm:gap-4 overflow-hidden">
+                            <div class="p-3 sm:p-4 rounded-lg bg-[#283039]/50 border border-[#3b4754]/50">
+                                <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kunde</p>
+                                <p class="text-base sm:text-2xl font-bold text-white leading-tight truncate">${esc(s.Kunde)}</p>
+                            </div>
+                            ${(s.Detaljer || s.Dato) ? `
+                            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                                ${s.Detaljer ? `
+                                <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
+                                    <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kolli</p>
+                                    <p class="text-sm sm:text-s font-semibold text-white truncate">${esc(s.Detaljer)}</p>
                                 </div>
-                                ${(s.Detaljer || s.Dato) ? `
-                                <div class="grid grid-cols-2 gap-2 sm:gap-3">
-                                    ${s.Detaljer ? `
-                                    <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
-                                        <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Detaljer</p>
-                                        <p class="text-sm sm:text-base font-semibold text-white">${esc(s.Detaljer)}</p>
-                                    </div>
-                                    ` : ''}
+                                ` : ''}
                                     ${s.Dato ? `
-                                    <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
-                                        <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Periode</p>
-                                        <p class="text-sm sm:text-base font-semibold text-white">${esc(s.Dato)}</p>
-                                    </div>
-                                    ` : ''}
+                                <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
+                                    <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Periode</p>
+                                    <p class="text-sm sm:text-s font-semibold text-white truncate">${esc(s.Dato)}</p>
                                 </div>
                                 ` : ''}
                             </div>
+                            ` : ''}
                         </div>
                     </div>
-                `;
+                </div>`;
             } else {
                 return `
-                    <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500/30 shadow-lg opacity-50 hover:opacity-70 transition-opacity">
-                        <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
-                            <!-- Header -->
-                            <div class="flex justify-between items-start">
-                                <div class="flex flex-col">
-                                    <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
-                                    <h2 class="text-xl sm:text-2xl font-display font-bold text-secondary-text">${name}</h2>
-                                </div>
-                                <div class="size-8 sm:size-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 flex-shrink-0">
-                                    <span class="material-symbols-outlined text-lg sm:text-xl">check_circle</span>
-                                </div>
+                <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500/30 shadow-lg opacity-50 h-full">
+                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
+                        <div class="flex justify-between items-start">
+                            <div class="flex flex-col">
+                                <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
+                                <h2 class="text-xl sm:text-2xl font-display font-bold text-secondary-text">${name}</h2>
                             </div>
-
-                            <!-- Empty State -->
-                            <div class="flex-1 flex flex-col items-center justify-center gap-1 sm:gap-2 py-4 sm:py-6">
-                                <p class="text-lg sm:text-xl font-bold text-secondary-text">Ledig</p>
-                                <p class="text-xs sm:text-sm text-[#3b4754]">Klar til reservation</p>
+                            <div class="size-8 sm:size-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 flex-shrink-0">
+                                <span class="material-symbols-outlined text-lg sm:text-xl">check_circle</span>
                             </div>
                         </div>
+                        <div class="flex-1 flex flex-col items-center justify-center gap-1 py-4 sm:py-6">
+                            <p class="text-lg sm:text-xl font-bold text-secondary-text">Ledig</p>
+                            <p class="text-xs sm:text-sm text-[#3b4754]">Klar til reservation</p>
+                        </div>
                     </div>
-                `;
+                </div>`;
             }
         }).join('');
-
         grid.innerHTML = html;
-        document.getElementById('updateStatus').textContent = 'Opdateret: Lige nu';
+    }
+
+    // --- Timer & Logic ---
+    let currentDifference = 0;
+    let warnThreshold = 50;
+    let audioPlaying = false;
+    let audioEnabled = false;
+    const audio = document.getElementById('warningSound');
+
+    document.getElementById('audioOverlay').addEventListener('click', () => {
+        audio.muted = true;
+        audio.play().then(() => {
+            audio.pause(); audio.muted = false; audioEnabled = true;
+            document.getElementById('audioOverlay').style.display = 'none';
+        });
+    });
+
+    function updateTimerDisplay(diff) {
+        const container = document.getElementById('headerTimer');
+        const countdown = document.getElementById('timerCountdown');
+        const label = document.getElementById('timerLabel');
+        const icon = document.getElementById('timerIcon');
+
+        const mins = Math.floor(Math.max(0, diff) / 60);
+        const secs = Math.max(0, diff) % 60;
+        countdown.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        container.classList.remove('timer-warning-glow', 'timer-critical-glow');
+        label.classList.remove('text-amber-500', 'text-red-500', 'text-emerald-500');
+        icon.classList.remove('text-amber-400', 'text-red-400', 'text-emerald-400');
+
+        if (diff <= 0) {
+            container.classList.add('timer-critical-glow');
+            label.textContent = 'Port lukker';
+            label.classList.add('text-red-500');
+            icon.classList.add('text-red-400');
+            icon.textContent = 'warning';
+            if (audioPlaying) { audio.pause(); audio.currentTime = 0; audioPlaying = false; }
+        } else if (diff <= warnThreshold) {
+            container.classList.add('timer-warning-glow');
+            label.textContent = 'Forlad slusen!';
+            label.classList.add('text-amber-500');
+            icon.classList.add('text-amber-400');
+            icon.textContent = 'alarm';
+            if (!audioPlaying && audioEnabled) {
+                audio.volume = 1.0; audio.loop = true; audio.play(); audioPlaying = true;
+            }
+        } else {
+            label.textContent = 'Alarm tilkobles om';
+            label.classList.add('text-emerald-500');
+            icon.classList.add('text-emerald-400');
+            icon.textContent = 'timer';
+            if (audioPlaying) { audio.pause(); audio.currentTime = 0; audioPlaying = false; }
+        }
+    }
+
+    async function fetchTimerData() {
+        try {
+            const res = await fetch('/api/sluse/timer');
+            const data = await res.json();
+            const container = document.getElementById('headerTimer');
+            const placeholder = document.getElementById('timerPlaceholder');
+
+            if (data.status === 0 && data.difference <= 0 && data.paused !== 1) {
+                container.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            currentDifference = data.difference;
+            updateTimerDisplay(currentDifference);
+        } catch (e) { console.error(e); }
     }
 
     async function fetchData() {
         try {
             const res = await fetch('/api/sluse/public');
             const json = await res.json();
-            if (json.success && json.data) {
-                render(json.data);
-            } else {
-                console.error('API returned error:', json);
-                document.getElementById('stallsGrid').innerHTML = `
-                    <div class="col-span-full row-span-full flex flex-col items-center justify-center text-secondary-text">
-                        <span class="material-symbols-outlined text-4xl mb-2 text-red-400">error</span>
-                        <span class="text-sm sm:text-base">Kunne ikke hente data</span>
-                    </div>
-                `;
-            }
-        } catch (e) {
-            console.error('Fetch error:', e);
-            document.getElementById('stallsGrid').innerHTML = `
-                <div class="col-span-full row-span-full flex flex-col items-center justify-center text-secondary-text">
-                    <span class="material-symbols-outlined text-4xl mb-2 text-red-400">cloud_off</span>
-                    <span class="text-sm sm:text-base">Forbindelsesfejl - prøver igen...</span>
-                </div>
-            `;
-        }
+            if (json.success && json.data) render(json.data);
+        } catch (e) { console.error(e); }
     }
 
-    updateTime();
-    fetchData();
+    updateTime(); fetchData();
     setInterval(updateTime, 1000);
     setInterval(fetchData, 30000);
-
-    // ============================================
-    // Timer / Countdown Logic
-    // ============================================
-
-    let countdownInterval = null;
-    let warnThreshold = 50; // Warning threshold - play sound when 50 seconds left
-    let currentDifference = 0;
-    let audioPlaying = false;
-    let audioEnabled = false; // Track if user has enabled audio
-    let livestatus = 'open'; // Default to open so sound can play
-    let timerIsActive = false; // Track if timer should be visible
-    let lastSuccessfulFetch = 0; // Track last successful API call
-    const audio = document.getElementById('warningSound');
-    const audioOverlay = document.getElementById('audioOverlay');
-
-    // Handle audio permission overlay
-    function enableAudio() {
-        // Play and immediately pause to unlock audio
-        audio.muted = true;
-        audio.play().then(() => {
-            audio.pause();
-            audio.muted = false;
-            audio.currentTime = 0;
-            audioEnabled = true;
-            console.log('Audio enabled by user interaction');
-
-            // Hide overlay with fade
-            audioOverlay.style.opacity = '0';
-            setTimeout(() => {
-                audioOverlay.style.display = 'none';
-            }, 500);
-        }).catch(e => {
-            console.error('Failed to enable audio:', e);
-        });
-    }
-
-    // Click anywhere to enable audio
-    audioOverlay.addEventListener('click', enableAudio);
-
-    // Function to play the warning sound
-    function playAudio() {
-        if (!audioPlaying && audio && audioEnabled) {
-            console.log('Playing warning audio...');
-            audio.volume = 1.0;
-            audio.loop = true;
-            audio.play()
-                .then(() => {
-                    console.log('Audio started successfully');
-                    audioPlaying = true;
-                })
-                .catch(e => {
-                    console.log('Audio play failed:', e);
-                });
-        }
-    }
-
-    // Function to fade out and stop the warning sound
-    function stopAudio() {
-        if (audioPlaying && audio) {
-            const fadeOut = setInterval(function() {
-                if (audio.volume > 0.1) {
-                    audio.volume -= 0.1;
-                } else {
-                    clearInterval(fadeOut);
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audioPlaying = false;
-                }
-            }, 200);
-        }
-    }
-
-    function getTimerElements() {
-        return {
-            container: document.getElementById('timerContainer'),
-            box: document.getElementById('timerBox'),
-            iconBox: document.getElementById('timerIconBox'),
-            icon: document.getElementById('timerIcon'),
-            label: document.getElementById('timerLabel'),
-            countdown: document.getElementById('timerCountdown')
-        };
-    }
-
-    function padZero(num) {
-        return num < 10 ? '0' + num : num;
-    }
-
-    function formatTime(seconds) {
-        if (seconds < 0) seconds = 0;
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${padZero(mins)}:${padZero(secs)}`;
-    }
-
-    function setTimerState(state) {
-        const els = getTimerElements();
-        if (!els.container) return;
-        els.container.classList.remove('timer-warning', 'timer-zero', 'timer-paused');
-        if (state) {
-            els.container.classList.add(`timer-${state}`);
-        }
-    }
-
-    function showTimer() {
-        const els = getTimerElements();
-        if (!els.container) return;
-        els.container.classList.remove('hidden');
-        els.container.classList.add('flex');
-    }
-
-    function hideTimer() {
-        const els = getTimerElements();
-        if (!els.container) return;
-        els.container.classList.add('hidden');
-        els.container.classList.remove('flex');
-        setTimerState(null);
-    }
-
-    function updateTimerDisplay(difference) {
-        const els = getTimerElements();
-        if (!els.countdown) return;
-
-        els.countdown.textContent = formatTime(difference);
-
-        if (difference <= 0) {
-            setTimerState('zero');
-            els.label.textContent = 'Port lukker';
-            els.icon.textContent = 'warning';
-            stopAudio();
-        } else if (difference <= warnThreshold) {
-            setTimerState('warning');
-            els.label.textContent = 'Forlad slusen!';
-            els.icon.textContent = 'alarm';
-            // Play audio (livestatus check removed - always play in warning state)
-            playAudio();
-        } else {
-            setTimerState(null);
-            els.label.textContent = 'Alarm tilkobles om';
-            els.icon.textContent = 'timer';
-            stopAudio();
-        }
-    }
-
-    function startLocalCountdown(initialDifference) {
-        currentDifference = initialDifference;
-
-        if (countdownInterval) {
-            clearInterval(countdownInterval);
-        }
-
-        updateTimerDisplay(currentDifference);
-
-        countdownInterval = setInterval(() => {
-            currentDifference--;
-            updateTimerDisplay(currentDifference);
-
-            if (currentDifference <= -10) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
-        }, 1000);
-    }
-
-    async function fetchTimerData() {
-        const els = getTimerElements();
-        if (!els.container) return;
-
-        try {
-            const res = await fetch('/api/sluse/timer');
-
-            if (!res.ok) {
-                console.error('Timer API error:', res.status);
-                // Don't hide timer on API error - keep showing if active
-                return;
-            }
-
-            const data = await res.json();
-
-            if (data.error) {
-                console.error('Timer data error:', data.error);
-                // Don't hide timer on data error - keep showing if active
-                return;
-            }
-
-            // Mark successful fetch
-            lastSuccessfulFetch = Date.now();
-
-            // Update livestatus from server
-            if (data.livestatus === 0) {
-                livestatus = 'closed';
-            } else if (data.livestatus === 2) {
-                livestatus = 'open';
-            }
-
-            if (data.warn) {
-                warnThreshold = data.warn;
-            }
-
-            // Handle paused state
-            if (data.paused === 1) {
-                timerIsActive = true;
-                showTimer();
-                setTimerState('paused');
-                els.label.textContent = 'Alarm udsat';
-                els.icon.textContent = 'pause_circle';
-                els.countdown.textContent = '--:--';
-                stopAudio();
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
-                return;
-            }
-
-            // Only hide timer if server explicitly says it should be hidden
-            // (status=0 AND difference<=0 means no active timer)
-            if (data.status === 0 && data.difference <= 0) {
-                timerIsActive = false;
-                hideTimer();
-                stopAudio();
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
-                return;
-            }
-
-            // Timer is active - show and sync countdown
-            timerIsActive = true;
-            showTimer();
-            startLocalCountdown(data.difference);
-
-        } catch (e) {
-            console.error('Failed to fetch timer data:', e);
-            // IMPORTANT: Don't hide timer on fetch error!
-            // Keep the local countdown running if timer was active
-            if (timerIsActive && currentDifference > -10) {
-                console.log('Keeping timer visible despite fetch error');
-            }
-        }
-    }
-
-    // Initial fetch and interval
-    fetchTimerData();
     setInterval(fetchTimerData, 5000);
+    setInterval(() => { if (currentDifference > -10) { currentDifference--; updateTimerDisplay(currentDifference); } }, 1000);
 </script>
-
 </body>
 </html>
