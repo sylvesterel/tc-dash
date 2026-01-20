@@ -228,7 +228,7 @@
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
                                 <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
-                                <h2 class="text-xl sm:text-1xl font-display font-bold text-white">${name}</h2>
+                                <h2 class="text-2xl sm:text-1xl font-display font-bold text-white">${name}</h2>
                             </div>
                             <div class="size-8 sm:size-10 rounded-full bg-${color}-500/10 flex items-center justify-center text-${color}-500 flex-shrink-0">
                                 <span class="material-symbols-outlined text-lg sm:text-xl">inventory_2</span>
@@ -242,15 +242,15 @@
                             ${(s.Detaljer || s.Dato) ? `
                             <div class="grid grid-cols-3 gap-2 sm:gap-3">
                                 ${s.Detaljer ? `
-                                <div class="p-2 sm:p-3 rounded-lg bg-[#283039]/30">
+                                <div class="p-2 sm:p-4 rounded-lg bg-[#283039]/30">
                                     <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kolli</p>
-                                    <p class="text-sm sm:text-l font-semibold text-white truncate">${esc(s.Detaljer)}</p>
+                                    <p class="text-sm sm:text-xl font-semibold text-white truncate">${esc(s.Detaljer)}</p>
                                 </div>
                                 ` : ''}
                                     ${s.Dato ? `
-                                <div class="p-2 sm:p-3 col-span-2 rounded-lg bg-[#283039]/30">
+                                <div class="p-2 sm:p-4 col-span-2 rounded-lg bg-[#283039]/30">
                                     <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Periode</p>
-                                    <p class="text-sm sm:text-l font-semibold text-white truncate">${esc(s.Dato)}</p>
+                                    <p class="text-sm sm:text-xl font-semibold text-white truncate">${esc(s.Dato)}</p>
                                 </div>
                                 ` : ''}
                             </div>
