@@ -3106,6 +3106,365 @@ app.delete("/api/notes/:id", authMiddleware, async (req, res) => {
 });
 
 // ============================================
+// Sluse Timer / Webhook Endpoints
+// ============================================
+
+// GET /api/sluse/timer - Public endpoint for display timer status (no auth required)
+app.get("/api/sluse/timer", async (req, res) => {
+    try {
+        const [rows] = await slusePool.query(`
+            SELECT
+                id, portnavn, status, livestatus, warn, alarm, paused,
+                UNIX_TIMESTAMP(timer) AS timer_unix,
+                UNIX_TIMESTAMP(opdateret) AS opdateret_unix,
+                UNIX_TIMESTAMP(NOW()) AS now_unix
+            FROM portstatus
+            WHERE portnavn = 'sluse'
+        `);
+
+        if (rows.length === 0) {
+            return res.json({ error: 'Ingen data fundet' });
+        }
+
+        const data = rows[0];
+        data.difference = data.timer_unix - data.now_unix;
+
+        res.json(data);
+    } catch (err) {
+        console.error('Error fetching timer status:', err);
+        res.status(500).json({ error: "Kunne ikke hente timer status" });
+    }
+});
+
+// POST /api/sluse/webhook - Webhook endpoint for updating timer (no auth)
+app.post("/api/sluse/webhook", async (req, res) => {
+    try {
+        const { port, warn, alarm, timer, portlive, paused } = req.body;
+
+        const params = [];
+        const values = [];
+
+        // Handle port status
+        if (port !== undefined) {
+            switch (port) {
+                case 'closed':
+                    params.push("status = ?");
+                    values.push(0);
+                    break;
+                case 'closing':
+                    params.push("status = ?");
+                    values.push(1);
+                    break;
+                case 'open':
+                    params.push("status = ?");
+                    values.push(2);
+                    break;
+            }
+        }
+
+        // Handle paused status
+        if (paused !== undefined) {
+            params.push("paused = ?");
+            values.push(paused === '1' || paused === 1 ? 1 : 0);
+        }
+
+        // Handle live port status
+        if (portlive !== undefined) {
+            switch (portlive) {
+                case 'closed':
+                    params.push("livestatus = ?");
+                    values.push(0);
+                    break;
+                case 'closing':
+                    params.push("livestatus = ?");
+                    values.push(1);
+                    break;
+                case 'open':
+                    params.push("livestatus = ?");
+                    values.push(2);
+                    break;
+            }
+        }
+
+        // Handle warn threshold
+        if (warn !== undefined) {
+            params.push("warn = ?");
+            values.push(parseInt(warn));
+        }
+
+        // Handle alarm threshold
+        if (alarm !== undefined) {
+            params.push("alarm = ?");
+            values.push(parseInt(alarm));
+        }
+
+        // Handle timer (format: "MM:SS")
+        if (timer !== undefined) {
+            const timeParts = timer.split(':');
+            if (timeParts.length === 2) {
+                const minutes = parseInt(timeParts[0]);
+                const seconds = parseInt(timeParts[1]);
+                params.push("timer = DATE_ADD(NOW(), INTERVAL ? SECOND)");
+                values.push(minutes * 60 + seconds);
+            }
+        }
+
+        // Always update the opdateret timestamp
+        params.push("opdateret = NOW()");
+
+        if (params.length === 1) {
+            // Only opdateret was added, nothing to update
+            return res.json({ success: true, message: 'No changes' });
+        }
+
+        const sql = `UPDATE portstatus SET ${params.join(", ")} WHERE portnavn = 'sluse'`;
+        await slusePool.query(sql, values);
+
+        // Log webhook call to sluselog
+        const varsForLog = Object.entries(req.body)
+            .filter(([key]) => key !== 'responseKey')
+            .map(([key, val]) => `${key}=${val}`)
+            .join('&');
+        await slusePool.query(
+            "INSERT INTO sluselog (slusenavn, action, variables) VALUES (?, 'statusMsg', ?)",
+            ['sluse', varsForLog]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error processing webhook:', err);
+        res.status(500).json({ error: "Webhook processing failed" });
+    }
+});
+
+// GET variant of webhook for compatibility with existing Arduino setup
+app.get("/api/sluse/webhook", async (req, res) => {
+    try {
+        const { port, warn, alarm, timer, portlive, paused } = req.query;
+
+        const params = [];
+        const values = [];
+
+        if (port !== undefined) {
+            switch (port) {
+                case 'closed':
+                    params.push("status = ?");
+                    values.push(0);
+                    break;
+                case 'closing':
+                    params.push("status = ?");
+                    values.push(1);
+                    break;
+                case 'open':
+                    params.push("status = ?");
+                    values.push(2);
+                    break;
+            }
+        }
+
+        if (paused !== undefined) {
+            params.push("paused = ?");
+            values.push(paused === '1' || paused === 1 ? 1 : 0);
+        }
+
+        if (portlive !== undefined) {
+            switch (portlive) {
+                case 'closed':
+                    params.push("livestatus = ?");
+                    values.push(0);
+                    break;
+                case 'closing':
+                    params.push("livestatus = ?");
+                    values.push(1);
+                    break;
+                case 'open':
+                    params.push("livestatus = ?");
+                    values.push(2);
+                    break;
+            }
+        }
+
+        if (warn !== undefined) {
+            params.push("warn = ?");
+            values.push(parseInt(warn));
+        }
+
+        if (alarm !== undefined) {
+            params.push("alarm = ?");
+            values.push(parseInt(alarm));
+        }
+
+        if (timer !== undefined) {
+            const timeParts = timer.split(':');
+            if (timeParts.length === 2) {
+                const minutes = parseInt(timeParts[0]);
+                const seconds = parseInt(timeParts[1]);
+                params.push("timer = DATE_ADD(NOW(), INTERVAL ? SECOND)");
+                values.push(minutes * 60 + seconds);
+            }
+        }
+
+        params.push("opdateret = NOW()");
+
+        if (params.length === 1) {
+            return res.json({ success: true, message: 'No changes' });
+        }
+
+        const sql = `UPDATE portstatus SET ${params.join(", ")} WHERE portnavn = 'sluse'`;
+        await slusePool.query(sql, values);
+
+        // Log webhook call to sluselog
+        const varsForLog = Object.entries(req.query)
+            .filter(([key]) => key !== 'responseKey' && key !== 'key')
+            .map(([key, val]) => `${key}=${val}`)
+            .join('&');
+        await slusePool.query(
+            "INSERT INTO sluselog (slusenavn, action, variables) VALUES (?, 'statusMsg', ?)",
+            ['sluse', varsForLog]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error processing webhook:', err);
+        res.status(500).json({ error: "Webhook processing failed" });
+    }
+});
+
+// GET /api/sluse/settings - Arduino fetches settings (no auth - uses key validation)
+app.get("/api/sluse/settings", async (req, res) => {
+    try {
+        const { key, firststart, format } = req.query;
+
+        // Optional key validation (set SLUSE_SETTINGS_KEY in .env if needed)
+        const settingsKey = process.env.SLUSE_SETTINGS_KEY;
+        if (settingsKey && key !== settingsKey) {
+            return res.status(403).json({ error: 'Invalid request key' });
+        }
+
+        const slusenavn = 'sluse';
+
+        // If firststart=1, reset shouldReset and log
+        if (firststart === '1') {
+            await slusePool.query(
+                "UPDATE slusesettings SET shouldReset = 0, lastFirststart = NOW() WHERE slusenavn = ?",
+                [slusenavn]
+            );
+            await slusePool.query(
+                "INSERT INTO sluselog (slusenavn, action) VALUES (?, 'firstStart')",
+                [slusenavn]
+            );
+        }
+
+        // Fetch settings
+        const [rows] = await slusePool.query(
+            "SELECT * FROM slusesettings WHERE slusenavn = ?",
+            [slusenavn]
+        );
+
+        // Default values (in milliseconds)
+        let settings = {
+            openDuration: 450000,      // 7.5 minutes
+            portCycleTime: 40000,      // 40 seconds
+            saltoImpulseDuration: 6000, // 6 seconds
+            warningThreshold: 45000    // 45 seconds
+        };
+
+        let shouldReset = 0;
+
+        if (rows.length > 0) {
+            const row = rows[0];
+            if (row.openDuration) settings.openDuration = Math.max(30000, parseInt(row.openDuration));
+            if (row.portCycleTime) settings.portCycleTime = parseInt(row.portCycleTime);
+            if (row.saltoImpulseDuration) settings.saltoImpulseDuration = parseInt(row.saltoImpulseDuration);
+            if (row.warningThreshold) settings.warningThreshold = Math.min(parseInt(row.warningThreshold), settings.openDuration);
+            shouldReset = row.shouldReset ? 1 : 0;
+        }
+
+        // Log settings fetch
+        await slusePool.query(
+            "INSERT INTO sluselog (slusenavn, action) VALUES (?, 'fetchSettings')",
+            [slusenavn]
+        );
+
+        // Response key (optional, set in .env)
+        const responseKey = process.env.SLUSE_RESPONSE_KEY || '';
+
+        if (format === 'json') {
+            const response = {
+                responseKey,
+                ...settings
+            };
+            if (shouldReset === 1) response.reset = 1;
+            res.json(response);
+        } else {
+            // URL-encoded format for Arduino
+            let output = `responseKey=${responseKey}&`;
+            output += `openDuration=${settings.openDuration}&`;
+            output += `portCycleTime=${settings.portCycleTime}&`;
+            output += `saltoImpulseDuration=${settings.saltoImpulseDuration}&`;
+            output += `warningThreshold=${settings.warningThreshold}`;
+            if (shouldReset === 1) output += '&reset=1';
+            res.type('text/plain').send(output);
+        }
+    } catch (err) {
+        console.error('Error fetching sluse settings:', err);
+        res.status(500).json({ error: "Failed to fetch settings" });
+    }
+});
+
+// POST /api/sluse/weekly-reset - Trigger weekly reset (sets shouldReset=1, cleans old logs)
+app.post("/api/sluse/weekly-reset", async (req, res) => {
+    try {
+        const slusenavn = 'sluse';
+
+        // Set shouldReset = 1
+        await slusePool.query(
+            "UPDATE slusesettings SET shouldReset = 1 WHERE slusenavn = ?",
+            [slusenavn]
+        );
+
+        // Clean old logs (older than 1 month)
+        const [result] = await slusePool.query(
+            "DELETE FROM sluselog WHERE time < NOW() - INTERVAL 1 MONTH"
+        );
+
+        res.json({
+            success: true,
+            message: 'Weekly reset triggered',
+            logsDeleted: result.affectedRows
+        });
+    } catch (err) {
+        console.error('Error triggering weekly reset:', err);
+        res.status(500).json({ error: "Failed to trigger reset" });
+    }
+});
+
+// GET variant for cron job compatibility
+app.get("/api/sluse/weekly-reset", async (req, res) => {
+    try {
+        const slusenavn = 'sluse';
+
+        await slusePool.query(
+            "UPDATE slusesettings SET shouldReset = 1 WHERE slusenavn = ?",
+            [slusenavn]
+        );
+
+        const [result] = await slusePool.query(
+            "DELETE FROM sluselog WHERE time < NOW() - INTERVAL 1 MONTH"
+        );
+
+        res.json({
+            success: true,
+            message: 'Weekly reset triggered',
+            logsDeleted: result.affectedRows
+        });
+    } catch (err) {
+        console.error('Error triggering weekly reset:', err);
+        res.status(500).json({ error: "Failed to trigger reset" });
+    }
+});
+
+// ============================================
 // Error Handling
 // ============================================
 

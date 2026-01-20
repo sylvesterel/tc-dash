@@ -63,6 +63,81 @@
                 grid-auto-rows: minmax(140px, auto);
             }
         }
+
+        /* Timer States */
+        #timerContainer.timer-warning {
+            border-color: #f59e0b !important;
+            animation: warningPulse 1s ease-in-out infinite;
+        }
+
+        #timerContainer.timer-warning #timerIconBox {
+            background: rgba(245, 158, 11, 0.25) !important;
+        }
+
+        #timerContainer.timer-warning #timerIcon {
+            color: #f59e0b !important;
+            animation: iconBounce 0.5s ease-in-out infinite;
+        }
+
+        #timerContainer.timer-warning #timerLabel {
+            color: #f59e0b !important;
+        }
+
+        #timerContainer.timer-warning #timerCountdown {
+            color: #fbbf24 !important;
+        }
+
+        #timerContainer.timer-zero {
+            border-color: #ef4444 !important;
+            animation: zeroPulse 0.5s ease-in-out infinite;
+        }
+
+        #timerContainer.timer-zero #timerIconBox {
+            background: rgba(239, 68, 68, 0.3) !important;
+        }
+
+        #timerContainer.timer-zero #timerIcon {
+            color: #ef4444 !important;
+        }
+
+        #timerContainer.timer-zero #timerLabel {
+            color: #ef4444 !important;
+        }
+
+        #timerContainer.timer-zero #timerCountdown {
+            color: #f87171 !important;
+        }
+
+        #timerContainer.timer-paused {
+            border-color: #818cf8 !important;
+        }
+
+        #timerContainer.timer-paused #timerIconBox {
+            background: rgba(99, 102, 241, 0.25) !important;
+        }
+
+        #timerContainer.timer-paused #timerIcon {
+            color: #818cf8 !important;
+        }
+
+        #timerContainer.timer-paused #timerLabel {
+            color: #818cf8 !important;
+        }
+
+        @keyframes warningPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.95; transform: scale(1.01); }
+        }
+
+        @keyframes zeroPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
@@ -76,8 +151,8 @@
                 <span class="material-symbols-outlined text-xl sm:text-2xl">grid_view</span>
             </div>
             <div>
-                <h1 class="text-base sm:text-xl font-bold tracking-tight leading-tight">Sluse System</h1>
-                <p class="text-[10px] sm:text-xs text-secondary-text font-medium uppercase tracking-wider hidden sm:block">Storage Overview</p>
+                <h1 class="text-base sm:text-xl font-bold tracking-tight leading-tight">Tourcare</h1>
+                <p class="text-[10px] sm:text-xs text-secondary-text font-medium uppercase tracking-wider hidden sm:block">Sluse overblik</p>
             </div>
         </div>
 
@@ -109,12 +184,42 @@
             <span class="text-sm sm:text-base">Indlæser...</span>
         </div>
     </div>
+
+    <!-- Timer Card - Fixed position, always in DOM -->
+    <div id="timerContainer" class="hidden fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl overflow-hidden bg-card-dark border-4 border-emerald-500 shadow-2xl transition-all duration-300">
+        <div id="timerBox" class="p-8 sm:p-10 flex flex-col justify-center items-center text-center">
+            <div id="timerIconBox" class="size-24 sm:size-28 rounded-2xl bg-emerald-500/20 flex items-center justify-center mb-5">
+                <span class="material-symbols-outlined text-6xl sm:text-7xl text-emerald-400" id="timerIcon">timer</span>
+            </div>
+            <span class="text-lg sm:text-xl uppercase tracking-wider text-emerald-400/90 font-semibold mb-3" id="timerLabel">Alarm tilkobles om</span>
+            <span class="font-mono text-7xl sm:text-8xl font-bold tracking-wider text-white" id="timerCountdown">--:--</span>
+        </div>
+    </div>
 </main>
 
 <!-- Footer -->
 <footer class="flex-none px-4 sm:px-8 py-3 sm:py-4 text-center border-t border-[#283039]">
     <p class="text-[10px] sm:text-xs text-secondary-text">TourCare Sluse System | Automatisk opdatering hvert 30. sekund</p>
 </footer>
+
+<!-- Warning Sound -->
+<audio id="warningSound" src="/files/tc_sluse.m4a" preload="auto"></audio>
+
+<!-- Audio Permission Overlay -->
+<div id="audioOverlay" class="fixed inset-0 z-[100] bg-background-dark/95 flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
+    <div class="text-center p-8">
+        <div class="size-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-6xl text-primary">volume_up</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-3">Aktiver Lyd</h2>
+        <p class="text-secondary-text mb-6">Klik hvor som helst for at aktivere advarselslyden</p>
+        <div class="inline-flex items-center gap-2 px-6 py-3 bg-primary rounded-lg text-white font-semibold">
+            <span class="material-symbols-outlined">touch_app</span>
+            Klik for at fortsætte
+        </div>
+    </div>
+</div>
+
 
 <script>
     const displayNames = {
@@ -145,7 +250,7 @@
     function render(data) {
         const grid = document.getElementById('stallsGrid');
 
-        const html = data.map((s, index) => {
+        let html = data.map((s, index) => {
             const hasCustomer = s.Kunde && s.Kunde.trim();
             const name = displayNames[s.slusenavn] || s.slusenavn;
             const color = stallColors[index % stallColors.length];
@@ -225,9 +330,25 @@
         try {
             const res = await fetch('/api/sluse/public');
             const json = await res.json();
-            if (json.success) render(json.data);
+            if (json.success && json.data) {
+                render(json.data);
+            } else {
+                console.error('API returned error:', json);
+                document.getElementById('stallsGrid').innerHTML = `
+                    <div class="col-span-full row-span-full flex flex-col items-center justify-center text-secondary-text">
+                        <span class="material-symbols-outlined text-4xl mb-2 text-red-400">error</span>
+                        <span class="text-sm sm:text-base">Kunne ikke hente data</span>
+                    </div>
+                `;
+            }
         } catch (e) {
-            console.error(e);
+            console.error('Fetch error:', e);
+            document.getElementById('stallsGrid').innerHTML = `
+                <div class="col-span-full row-span-full flex flex-col items-center justify-center text-secondary-text">
+                    <span class="material-symbols-outlined text-4xl mb-2 text-red-400">cloud_off</span>
+                    <span class="text-sm sm:text-base">Forbindelsesfejl - prøver igen...</span>
+                </div>
+            `;
         }
     }
 
@@ -235,6 +356,252 @@
     fetchData();
     setInterval(updateTime, 1000);
     setInterval(fetchData, 30000);
+
+    // ============================================
+    // Timer / Countdown Logic
+    // ============================================
+
+    let countdownInterval = null;
+    let warnThreshold = 50; // Warning threshold - play sound when 50 seconds left
+    let currentDifference = 0;
+    let audioPlaying = false;
+    let audioEnabled = false; // Track if user has enabled audio
+    let livestatus = 'open'; // Default to open so sound can play
+    let timerIsActive = false; // Track if timer should be visible
+    let lastSuccessfulFetch = 0; // Track last successful API call
+    const audio = document.getElementById('warningSound');
+    const audioOverlay = document.getElementById('audioOverlay');
+
+    // Handle audio permission overlay
+    function enableAudio() {
+        // Play and immediately pause to unlock audio
+        audio.muted = true;
+        audio.play().then(() => {
+            audio.pause();
+            audio.muted = false;
+            audio.currentTime = 0;
+            audioEnabled = true;
+            console.log('Audio enabled by user interaction');
+
+            // Hide overlay with fade
+            audioOverlay.style.opacity = '0';
+            setTimeout(() => {
+                audioOverlay.style.display = 'none';
+            }, 500);
+        }).catch(e => {
+            console.error('Failed to enable audio:', e);
+        });
+    }
+
+    // Click anywhere to enable audio
+    audioOverlay.addEventListener('click', enableAudio);
+
+    // Function to play the warning sound
+    function playAudio() {
+        if (!audioPlaying && audio && audioEnabled) {
+            console.log('Playing warning audio...');
+            audio.volume = 1.0;
+            audio.loop = true;
+            audio.play()
+                .then(() => {
+                    console.log('Audio started successfully');
+                    audioPlaying = true;
+                })
+                .catch(e => {
+                    console.log('Audio play failed:', e);
+                });
+        }
+    }
+
+    // Function to fade out and stop the warning sound
+    function stopAudio() {
+        if (audioPlaying && audio) {
+            const fadeOut = setInterval(function() {
+                if (audio.volume > 0.1) {
+                    audio.volume -= 0.1;
+                } else {
+                    clearInterval(fadeOut);
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audioPlaying = false;
+                }
+            }, 200);
+        }
+    }
+
+    function getTimerElements() {
+        return {
+            container: document.getElementById('timerContainer'),
+            box: document.getElementById('timerBox'),
+            iconBox: document.getElementById('timerIconBox'),
+            icon: document.getElementById('timerIcon'),
+            label: document.getElementById('timerLabel'),
+            countdown: document.getElementById('timerCountdown')
+        };
+    }
+
+    function padZero(num) {
+        return num < 10 ? '0' + num : num;
+    }
+
+    function formatTime(seconds) {
+        if (seconds < 0) seconds = 0;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${padZero(mins)}:${padZero(secs)}`;
+    }
+
+    function setTimerState(state) {
+        const els = getTimerElements();
+        if (!els.container) return;
+        els.container.classList.remove('timer-warning', 'timer-zero', 'timer-paused');
+        if (state) {
+            els.container.classList.add(`timer-${state}`);
+        }
+    }
+
+    function showTimer() {
+        const els = getTimerElements();
+        if (!els.container) return;
+        els.container.classList.remove('hidden');
+        els.container.classList.add('flex');
+    }
+
+    function hideTimer() {
+        const els = getTimerElements();
+        if (!els.container) return;
+        els.container.classList.add('hidden');
+        els.container.classList.remove('flex');
+        setTimerState(null);
+    }
+
+    function updateTimerDisplay(difference) {
+        const els = getTimerElements();
+        if (!els.countdown) return;
+
+        els.countdown.textContent = formatTime(difference);
+
+        if (difference <= 0) {
+            setTimerState('zero');
+            els.label.textContent = 'Port lukker';
+            els.icon.textContent = 'warning';
+            stopAudio();
+        } else if (difference <= warnThreshold) {
+            setTimerState('warning');
+            els.label.textContent = 'Forlad slusen!';
+            els.icon.textContent = 'alarm';
+            // Play audio (livestatus check removed - always play in warning state)
+            playAudio();
+        } else {
+            setTimerState(null);
+            els.label.textContent = 'Alarm tilkobles om';
+            els.icon.textContent = 'timer';
+            stopAudio();
+        }
+    }
+
+    function startLocalCountdown(initialDifference) {
+        currentDifference = initialDifference;
+
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+
+        updateTimerDisplay(currentDifference);
+
+        countdownInterval = setInterval(() => {
+            currentDifference--;
+            updateTimerDisplay(currentDifference);
+
+            if (currentDifference <= -10) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }, 1000);
+    }
+
+    async function fetchTimerData() {
+        const els = getTimerElements();
+        if (!els.container) return;
+
+        try {
+            const res = await fetch('/api/sluse/timer');
+
+            if (!res.ok) {
+                console.error('Timer API error:', res.status);
+                // Don't hide timer on API error - keep showing if active
+                return;
+            }
+
+            const data = await res.json();
+
+            if (data.error) {
+                console.error('Timer data error:', data.error);
+                // Don't hide timer on data error - keep showing if active
+                return;
+            }
+
+            // Mark successful fetch
+            lastSuccessfulFetch = Date.now();
+
+            // Update livestatus from server
+            if (data.livestatus === 0) {
+                livestatus = 'closed';
+            } else if (data.livestatus === 2) {
+                livestatus = 'open';
+            }
+
+            if (data.warn) {
+                warnThreshold = data.warn;
+            }
+
+            // Handle paused state
+            if (data.paused === 1) {
+                timerIsActive = true;
+                showTimer();
+                setTimerState('paused');
+                els.label.textContent = 'Alarm udsat';
+                els.icon.textContent = 'pause_circle';
+                els.countdown.textContent = '--:--';
+                stopAudio();
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                return;
+            }
+
+            // Only hide timer if server explicitly says it should be hidden
+            // (status=0 AND difference<=0 means no active timer)
+            if (data.status === 0 && data.difference <= 0) {
+                timerIsActive = false;
+                hideTimer();
+                stopAudio();
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                return;
+            }
+
+            // Timer is active - show and sync countdown
+            timerIsActive = true;
+            showTimer();
+            startLocalCountdown(data.difference);
+
+        } catch (e) {
+            console.error('Failed to fetch timer data:', e);
+            // IMPORTANT: Don't hide timer on fetch error!
+            // Keep the local countdown running if timer was active
+            if (timerIsActive && currentDifference > -10) {
+                console.log('Keeping timer visible despite fetch error');
+            }
+        }
+    }
+
+    // Initial fetch and interval
+    fetchTimerData();
+    setInterval(fetchTimerData, 5000);
 </script>
 
 </body>

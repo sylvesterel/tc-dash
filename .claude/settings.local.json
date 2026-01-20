@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"C:\\\\Users\\\\sylve\\\\Desktop\\\\Udvikling\\\\TC-Dash\\\\tc-dash\\\\*.js\")",
+      "Bash(findstr:*)",
+      "Bash(Get-ChildItem:*)",
+      "Bash(Where-Object { $_FullName -notlike \"*node_modules*\" })",
+      "Bash(Select-Object -ExpandProperty FullName)"
+    ]
+  }
+}
