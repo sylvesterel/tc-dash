@@ -101,6 +101,90 @@
         }
 
         /* Menu kompakt styling */
+        .menu-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+            flex: 1;
+            min-height: 0; /* vigtigt i flex for at undgå overflow */
+        }
+
+        .menu-panel {
+            border-radius: 16px;
+            border: 1px solid rgba(48, 54, 61, 0.8);
+            background: rgba(33, 38, 45, 0.45); /* matcher resten af dashboardet */
+            box-shadow: none; /* mindre "fremmed" look */
+        }
+
+        .menu-panel-main {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* hold alt inde i cardet */
+        }
+
+        .menu-headerline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.7);
+        }
+
+        .menu-body {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            padding: 12px 14px;
+        }
+
+        .menu-kicker {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(139, 148, 158, 0.95);
+        }
+
+        .menu-title {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.2;
+            color: rgba(255, 255, 255, 0.98);
+        }
+
+        .menu-desc {
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.35;
+            color: rgba(139, 148, 158, 0.98);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .menu-extras {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(48, 54, 61, 0.6);
+            max-height: clamp(90px, 18vh, 180px); /* plads til både tilbehør+salat */
+            overflow: hidden;
+        }
+
+        .menu-nextline {
+            font-size: 12px;
+            color: rgba(139, 148, 158, 0.98);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
         .menu-compact {
             display: flex;
             flex-direction: column;
@@ -112,6 +196,20 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+
+        .menu-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(201, 209, 217, 0.95);
+        }
+
+        .menu-subtitle .material-symbols-outlined {
+            font-size: 16px;
+            opacity: 0.9;
         }
 
         .menu-tags {
@@ -126,6 +224,39 @@
             font-size: 11px;
             white-space: nowrap;
         }
+
+        .menu-divider {
+            height: 1px;
+            background: rgba(48, 54, 61, 0.6);
+            margin: 2px 0;
+        }
+
+        .menu-next {
+            padding: 8px 12px 10px 12px;
+            flex: 0 0 auto; /* skal ikke presse hovedpanelet */
+        }
+
+        .menu-next .menu-next-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .menu-next .menu-next-main {
+            margin-top: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.92);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Sørg for at menuContent kan "shrinke" korrekt i flex-card */
+        #menuContent { min-height: 0; }
 
         /* Door Access Popup */
         .access-popup-container {
@@ -228,12 +359,179 @@
             align-items: center;
             gap: 6px;
         }
+
+        /* Lunch Popup (fullscreen) */
+        .lunch-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(10px);
+        }
+
+        .lunch-overlay.show {
+            display: flex;
+            animation: lunchFadeIn 180ms ease-out;
+        }
+
+        @keyframes lunchFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .lunch-modal {
+            width: min(980px, calc(100vw - 64px));
+            border-radius: 28px;
+            padding: 34px 34px 28px 34px;
+            border: 1px solid rgba(48, 54, 61, 0.9);
+            background: radial-gradient(1200px 500px at 20% 0%, rgba(240, 136, 62, 0.25), transparent 55%),
+                        radial-gradient(900px 500px at 90% 40%, rgba(19, 127, 236, 0.22), transparent 55%),
+                        rgba(22, 27, 34, 0.96);
+            box-shadow: 0 30px 120px rgba(0,0,0,0.65);
+            transform: translateY(10px);
+            animation: lunchPop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes lunchPop {
+            from { opacity: 0; transform: translateY(18px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .lunch-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(240, 136, 62, 0.14);
+            border: 1px solid rgba(240, 136, 62, 0.35);
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .lunch-title {
+            margin-top: 16px;
+            font-size: clamp(40px, 5.2vw, 64px);
+            font-weight: 900;
+            line-height: 1.03;
+            letter-spacing: -0.02em;
+        }
+
+        .lunch-sub {
+            margin-top: 12px;
+            font-size: clamp(18px, 2.2vw, 24px);
+            color: rgba(201, 209, 217, 0.92);
+        }
+
+        .lunch-meta {
+            margin-top: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .lunch-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(33, 38, 45, 0.75);
+            border: 1px solid rgba(48, 54, 61, 0.85);
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .lunch-menu-card {
+            margin-top: 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(48, 54, 61, 0.8);
+            background: rgba(33, 38, 45, 0.55);
+            padding: 18px 18px;
+        }
+
+        .lunch-menu-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(139, 148, 158, 0.95);
+            font-weight: 800;
+        }
+
+        .lunch-menu-main {
+            margin-top: 8px;
+            font-size: 22px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.96);
+            line-height: 1.2;
+        }
+
+        .lunch-menu-desc {
+            margin-top: 8px;
+            font-size: 14px;
+            line-height: 1.35;
+            color: rgba(201, 209, 217, 0.9);
+        }
+
+        .lunch-hint {
+            margin-top: 16px;
+            font-size: 12px;
+            color: rgba(139, 148, 158, 0.95);
+        }
     </style>
 </head>
 <body class="bg-background-dark text-white min-h-screen">
 
 <!-- Access Popup Container -->
 <div class="access-popup-container" id="accessPopupContainer"></div>
+
+<!-- Lunch Popup (Fullscreen) -->
+<div class="lunch-overlay" id="lunchOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="lunch-modal">
+        <div class="flex items-center justify-between gap-4">
+            <div class="lunch-badge">
+                <span class="material-symbols-outlined" style="font-size: 18px;">restaurant</span>
+                Frokost nu
+            </div>
+            <div class="text-secondary-text text-sm font-semibold">
+                Tryk <span class="px-2 py-1 bg-[#21262d]/70 border border-card-border rounded text-white">ESC</span> for at lukke
+            </div>
+        </div>
+
+        <div class="lunch-title">Der er frokost nu</div>
+        <div class="lunch-sub" id="lunchSubline">--</div>
+
+        <div class="lunch-meta">
+            <div class="lunch-chip">
+                <span class="material-symbols-outlined" style="font-size: 18px;">schedule</span>
+                <span id="lunchTimeText">--:--</span>
+            </div>
+            <div class="lunch-chip">
+                <span class="material-symbols-outlined" style="font-size: 18px;">today</span>
+                <span id="lunchDayText">--</span>
+            </div>
+        </div>
+
+        <div class="lunch-menu-card">
+            <div class="lunch-menu-label">Dagens menu</div>
+            <div class="lunch-menu-main" id="lunchMenuMain">Indlæser...</div>
+            <div class="lunch-menu-desc" id="lunchMenuDesc" style="display:none;"></div>
+        </div>
+
+        <div class="lunch-hint">Test: tryk <span class="px-2 py-1 bg-[#21262d]/70 border border-card-border rounded text-white">L</span> for at vise popuppen.</div>
+    </div>
+</div>
+
+<audio id="lunchAudio" preload="auto">
+    <source src="/files/lunch.mp3" type="audio/mpeg">
+</audio>
 
 <!-- Main Grid Layout -->
 <div class="h-screen p-4 lg:p-6 grid grid-cols-12 grid-rows-6 gap-4 lg:gap-5">
@@ -531,7 +829,7 @@ function updateClock() {
 // Render Functions
 // ============================================
 
-function renderMenu(menu) {
+function renderMenu(menu, tomorrowMenu) {
     const container = document.getElementById('menuContent');
     const dayEl = document.getElementById('menuDay');
     const badgeEl = document.getElementById('menuBadge');
@@ -558,38 +856,53 @@ function renderMenu(menu) {
         badgeEl.classList.add('hidden');
     }
 
-    // Kompakt tilbehør og salater på samme linje
-    let tagsHtml = '';
+    const toppings = Array.isArray(menu.toppings) ? menu.toppings.filter(Boolean) : [];
+    const salads = Array.isArray(menu.salads) ? menu.salads.filter(Boolean) : [];
+
+    // Saml tags igen (mere kompakt => salat bliver ikke "skubbet væk")
     const allTags = [];
+    toppings.forEach(t => allTags.push({ text: t, type: 'topping' }));
+    salads.forEach(s => allTags.push({ text: s, type: 'salad' }));
 
-    if (menu.toppings && menu.toppings.length > 0) {
-        menu.toppings.forEach(t => allTags.push({ text: t, type: 'topping' }));
-    }
-    if (menu.salads && menu.salads.length > 0) {
-        menu.salads.forEach(s => allTags.push({ text: s, type: 'salad' }));
-    }
+    const tagsHtml = allTags.length > 0 ? `
+        <div class="menu-tags mt-2">
+            ${allTags.map(tag =>
+                tag.type === 'salad'
+                    ? `<span class="menu-tag bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">${esc(tag.text)}</span>`
+                    : `<span class="menu-tag bg-[#21262d] text-gray-300">${esc(tag.text)}</span>`
+            ).join('')}
+        </div>
+    ` : '';
 
-    if (allTags.length > 0) {
-        tagsHtml = `
-            <div class="menu-tags mt-3">
-                ${allTags.map(tag =>
-                    tag.type === 'salad'
-                        ? `<span class="menu-tag bg-emerald-500/20 text-emerald-300">${esc(tag.text)}</span>`
-                        : `<span class="menu-tag bg-[#21262d] text-gray-300">${esc(tag.text)}</span>`
-                ).join('')}
+    const hasExtras = !!tagsHtml;
+
+    const showTomorrow = !!(tomorrowMenu && tomorrowMenu.main_dish);
+    const tomorrowDayLabel = showTomorrow ? getDayNameDa(tomorrowMenu.day) : '';
+    // Vis kun "Næste dags menu" når vi faktisk har en menu (ingen placeholders)
+    const tomorrowHtml = showTomorrow ? `
+        <div class="menu-panel menu-next">
+            <div class="menu-next-title">
+                <div class="menu-kicker">Næste dags menu</div>
+                <span class="px-2 py-0.5 bg-[#21262d]/70 border border-card-border text-gray-200 text-xs rounded">${esc(tomorrowDayLabel)}</span>
             </div>
-        `;
-    }
+            <div class="menu-next-main">${esc(tomorrowMenu.main_dish)}</div>
+        </div>
+    ` : '';
 
     container.innerHTML = `
-        <div class="menu-compact">
-            <div class="menu-main">
-                <div class="bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-xl p-4 border border-orange-500/30">
-                    <h3 class="text-xl font-bold text-orange-300">${esc(menu.main_dish)}</h3>
-                    ${menu.main_dish_description ? `<p class="text-secondary-text text-sm mt-1 line-clamp-2">${esc(menu.main_dish_description)}</p>` : ''}
+        <div class="menu-shell">
+            <div class="menu-panel menu-panel-main">
+                <div class="menu-headerline">
+                    <div class="menu-kicker">${menu.isToday ? 'Dagens hovedret' : 'Næste hovedret'}</div>
+                    <span class="material-symbols-outlined text-orange-300" style="font-size: 18px;">local_dining</span>
+                </div>
+                <div class="menu-body">
+                    <div class="menu-title">${esc(menu.main_dish)}</div>
+                    ${menu.main_dish_description ? `<div class="menu-desc">${esc(menu.main_dish_description)}</div>` : ''}
+                    ${hasExtras ? `<div class="menu-extras"><div class="menu-kicker">Tilbehør & salat</div>${tagsHtml}</div>` : ''}
                 </div>
             </div>
-            ${tagsHtml}
+            ${tomorrowHtml}
         </div>
     `;
 }
@@ -658,6 +971,11 @@ function renderErrors(integration) {
     const iconBg = document.getElementById('errorIconBg');
     const icon = document.getElementById('errorIcon');
 
+    // Gem antal uløste fejl så scroll-logik kan tage højde for det
+    if (container) {
+        container.dataset.unresolvedCount = integration.unresolvedErrors ?? 0;
+    }
+
     countEl.textContent = integration.unresolvedErrors;
 
     if (integration.error) {
@@ -700,7 +1018,7 @@ function renderErrors(integration) {
     }
 
     container.innerHTML = integration.recentErrors.map(error => `
-        <div class="p-2 rounded-lg bg-[#21262d]/50 border-l-2 ${getSeverityClass(error.severity)} ${error.resolved ? 'opacity-50' : ''}">
+        <div class="error-item p-2 rounded-lg bg-[#21262d]/50 border-l-2 ${getSeverityClass(error.severity)} ${error.resolved ? 'error-resolved opacity-50' : ''}">
             <div class="flex items-start justify-between gap-2">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
@@ -853,6 +1171,8 @@ function connectAccessEventStream() {
 // Data Fetching
 // ============================================
 
+let latestMenuForPopup = null;
+
 async function fetchData() {
     try {
         const res = await fetch('/api/office-dashboard');
@@ -865,7 +1185,8 @@ async function fetchData() {
             document.getElementById('lastUpdate').textContent = formatTimeShort(new Date());
 
             // Render all sections
-            renderMenu(data.todaysMenu);
+            renderMenu(data.todaysMenu, data.tomorrowsMenu);
+            latestMenuForPopup = data.todaysMenu || null;
             renderSluser(data.sluser || { occupied: 0, total: 0 });
             renderSeamUsers(data.seamUsers || { withDatePrefix: 0, total: 0, users: [] });
             renderProjects(data.weeklyProjects || { count: 0, projects: [] });
@@ -875,6 +1196,123 @@ async function fetchData() {
     } catch (error) {
         console.error('Error fetching data:', error);
     }
+}
+
+// ============================================
+// Lunch Popup System
+// ============================================
+
+const LUNCH_POPUP_STORAGE_KEY = 'tcDash:lunchPopup:lastShownDate';
+let lunchPopupAutoHideTimer = null;
+
+function isWeekday(date) {
+    const day = date.getDay(); // 0=Sun ... 6=Sat
+    return day >= 1 && day <= 5;
+}
+
+function dateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function getMenuTextForPopup(menu) {
+    if (!menu || !menu.main_dish) {
+        return {
+            main: 'Menu ikke tilgængelig',
+            desc: ''
+        };
+    }
+    return {
+        main: menu.main_dish,
+        desc: menu.main_dish_description || ''
+    };
+}
+
+function showLunchPopup({ source = 'auto' } = {}) {
+    const overlay = document.getElementById('lunchOverlay');
+    if (!overlay) return;
+
+    const now = new Date();
+    const timeEl = document.getElementById('lunchTimeText');
+    const dayEl = document.getElementById('lunchDayText');
+    const subEl = document.getElementById('lunchSubline');
+    const menuMainEl = document.getElementById('lunchMenuMain');
+    const menuDescEl = document.getElementById('lunchMenuDesc');
+
+    if (timeEl) timeEl.textContent = formatTimeShort(now);
+    if (dayEl) dayEl.textContent = formatDate(now);
+    if (subEl) subEl.textContent = source === 'test' ? 'Test-visning (tast L)' : 'God appetit';
+
+    const menuText = getMenuTextForPopup(latestMenuForPopup);
+    if (menuMainEl) menuMainEl.textContent = menuText.main;
+    if (menuDescEl) {
+        if (menuText.desc) {
+            menuDescEl.style.display = '';
+            menuDescEl.textContent = menuText.desc;
+        } else {
+            menuDescEl.style.display = 'none';
+            menuDescEl.textContent = '';
+        }
+    }
+
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    // Spil lyd (kræver typisk user-gesture; test via tast L virker)
+    const audio = document.getElementById('lunchAudio');
+    if (audio) {
+        try {
+            audio.currentTime = 0;
+            const p = audio.play();
+            if (p && typeof p.catch === 'function') {
+                p.catch(err => console.warn('Lunch audio blocked or failed:', err));
+            }
+        } catch (e) {
+            console.warn('Lunch audio play failed:', e);
+        }
+    }
+
+    // Auto-hide efter 60 sekunder (så den ikke bliver hængende i kiosk)
+    if (lunchPopupAutoHideTimer) clearTimeout(lunchPopupAutoHideTimer);
+    lunchPopupAutoHideTimer = setTimeout(() => hideLunchPopup(), 60000);
+}
+
+function hideLunchPopup() {
+    const overlay = document.getElementById('lunchOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    if (lunchPopupAutoHideTimer) {
+        clearTimeout(lunchPopupAutoHideTimer);
+        lunchPopupAutoHideTimer = null;
+    }
+}
+
+function shouldTriggerLunchPopupNow(now) {
+    if (!isWeekday(now)) return false;
+    // Kl. 12:10 (vi giver et vindue på 60 sekunder for robusthed)
+    if (now.getHours() !== 12 || now.getMinutes() !== 10) return false;
+
+    const today = dateKey(now);
+    const last = localStorage.getItem(LUNCH_POPUP_STORAGE_KEY);
+    return last !== today;
+}
+
+function markLunchPopupShown(now) {
+    localStorage.setItem(LUNCH_POPUP_STORAGE_KEY, dateKey(now));
+}
+
+function startLunchPopupScheduler() {
+    // Check hvert 10. sekund (billigt og robust ift. tab visibility)
+    setInterval(() => {
+        const now = new Date();
+        if (shouldTriggerLunchPopupNow(now)) {
+            showLunchPopup({ source: 'auto' });
+            markLunchPopupShown(now);
+        }
+    }, 10000);
 }
 
 // ============================================
@@ -896,15 +1334,33 @@ class AutoScroller {
         this.currentOffset = 0;
         this.maxOffset = 0;
         this.atEnd = false;
+        this.needsScroll = false;
+        this.endReachedAt = null; // timestamp når vi rammer bunden (til individuel pause/reset)
     }
 
     calculate() {
         if (!this.container || !this.content) return;
 
         const containerHeight = this.container.clientHeight;
-        const contentHeight = this.content.scrollHeight;
+        let contentHeight = this.content.scrollHeight;
 
-        // Beregn max scroll offset
+        // For "Seneste Fejl" skal vi kun scrolle, hvis de ULØSTE fejl
+        // fylder mere end én visning. Resolved fejl må gerne være med,
+        // men må ikke i sig selv trigge auto-scroll.
+        if (this.container.id === 'errorsScroll') {
+            const unresolvedItems = this.content.querySelectorAll('.error-item:not(.error-resolved)');
+
+            if (unresolvedItems.length > 0) {
+                const lastItem = unresolvedItems[unresolvedItems.length - 1];
+                const lastBottom = lastItem.offsetTop + lastItem.offsetHeight;
+                contentHeight = lastBottom;
+            } else {
+                // Ingen uløste fejl – ingen grund til at scrolle
+                contentHeight = containerHeight;
+            }
+        }
+
+        // Beregn max scroll offset ud fra det relevante indhold
         this.maxOffset = Math.max(0, contentHeight - containerHeight);
         this.needsScroll = this.maxOffset > 10; // Kun scroll hvis der er mere end 10px at scrolle
     }
@@ -917,6 +1373,7 @@ class AutoScroller {
         if (!this.needsScroll) {
             this.content.style.transform = 'translateY(0)';
             this.atEnd = false;
+            this.endReachedAt = null;
             return;
         }
 
@@ -931,8 +1388,10 @@ class AutoScroller {
         if (this.currentOffset >= this.maxOffset) {
             this.currentOffset = this.maxOffset;
             this.atEnd = true;
+            if (this.endReachedAt == null) this.endReachedAt = Date.now();
         } else {
             this.atEnd = false;
+            this.endReachedAt = null;
         }
 
         this.content.style.transform = `translateY(-${this.currentOffset}px)`;
@@ -941,6 +1400,7 @@ class AutoScroller {
     reset() {
         this.currentOffset = 0;
         this.atEnd = false;
+        this.endReachedAt = null;
         if (this.content) {
             this.content.style.transition = 'none';
             this.content.style.transform = 'translateY(0)';
@@ -967,6 +1427,9 @@ function initAutoScrollers() {
         new AutoScroller('accessEventsScroll', 'accessEventsList')
     ];
 
+    // Beregn initial behov for scroll (så startSyncScroll ikke tror alt er "færdigt")
+    scrollState.scrollers.forEach(scroller => scroller.calculate());
+
     // Sæt initial transition på alle
     scrollState.scrollers.forEach(scroller => {
         if (scroller.content) {
@@ -982,18 +1445,32 @@ function startSyncScroll() {
     if (scrollState.interval) clearInterval(scrollState.interval);
 
     scrollState.interval = setInterval(() => {
-        // Tjek om alle scrollers er ved enden
-        const allAtEnd = scrollState.scrollers.every(s => s.isAtEnd() || !s.needsScroll);
+        // Opdater beregninger før vi vurderer om der skal scrolles
+        scrollState.scrollers.forEach(s => s.calculate());
 
-        if (allAtEnd) {
-            // Pause og reset alle
-            setTimeout(() => {
-                scrollState.scrollers.forEach(s => s.reset());
-            }, scrollState.pauseAtEnd);
-        } else {
-            // Scroll alle synkront
-            scrollState.scrollers.forEach(s => s.scrollNext());
-        }
+        // Scroll hver liste uafhængigt (en liste i bunden må ikke blokere de andre)
+        const now = Date.now();
+        scrollState.scrollers.forEach(s => {
+            if (!s.needsScroll) {
+                // Ingen overflow => hold den i top og nulstil end-state
+                if (s.content) s.content.style.transform = 'translateY(0)';
+                s.atEnd = false;
+                s.endReachedAt = null;
+                return;
+            }
+
+            if (s.isAtEnd()) {
+                if (s.endReachedAt == null) s.endReachedAt = now;
+
+                // Individuel pause ved bunden før reset
+                if (now - s.endReachedAt >= scrollState.pauseAtEnd) {
+                    s.reset();
+                }
+                return;
+            }
+
+            s.scrollNext();
+        });
     }, scrollState.scrollSpeed);
 }
 
@@ -1011,8 +1488,16 @@ function enableKioskMode() {
 
     // Forhindre keyboard shortcuts
     document.addEventListener('keydown', e => {
-        // Tillad F5 for manuel refresh, F11 for fullscreen, T for test popup
-        if (e.key !== 'F5' && e.key !== 'F11' && e.key !== 't' && e.key !== 'T') {
+        // Tillad F5 for manuel refresh, F11 for fullscreen, T for test access-popup, L/ESC for lunch popup
+        if (
+            e.key !== 'F5' &&
+            e.key !== 'F11' &&
+            e.key !== 't' &&
+            e.key !== 'T' &&
+            e.key !== 'l' &&
+            e.key !== 'L' &&
+            e.key !== 'Escape'
+        ) {
             e.preventDefault();
         }
     });
@@ -1058,6 +1543,7 @@ updateClock();
 fetchData();
 enableKioskMode();
 connectAccessEventStream(); // Real-time access events via SSE
+startLunchPopupScheduler();
 
 // Start auto-scrollers efter kort delay (så data er indlæst)
 setTimeout(initAutoScrollers, 2000);
@@ -1113,7 +1599,17 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-console.log('Dashboard loaded. Press T to test popup, or call testPopup() / testServerPopup() from console');
+// Press 'L' key to trigger lunch popup (test)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        showLunchPopup({ source: 'test' });
+    } else if (e.key === 'Escape') {
+        hideLunchPopup();
+    }
+});
+
+console.log('Dashboard loaded. Press T to test access popup, press L to test lunch popup.');
 </script>
 
 </body>
