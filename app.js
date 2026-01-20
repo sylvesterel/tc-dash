@@ -1149,10 +1149,9 @@ app.post("/api/seam/webhook", async (req, res) => {
     try {
         const event = req.body;
 
-        console.log('Seam webhook received:', event.event_type);
+        console.log('Seam webhook received:', event.event_type, JSON.stringify(event, null, 2));
 
-        // Handle access events (acs_user.* or acs_credential.* events)
-        // Common events: acs_user.entered, acs_user.exited, acs_credential.unlocked
+        // Handle access events (lock events and acs events)
         const accessEventTypes = [
             'acs_user.entered',
             'acs_user.exited',
@@ -1162,12 +1161,23 @@ app.post("/api/seam/webhook", async (req, res) => {
         ];
 
         if (accessEventTypes.includes(event.event_type) || event.event_type?.startsWith('acs_')) {
-            const payload = event.payload || {};
+            // Seam sends data at root level, not in event.payload
+            // For lock.unlocked: device_id, method, occurred_at are at root
+            // For acs events: acs_user_id may be in data or at root
 
-            // Try to find user name from our database
             let userName = null;
-            const acsUserId = payload.acs_user_id || payload.acs_user?.acs_user_id;
+            let deviceName = 'Ukendt enhed';
 
+            // Get device_id from root level (Seam's new format)
+            const deviceId = event.device_id;
+
+            // Get acs_user_id - check multiple possible locations
+            const acsUserId = event.acs_user_id ||
+                             event.data?.acs_user_id ||
+                             event.acs_user?.acs_user_id ||
+                             event.data?.acs_user?.acs_user_id;
+
+            // Try to find user name from our database if we have acs_user_id
             if (acsUserId) {
                 try {
                     const [rows] = await pool.query(
@@ -1182,11 +1192,17 @@ app.post("/api/seam/webhook", async (req, res) => {
                 }
             }
 
-            // Get device/lock name if available
-            const deviceName = payload.device?.name ||
-                              payload.lock?.name ||
-                              payload.acs_entrance?.display_name ||
-                              'Ukendt enhed';
+            // Look up device name from Seam API if we have device_id
+            if (deviceId) {
+                try {
+                    const device = await seam.devices.get({ device_id: deviceId });
+                    deviceName = device.properties?.name || device.display_name || 'Lås';
+                    console.log('Device lookup result:', device.properties?.name, device.display_name);
+                } catch (e) {
+                    console.error('Error looking up device from Seam:', e);
+                    deviceName = 'Lås';
+                }
+            }
 
             // Save event to database
             const [result] = await pool.query(
@@ -1210,7 +1226,7 @@ app.post("/api/seam/webhook", async (req, res) => {
                 acs_user_id: acsUserId,
                 user_name: userName,
                 device_name: deviceName,
-                occurred_at: new Date().toISOString()
+                occurred_at: event.occurred_at || new Date().toISOString()
             });
 
             console.log(`Access event saved and broadcast: ${event.event_type} - ${userName || 'Unknown'} - ${deviceName}`);
