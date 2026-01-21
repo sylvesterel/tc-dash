@@ -171,6 +171,7 @@
     <!-- Audio & Overlay -->
     <audio id="warningSound" src="/files/tc_benjamin.wav" preload="auto"></audio>
 
+
     <script>
         const displayNames = {
             'Sluse1': 'BÅS 01', 'Sluse2': 'BÅS 02', 'Sluse3': 'BÅS 03',
@@ -276,14 +277,7 @@
         let audioPlaying = false;
         let audioEnabled = false;
         const audio = document.getElementById('warningSound');
-
-        document.getElementById('audioOverlay').addEventListener('click', () => {
-            audio.muted = true;
-            audio.play().then(() => {
-                audio.pause(); audio.muted = false; audioEnabled = true;
-                document.getElementById('audioOverlay').style.display = 'none';
-            });
-        });
+        audio.muted = false; audioEnabled = true;
 
         function updateTimerDisplay(diff) {
             const container = document.getElementById('headerTimer');
