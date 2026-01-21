@@ -171,6 +171,51 @@
     <!-- Audio & Overlay -->
     <audio id="warningSound" src="/files/tc_benjamin.wav" preload="auto"></audio>
 
+    <!-- Pauseskærm - Vises når porten er lukket -->
+    <div id="pauseScreen" class="fixed inset-0 z-50 bg-background-dark flex flex-col items-center justify-center hidden">
+        <div class="text-center max-w-3xl px-8">
+            <!-- Logo/Icon -->
+            <div class="mb-8">
+                <div class="size-24 mx-auto bg-primary/20 rounded-3xl flex items-center justify-center text-primary mb-6">
+                    <span class="material-symbols-outlined text-6xl">door_front</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Porten er lukket</h1>
+            </div>
+
+            <!-- Besked -->
+            <div class="bg-card-dark rounded-2xl p-8 border border-[#283039] mb-8">
+                <p class="text-xl md:text-2xl text-secondary-text leading-relaxed">
+                    Åben porten for at se overblik over slusen
+                </p>
+            </div>
+
+            <!-- Nødkontakt -->
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <span class="material-symbols-outlined text-3xl text-amber-500">warning</span>
+                    <h2 class="text-xl font-bold text-amber-500">Er du låst inde eller er alarmen gået?</h2>
+                </div>
+                <p class="text-secondary-text mb-4">
+                    Ring til vores hovednummer og vent på at blive viderestillet til vores akuttelefon
+                </p>
+                <div class="flex items-center justify-center gap-3">
+                    <span class="material-symbols-outlined text-2xl text-white">call</span>
+                    <span class="text-3xl md:text-4xl font-bold text-white tracking-wider">+45 3227 6666</span>
+                </div>
+            </div>
+
+            <!-- TourCare branding -->
+            <div class="mt-12 opacity-50">
+                <p class="text-sm text-secondary-text uppercase tracking-[0.3em]">TourCare Sluse System</p>
+            </div>
+        </div>
+
+        <!-- Animeret baggrund -->
+        <div class="absolute inset-0 -z-10 overflow-hidden">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+    </div>
 
     <script>
         const displayNames = {
@@ -324,13 +369,18 @@
                 const data = await res.json();
                 const container = document.getElementById('headerTimer');
                 const placeholder = document.getElementById('timerPlaceholder');
+                const pauseScreen = document.getElementById('pauseScreen');
 
+                // Vis pauseskærm når porten er lukket (status === 0 og ingen aktiv timer)
                 if (data.status === 0 && data.difference <= 0 && data.paused !== 1) {
                     container.classList.add('hidden');
                     placeholder.classList.remove('hidden');
+                    pauseScreen.classList.remove('hidden');
                     return;
                 }
 
+                // Skjul pauseskærm når porten er åben
+                pauseScreen.classList.add('hidden');
                 container.classList.remove('hidden');
                 placeholder.classList.add('hidden');
                 currentDifference = data.difference;
@@ -346,7 +396,7 @@
             } catch (e) { console.error(e); }
         }
 
-        updateTime(); fetchData();
+        updateTime(); fetchData(); fetchTimerData();
         setInterval(updateTime, 1000);
         setInterval(fetchData, 30000);
         setInterval(fetchTimerData, 5000);
