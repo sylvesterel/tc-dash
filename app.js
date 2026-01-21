@@ -1052,10 +1052,7 @@ app.post("/api/seam/create-user", authMiddleware, async (req, res) => {
             access_method: "code",
         });
         writeStatus(`STATUS:Credential oprettet. Venter på pinkode...`);
-        const sync = await seam.connectedAccounts.sync({
-            connected_account_id: "d59e3cbd-b6fd-4b3f-b10d-e047c81e8db4"
-        })
-
+        
         // Gem bruger i database for webhook opslag
         try {
             await pool.query(
@@ -2635,6 +2632,14 @@ app.get("/indkob", authMiddleware, (req, res) => {
     res.sendFile(path.join(process.cwd(), "protected", "indkob.html"));
 });
 
+app.get("/codes", authMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "protected", "koder.html"));
+});
+
+app.get("/projects", authMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "protected", "projects.html"));
+});
+
 // ============================================
 // API Endpoints - Weekly Menu
 // ============================================
@@ -3537,8 +3542,14 @@ app.get("/api/sluse/weekly-reset", async (req, res) => {
 // ============================================
 
 // 404 Handler
+app.use(authMiddleware, (req, res) => {
+    //res.status(404).json({ error: 'Endpoint ikke fundet' });
+    res.sendFile(path.join(process.cwd(), "protected", "index.html"));
+});
+
 app.use((req, res) => {
-    res.status(404).json({ error: 'Endpoint ikke fundet' });
+    //res.status(404).json({ error: 'Endpoint ikke fundet' });
+    res.sendFile(path.join(process.cwd(), "public", "login.html"));
 });
 
 // Global Error Handler
