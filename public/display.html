@@ -371,8 +371,8 @@
                 const placeholder = document.getElementById('timerPlaceholder');
                 const pauseScreen = document.getElementById('pauseScreen');
 
-                // Vis pauseskærm når porten er lukket (status === 0 og ingen aktiv timer)
-                if (data.status === 0 && data.difference <= 0 && data.paused !== 1) {
+                // Vis pauseskærm når porten er lukket (livestatus === 0)
+                if (data.livestatus === 0) {
                     container.classList.add('hidden');
                     placeholder.classList.remove('hidden');
                     pauseScreen.classList.remove('hidden');
@@ -381,6 +381,14 @@
 
                 // Skjul pauseskærm når porten er åben
                 pauseScreen.classList.add('hidden');
+
+                // Skjul timer hvis livestatus er 2 og status er 0
+                if (data.livestatus === 2 && data.status === 0) {
+                    container.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                    return;
+                }
+
                 container.classList.remove('hidden');
                 placeholder.classList.add('hidden');
                 currentDifference = data.difference;
