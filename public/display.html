@@ -165,7 +165,7 @@
     </main>
 
     <footer class="flex-none px-8 py-2 text-center border-t border-[#283039] bg-[#0d1217]">
-        <p class="text-[10px] text-secondary-text uppercase tracking-[0.4em]">TourCare Sluse System</p>
+        <p class="text-[10px] text-secondary-text uppercase tracking-[0.4em]">TourCare Sluse System | +45 3227 6666 (Vent for akuttelefon)</p>
     </footer>
 
     <!-- Audio & Overlay -->
@@ -212,32 +212,32 @@
 
                 if (hasCustomer) {
                     return `
-                <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500 shadow-lg h-full">
-                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
+                <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark shadow-lg h-full">
+                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full bg-${color}-600/75">
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
                                 <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
                                 <h2 class="text-2xl sm:text-1xl font-display font-bold text-white">${name}</h2>
                             </div>
-                            <div class="size-8 sm:size-10 rounded-full bg-${color}-500/10 flex items-center justify-center text-${color}-500 flex-shrink-0">
+                            <div class="size-8 sm:size-10 rounded-full bg-${color}-500/30 flex items-center justify-center text-${color}-500 flex-shrink-0">
                                 <span class="material-symbols-outlined text-lg sm:text-xl">inventory_2</span>
                             </div>
                         </div>
                         <div class="flex-1 flex flex-col gap-3 sm:gap-4 overflow-hidden">
-                            <div class="p-3 sm:p-4 rounded-lg bg-[#283039]/50 border border-[#3b4754]/50">
+                            <div class="p-3 sm:p-4 rounded-lg bg-[#283039] border border-[#3b4754]/80">
                                 <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kunde</p>
                                 <p class="text-base sm:text-4xl font-bold text-white leading-tight truncate">${esc(s.Kunde)}</p>
                             </div>
                             ${(s.Detaljer || s.Dato) ? `
                             <div class="grid grid-cols-3 gap-2 sm:gap-3">
                                 ${s.Detaljer ? `
-                                <div class="p-2 sm:p-4 rounded-lg bg-[#283039]/30">
+                                <div class="p-2 sm:p-4 rounded-lg bg-[#283039] border border-[#3b4754]/80">
                                     <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Kolli</p>
                                     <p class="text-sm sm:text-xl font-semibold text-white truncate">${esc(s.Detaljer)}</p>
                                 </div>
                                 ` : ''}
                                     ${s.Dato ? `
-                                <div class="p-2 sm:p-4 col-span-2 rounded-lg bg-[#283039]/30">
+                                <div class="p-2 sm:p-4 col-span-2 rounded-lg bg-[#283039] border border-[#3b4754]/80">
                                     <p class="text-secondary-text text-[10px] sm:text-xs font-medium mb-1">Periode</p>
                                     <p class="text-sm sm:text-xl font-semibold text-white truncate">${esc(s.Dato)}</p>
                                 </div>
@@ -249,8 +249,8 @@
                 </div>`;
                 } else {
                     return `
-                <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-${color}-500/30 shadow-lg opacity-50 h-full">
-                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full">
+                <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark border-t-4 border-blue-500/30 shadow-lg opacity-50 h-full">
+                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full bg-dark-600/50">
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
                                 <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
@@ -261,8 +261,8 @@
                             </div>
                         </div>
                         <div class="flex-1 flex flex-col items-center justify-center gap-1 py-4 sm:py-6">
-                            <p class="text-lg sm:text-xl font-bold text-secondary-text">Ledig</p>
-                            <p class="text-xs sm:text-sm text-[#3b4754]">Klar til reservation</p>
+                            <p class="text-lg sm:text-3xl font-bold text-secondary-text">Ledig</p>
+                            <p class="text-xs sm:text-l text-secondary-text">Her kan du aflevere din ting retur!</p>
                         </div>
                     </div>
                 </div>`;
