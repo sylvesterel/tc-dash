@@ -41,4 +41,8 @@ router.get("/projects", authMiddleware, (req, res) => {
     res.sendFile(path.join(process.cwd(), "protected", "projects.html"));
 });
 
+router.get("/opbevaring", authMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "protected", "opbevaring.html"));
+});
+
 export default router;

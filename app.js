@@ -19,6 +19,7 @@ import pageRoutes from "./routes/pages.js";
 import seamRouter from "./routes/seam.js";
 import integrationRouter from "./routes/integration.js";
 import passwordsRouter from "./routes/passwords.js";
+import storageRouter from "./routes/storage.js";
 
 dotenv.config();
 
@@ -129,6 +130,22 @@ async function initDatabase() {
             )
         `);
 
+        // Initialize storage bookings table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS storage_bookings (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                customer_name VARCHAR(255) NOT NULL,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                units JSON NOT NULL,
+                created_by INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_start_date (start_date),
+                INDEX idx_end_date (end_date),
+                INDEX idx_customer (customer_name)
+            )
+        `);
+
         console.log('Database tables initialized');
     } catch (error) {
         console.error('Error initializing database:', error);
@@ -181,13 +198,14 @@ app.use("/api", dashboardRoutes);
 app.use("/api/seam", seamRouter);
 app.use("/api/integration", integrationRouter);
 app.use("/api/passwords", passwordsRouter);
+app.use("/api/storage", storageRouter);
 
 // Project routes (public lager dashboard endpoints)
 app.use("/projects", projectRoutes);
 app.use(projectRoutes); // Also mount at root for /api/projects
 
 // Office dashboard (public endpoint)
-app.get("/api/office-dashboard", sluseRoutes);
+//app.get("/api/office-dashboard", sluseRoutes);
 
 // Page routes (protected HTML pages)
 app.use(pageRoutes);

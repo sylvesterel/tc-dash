@@ -1209,7 +1209,7 @@ let latestMenuForPopup = null;
 
 async function fetchData() {
     try {
-        const res = await fetch('/api/office-dashboard');
+        const res = await fetch('/api/sluse/office-dashboard');
         const data = await res.json();
 
         console.log('Dashboard data:', data); // Debug log
