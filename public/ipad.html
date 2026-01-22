@@ -62,9 +62,15 @@
 <body class="font-sans bg-dark-bg text-white h-full select-none flex flex-col">
 
 <!-- Header -->
-<header class="flex-none px-6 py-8 border-b border-white/10">
-    <h1 class="text-4xl font-bold text-white">Vælg din boks</h1>
-    <p class="text-white/50 text-lg mt-2">Tryk for at se indhold på skærmen</p>
+<header class="flex-none px-6 py-6 border-b border-white/10">
+    <h1 class="text-4xl font-bold text-white mb-4">Vælg din boks</h1>
+    <div class="relative">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Søg efter navn..."
+            class="w-full pl-12 pr-4 py-4 bg-dark-card border border-white/10 rounded-xl text-white text-lg placeholder-white/40 focus:outline-none focus:border-white/30">
+    </div>
 </header>
 
 <!-- List -->
@@ -134,11 +140,19 @@ async function loadData() {
 }
 
 // Render list
-function render() {
+function render(searchFilter = '') {
     const list = document.getElementById('stallList');
 
-    // Filter only occupied stalls
-    const occupied = stallsData.filter(s => s.Kunde && s.Kunde.trim());
+    // Filter only occupied stalls and apply search
+    let occupied = stallsData.filter(s => s.Kunde && s.Kunde.trim());
+
+    if (searchFilter) {
+        const search = searchFilter.toLowerCase();
+        occupied = occupied.filter(s =>
+            s.Kunde.toLowerCase().includes(search) ||
+            (s.Dato && s.Dato.toLowerCase().includes(search))
+        );
+    }
 
     if (occupied.length === 0) {
         list.innerHTML = `
@@ -221,6 +235,11 @@ function escapeHtml(text) {
     div.textContent = text || '';
     return div.innerHTML;
 }
+
+// Search functionality
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    render(e.target.value);
+});
 
 // Initialize
 loadData();

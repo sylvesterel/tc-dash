@@ -178,43 +178,43 @@ function renderSelected(data) {
     const textColor = luminance > 0.5 ? '#000000' : '#FFFFFF';
 
     main.innerHTML = `
-        <div class="w-full max-w-5xl animate-fadeIn">
+        <div class="w-full max-w-6xl animate-fadeIn">
             <!-- Main Card -->
             <div class="rounded-3xl overflow-hidden shadow-2xl" style="background-color: ${color}">
                 <!-- Header -->
-                <div class="px-12 py-8 border-b border-black/10">
+                <div class="px-16 py-10 border-b border-black/10">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-lg font-semibold uppercase tracking-widest mb-2" style="color: ${textColor}80">Din boks</p>
-                            <h1 class="text-6xl font-black" style="color: ${textColor}">${name}</h1>
+                            <p class="text-xl font-semibold uppercase tracking-widest mb-3" style="color: ${textColor}80">Din boks</p>
+                            <h1 class="text-7xl font-black" style="color: ${textColor}">${name}</h1>
                         </div>
-                        <div class="w-24 h-24 rounded-2xl bg-black/20 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-6xl" style="color: ${textColor}">inventory_2</span>
+                        <div class="w-32 h-32 rounded-3xl bg-black/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-7xl" style="color: ${textColor}">inventory_2</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Content -->
-                <div class="px-12 py-10 space-y-8">
+                <div class="px-16 py-12 space-y-10">
                     <!-- Kunde -->
-                    <div class="p-8 rounded-2xl bg-black/20">
-                        <p class="text-sm font-semibold uppercase tracking-widest mb-3" style="color: ${textColor}80">Kunde / Artist</p>
-                        <p class="text-5xl font-bold leading-tight" style="color: ${textColor}">${esc(data.Kunde)}</p>
+                    <div class="p-10 rounded-3xl bg-black/20">
+                        <p class="text-lg font-semibold uppercase tracking-widest mb-4" style="color: ${textColor}80">Kunde / Artist</p>
+                        <p class="text-6xl font-bold leading-tight" style="color: ${textColor}">${esc(data.Kunde)}</p>
                     </div>
 
                     <!-- Details Grid -->
                     ${(data.Detaljer || data.Dato) ? `
-                        <div class="grid grid-cols-2 gap-6">
+                        <div class="grid grid-cols-2 gap-8">
                             ${data.Detaljer ? `
-                                <div class="p-6 rounded-2xl bg-black/20">
-                                    <p class="text-sm font-semibold uppercase tracking-widest mb-2" style="color: ${textColor}80">Kolli / Detaljer</p>
-                                    <p class="text-3xl font-bold" style="color: ${textColor}">${esc(data.Detaljer)}</p>
+                                <div class="p-8 rounded-3xl bg-black/20">
+                                    <p class="text-lg font-semibold uppercase tracking-widest mb-3" style="color: ${textColor}80">Kolli / Detaljer</p>
+                                    <p class="text-4xl font-bold" style="color: ${textColor}">${esc(data.Detaljer)}</p>
                                 </div>
                             ` : ''}
                             ${data.Dato ? `
-                                <div class="p-6 rounded-2xl bg-black/20">
-                                    <p class="text-sm font-semibold uppercase tracking-widest mb-2" style="color: ${textColor}80">Periode</p>
-                                    <p class="text-3xl font-bold" style="color: ${textColor}">${esc(data.Dato)}</p>
+                                <div class="p-8 rounded-3xl bg-black/20">
+                                    <p class="text-lg font-semibold uppercase tracking-widest mb-3" style="color: ${textColor}80">Periode</p>
+                                    <p class="text-4xl font-bold" style="color: ${textColor}">${esc(data.Dato)}</p>
                                 </div>
                             ` : ''}
                         </div>
@@ -223,9 +223,9 @@ function renderSelected(data) {
             </div>
 
             <!-- Helper Text -->
-            <div class="mt-8 text-center">
-                <p class="text-secondary-text text-lg">
-                    <span class="material-symbols-outlined align-middle mr-2">info</span>
+            <div class="mt-10 text-center">
+                <p class="text-secondary-text text-xl">
+                    <span class="material-symbols-outlined align-middle mr-2 text-2xl">info</span>
                     Find dine ting ved den farvede markering
                 </p>
             </div>
