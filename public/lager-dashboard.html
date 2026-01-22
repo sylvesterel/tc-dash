@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html class="dark" lang="da">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Tourcare | Lager Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#1c252e",
+                        "card-hover": "#252f3a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen flex flex-col overflow-hidden text-slate-900 dark:text-white selection:bg-primary selection:text-white">
+
+    <!-- Header -->
+    <header class="flex-none flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#151b23] px-6 py-4 z-10 shadow-sm h-[10vh]">
+        <div class="flex items-center gap-4">
+            <div class="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary shadow-inner">
+                <span class="material-symbols-outlined text-3xl">inventory_2</span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold leading-tight tracking-tight uppercase">Tourcare</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wider">Lager Dashboard</p>
+            </div>
+        </div>
+        <div class="flex flex-col items-end">
+            <span id="current-time" class="text-3xl font-bold tabular-nums tracking-tight text-gray-900 dark:text-white">--:--</span>
+            <span id="current-date" class="text-base font-medium text-gray-500 dark:text-gray-400 uppercase tracking-widest">--- --, ----</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 overflow-hidden h-[90vh]">
+        <div class="grid grid-cols-4 grid-rows-1 gap-4 h-full">
+
+            <!-- Skal pakkes (Confirmed - Status 3) -->
+            <div class="flex flex-col h-full bg-white dark:bg-[#151b23] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-lg">
+                <div class="flex-none px-4 py-2 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-[#151b23]">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-yellow-500 text-xl">check_circle</span>
+                        <h3 class="font-bold text-base tracking-tight">Skal pakkes</h3>
+                    </div>
+                    <span id="projects-count-confirmed" class="px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-bold border border-yellow-500/20">0</span>
+                </div>
+                <div class="flex-1 p-2 bg-gray-50/50 dark:bg-black/20 overflow-hidden">
+                    <div class="grid grid-rows-9 gap-1 h-full">
+                        <ul class="project-list-confirmed contents"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Er pakket (Prepped - Status 4) -->
+            <div class="flex flex-col h-full bg-white dark:bg-[#151b23] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-lg">
+                <div class="flex-none px-4 py-2 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-[#151b23]">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-500 text-xl">inventory_2</span>
+                        <h3 class="font-bold text-base tracking-tight">Er pakket</h3>
+                    </div>
+                    <span id="projects-count-prepped" class="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-500/20">0</span>
+                </div>
+                <div class="flex-1 p-2 bg-gray-50/50 dark:bg-black/20 overflow-hidden">
+                    <div class="grid grid-rows-9 gap-1 h-full">
+                        <ul class="project-list-prepped contents"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kommer hjem (On Location - Status 5) -->
+            <div class="flex flex-col h-full bg-white dark:bg-[#151b23] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-lg">
+                <div class="flex-none px-4 py-2 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-[#151b23]">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-500 text-xl">location_on</span>
+                        <h3 class="font-bold text-base tracking-tight">Kommer hjem</h3>
+                    </div>
+                    <span id="projects-count-onlocation" class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-bold border border-green-500/20">0</span>
+                </div>
+                <div class="flex-1 p-2 bg-gray-50/50 dark:bg-black/20 overflow-hidden">
+                    <div class="grid grid-rows-9 gap-1 h-full">
+                        <ul class="project-list-onlocation contents"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forsinket (Delayed) -->
+            <div class="flex flex-col h-full bg-white dark:bg-[#151b23] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-lg">
+                <div class="flex-none px-4 py-2 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-[#151b23]">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-orange-500 text-xl">warning</span>
+                        <h3 class="font-bold text-base tracking-tight">Forsinket</h3>
+                    </div>
+                    <span id="projects-count-delayed" class="px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-bold border border-orange-500/20">0</span>
+                </div>
+                <div class="flex-1 p-2 bg-gray-50/50 dark:bg-black/20 overflow-hidden">
+                    <div class="grid grid-rows-9 gap-1 h-full">
+                        <ul class="project-list-delayed contents"></ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/js/lager-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html class="dark" lang="da">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Tourcare | Lager Overblik - 65" Display</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#0a0f14",
+                        "card-dark": "#1c252e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #0a0f14;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            height: 100vh;
+            width: 100vw;
+            gap: 4px;
+            padding: 4px;
+            box-sizing: border-box;
+            background: #1a1f26;
+        }
+
+        .panel {
+            border-radius: 12px;
+            overflow: hidden;
+            background: #101922;
+            position: relative;
+        }
+
+        .panel iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .panel-label {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #9dabb9;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Left panels - Lager Dashboard embedded */
+        .lager-top, .lager-bottom {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .camera-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #101922 0%, #0a0f14 100%);
+        }
+
+        .camera-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: #4a5568;
+        }
+
+        .camera-placeholder .material-symbols-outlined {
+            font-size: 64px;
+            opacity: 0.5;
+        }
+
+        .camera-placeholder p {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        /* Camera feed container for when URL is added */
+        .camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* For embedded lager content */
+        .lager-content {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .lager-header {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #283039;
+            background: #151b23;
+            padding: 12px 16px;
+        }
+
+        .lager-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lager-header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(19, 127, 236, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #137fec;
+        }
+
+        .lager-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .lager-header p {
+            font-size: 10px;
+            color: #6b7280;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .lager-time {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .lager-main {
+            flex: 1;
+            padding: 12px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .lager-column {
+            display: flex;
+            flex-direction: column;
+            background: #151b23;
+            border-radius: 10px;
+            border: 1px solid #283039;
+            overflow: hidden;
+        }
+
+        .lager-column-header {
+            padding: 10px 14px;
+            border-bottom: 1px solid #283039;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .lager-column-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lager-column-header h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .lager-column-header .material-symbols-outlined {
+            font-size: 18px;
+        }
+
+        .lager-badge {
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 700;
+            border: 1px solid;
+        }
+
+        .lager-column-content {
+            flex: 1;
+            padding: 8px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .lager-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+        }
+
+        .lager-item {
+            background: #1c252e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 3px solid;
+        }
+
+        .lager-item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lager-item-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .lager-item-project {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .lager-item-date {
+            font-size: 10px;
+            font-weight: 600;
+            color: #6b7280;
+            text-align: right;
+        }
+
+        .border-yellow { border-left-color: #eab308; }
+        .border-blue { border-left-color: #3b82f6; }
+        .border-green { border-left-color: #22c55e; }
+        .border-orange { border-left-color: #f97316; }
+
+        .text-yellow { color: #eab308; }
+        .text-blue { color: #3b82f6; }
+        .text-green { color: #22c55e; }
+        .text-orange { color: #f97316; }
+
+        .bg-yellow { background: rgba(234, 179, 8, 0.1); border-color: rgba(234, 179, 8, 0.2); }
+        .bg-blue { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); }
+        .bg-green { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.2); }
+        .bg-orange { background: rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="grid-container">
+        <!-- Top Left: Lager Dashboard - Skal pakkes & Er pakket -->
+        <div class="panel lager-top" id="panel-lager-top">
+            <div class="lager-header">
+                <div class="lager-header-left">
+                    <div class="lager-header-icon">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                    </div>
+                    <div>
+                        <h2>TOURCARE</h2>
+                        <p>Lager Dashboard</p>
+                    </div>
+                </div>
+                <span class="lager-time" id="time-top">--:--</span>
+            </div>
+            <div class="lager-main">
+                <!-- Skal pakkes -->
+                <div class="lager-column">
+                    <div class="lager-column-header">
+                        <div class="lager-column-header-left">
+                            <span class="material-symbols-outlined text-yellow">check_circle</span>
+                            <h3>Skal pakkes</h3>
+                        </div>
+                        <span class="lager-badge bg-yellow text-yellow" id="count-confirmed-top">0</span>
+                    </div>
+                    <div class="lager-column-content">
+                        <div class="lager-list" id="list-confirmed-top"></div>
+                    </div>
+                </div>
+                <!-- Er pakket -->
+                <div class="lager-column">
+                    <div class="lager-column-header">
+                        <div class="lager-column-header-left">
+                            <span class="material-symbols-outlined text-blue">inventory_2</span>
+                            <h3>Er pakket</h3>
+                        </div>
+                        <span class="lager-badge bg-blue text-blue" id="count-prepped-top">0</span>
+                    </div>
+                    <div class="lager-column-content">
+                        <div class="lager-list" id="list-prepped-top"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Right: Sluse Display (Baser) -->
+        <div class="panel">
+            <span class="panel-label">Sluse Overblik</span>
+            <iframe src="/display.html" title="Sluse Display"></iframe>
+        </div>
+
+        <!-- Bottom Left: Lager Dashboard - Kommer hjem & Forsinket -->
+        <div class="panel lager-bottom" id="panel-lager-bottom">
+            <div class="lager-header">
+                <div class="lager-header-left">
+                    <div class="lager-header-icon">
+                        <span class="material-symbols-outlined">local_shipping</span>
+                    </div>
+                    <div>
+                        <h2>TOURCARE</h2>
+                        <p>Returneringer</p>
+                    </div>
+                </div>
+                <span class="lager-time" id="time-bottom">--:--</span>
+            </div>
+            <div class="lager-main">
+                <!-- Kommer hjem -->
+                <div class="lager-column">
+                    <div class="lager-column-header">
+                        <div class="lager-column-header-left">
+                            <span class="material-symbols-outlined text-green">location_on</span>
+                            <h3>Kommer hjem</h3>
+                        </div>
+                        <span class="lager-badge bg-green text-green" id="count-onlocation">0</span>
+                    </div>
+                    <div class="lager-column-content">
+                        <div class="lager-list" id="list-onlocation"></div>
+                    </div>
+                </div>
+                <!-- Forsinket -->
+                <div class="lager-column">
+                    <div class="lager-column-header">
+                        <div class="lager-column-header-left">
+                            <span class="material-symbols-outlined text-orange">warning</span>
+                            <h3>Forsinket</h3>
+                        </div>
+                        <span class="lager-badge bg-orange text-orange" id="count-delayed">0</span>
+                    </div>
+                    <div class="lager-column-content">
+                        <div class="lager-list" id="list-delayed"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Right: Camera Feed -->
+        <div class="panel camera-panel" id="panel-camera">
+            <span class="panel-label">Kamera Feed</span>
+            <div class="camera-placeholder" id="camera-placeholder">
+                <span class="material-symbols-outlined">videocam</span>
+                <p>Kamera Feed</p>
+                <p style="font-size: 11px; opacity: 0.6;">Tilfoej kamera URL i konfigurationen</p>
+            </div>
+
+            <img id="camera-feed" class="camera-feed" src="" alt="Kamera Feed" style="display: none;">
+            <iframe id="camera-iframe" class="camera-feed" src="" style="display: none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        /* =======================
+           CONFIGURATION
+        ======================= */
+        const CONFIG = {
+            // Camera configuration
+            cameraUrl: 'https://monitor.ui.com/f7869b1e-efe9-434d-bbc4-9694af8d770d',
+            cameraType: 'iframe', // 'img' for MJPEG/image streams, 'iframe' for web-based cameras
+            itemsPerList: 6, // Number of items to show per list
+            rotateInterval: 30, // Seconds between page rotations
+            fetchInterval: 120 // Seconds between data fetches
+        };
+
+        /* =======================
+           CLOCK
+        ======================= */
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+
+            document.getElementById('time-top').textContent = timeStr;
+            document.getElementById('time-bottom').textContent = timeStr;
+        }
+
+        /* =======================
+           STATE
+        ======================= */
+        const state = {
+            confirmed: { pages: [], current: 0 },
+            prepped: { pages: [], current: 0 },
+            onlocation: { pages: [], current: 0 },
+            delayed: { pages: [], current: 0 },
+            countdown: CONFIG.rotateInterval,
+            lastFetch: 0
+        };
+
+        /* =======================
+           HELPERS
+        ======================= */
+        function chunk(arr, size) {
+            const out = [];
+            for (let i = 0; i < arr.length; i += size) {
+                out.push(arr.slice(i, i + size));
+            }
+            return out.length ? out : [[]];
+        }
+
+        async function safeFetch(url) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch (e) {
+                console.error(`Fetch error for ${url}:`, e);
+                return [];
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const today = new Date();
+            const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+            const hours = date.getHours().toString().padStart(2, '0');
+            const mins = date.getMinutes().toString().padStart(2, '0');
+
+            if (date.toDateString() === today.toDateString()) {
+                return `I dag ${hours}:${mins}`;
+            }
+            return `${date.getDate()}. ${months[date.getMonth()]} ${hours}:${mins}`;
+        }
+
+        /* =======================
+           RENDER
+        ======================= */
+        function renderList(containerId, items, borderClass) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = items.map(item => `
+                <div class="lager-item ${borderClass}">
+                    <div class="lager-item-info">
+                        <span class="lager-item-name">${item.displayname || ''}</span>
+                        ${item.project && item.project !== item.displayname ?
+                            `<span class="lager-item-project">${item.project}</span>` : ''}
+                    </div>
+                    <span class="lager-item-date">${formatDate(item.sp_start_up || item.sp_end_pp)}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateCounters() {
+            const s = state;
+            document.getElementById('count-confirmed-top').textContent =
+                s.confirmed.pages.length > 1 ? `${s.confirmed.current + 1}/${s.confirmed.pages.length}` :
+                (s.confirmed.pages[0]?.length || 0);
+            document.getElementById('count-prepped-top').textContent =
+                s.prepped.pages.length > 1 ? `${s.prepped.current + 1}/${s.prepped.pages.length}` :
+                (s.prepped.pages[0]?.length || 0);
+            document.getElementById('count-onlocation').textContent =
+                s.onlocation.pages.length > 1 ? `${s.onlocation.current + 1}/${s.onlocation.pages.length}` :
+                (s.onlocation.pages[0]?.length || 0);
+            document.getElementById('count-delayed').textContent =
+                s.delayed.pages.length > 1 ? `${s.delayed.current + 1}/${s.delayed.pages.length}` :
+                (s.delayed.pages[0]?.length || 0);
+        }
+
+        function render() {
+            renderList('list-confirmed-top', state.confirmed.pages[state.confirmed.current] || [], 'border-yellow');
+            renderList('list-prepped-top', state.prepped.pages[state.prepped.current] || [], 'border-blue');
+            renderList('list-onlocation', state.onlocation.pages[state.onlocation.current] || [], 'border-green');
+            renderList('list-delayed', state.delayed.pages[state.delayed.current] || [], 'border-orange');
+            updateCounters();
+        }
+
+        /* =======================
+           FETCH DATA
+        ======================= */
+        async function fetchData() {
+            const [confirmed, prepped, onlocation, delayed] = await Promise.all([
+                safeFetch('/projects/confirmed'),
+                safeFetch('/projects/prepped'),
+                safeFetch('/projects/onlocation'),
+                safeFetch('/projects/delayed')
+            ]);
+
+            state.confirmed.pages = chunk(confirmed, CONFIG.itemsPerList);
+            state.prepped.pages = chunk(prepped, CONFIG.itemsPerList);
+            state.onlocation.pages = chunk(onlocation, CONFIG.itemsPerList);
+            state.delayed.pages = chunk(delayed, CONFIG.itemsPerList);
+
+            state.lastFetch = Date.now();
+            render();
+        }
+
+        /* =======================
+           CAMERA SETUP
+        ======================= */
+        function setupCamera() {
+            if (!CONFIG.cameraUrl) return;
+
+            const placeholder = document.getElementById('camera-placeholder');
+            const panel = document.getElementById('panel-camera');
+
+            if (CONFIG.cameraType === 'img') {
+                const img = document.createElement('img');
+                img.className = 'camera-feed';
+                img.src = CONFIG.cameraUrl;
+                img.alt = 'Kamera Feed';
+                img.onerror = () => {
+                    img.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                };
+                placeholder.style.display = 'none';
+                panel.appendChild(img);
+            } else {
+                const iframe = document.createElement('iframe');
+                iframe.className = 'camera-feed';
+                iframe.src = CONFIG.cameraUrl;
+                iframe.title = 'Kamera Feed';
+                placeholder.style.display = 'none';
+                panel.appendChild(iframe);
+            }
+        }
+
+        /* =======================
+           MAIN LOOP
+        ======================= */
+        setInterval(() => {
+            updateClock();
+            state.countdown--;
+
+            if (state.countdown <= 0) {
+                // Rotate pages
+                state.confirmed.current = (state.confirmed.current + 1) % Math.max(1, state.confirmed.pages.length);
+                state.prepped.current = (state.prepped.current + 1) % Math.max(1, state.prepped.pages.length);
+                state.onlocation.current = (state.onlocation.current + 1) % Math.max(1, state.onlocation.pages.length);
+                state.delayed.current = (state.delayed.current + 1) % Math.max(1, state.delayed.pages.length);
+
+                render();
+                state.countdown = CONFIG.rotateInterval;
+            }
+
+            // Refetch data periodically
+            if (Date.now() - state.lastFetch > CONFIG.fetchInterval * 1000) {
+                fetchData();
+            }
+        }, 1000);
+
+        /* =======================
+           WATCHDOG - Reload every 6 hours
+        ======================= */
+        setTimeout(() => location.reload(), 6 * 60 * 60 * 1000);
+
+        /* =======================
+           INIT
+        ======================= */
+        updateClock();
+        setupCamera();
+        fetchData();
+    </script>
+</body>
+</html>
