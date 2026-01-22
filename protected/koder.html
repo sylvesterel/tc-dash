@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Appcare | Adgangskoder</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9DABB9; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
+
+<!-- Header -->
+<header class="h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[13px] tracking-wide">Generelt / Adgangskoder</h1>
+    </div>
+    <div class="text-right flex items-center gap-4">
+        <div>
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
+        </div>
+        <img src="/img/user.png" class="h-[50px] w-[50px] rounded-full object-cover">
+    </div>
+</header>
+
+<div class="flex flex-1">
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
+
+    <!-- Main Content -->
+    <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-[52px] h-[52px] rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="totalCountBadge">0</span>
+                </div>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Alle Adgangskoder</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="totalValue">0</h2>
+                <p class="text-xs text-success">Sikkert gemt</p>
+            </div>
+
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-[52px] h-[52px] rounded-xl bg-info/10 flex items-center justify-center text-2xl text-info">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                </div>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Sikkerhedsscore</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="securityScore">-</h2>
+                <p class="text-xs text-text-secondary">Baseret på kompleksitet</p>
+            </div>
+
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-[52px] h-[52px] rounded-xl bg-success/10 flex items-center justify-center text-2xl text-success">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                </div>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Unikke Domæner</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="uniqueSites">0</h2>
+                <p class="text-xs text-text-secondary">Aktivt beskyttet</p>
+            </div>
+        </div>
+
+        <!-- Password Table Card -->
+        <div class="bg-dark-card border border-[#333] rounded-xl">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 border-b border-[#1a1a1a]">
+                <h3 class="text-lg font-semibold text-text-primary">Dine gemte login-oplysninger</h3>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="relative flex-1 sm:flex-none">
+                        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"></i>
+                        <input type="text" id="searchInput" placeholder="Søg efter tjeneste eller brugernavn..."
+                            class="w-full sm:w-[300px] pl-10 pr-4 py-2.5 bg-dark-hover border border-[#333] rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary transition-colors">
+                    </div>
+                    <button id="addBtn" class="flex items-center gap-2 py-2.5 px-5 bg-primary border-none rounded-lg text-white text-sm font-medium cursor-pointer hover:bg-primary-hover transition-all whitespace-nowrap">
+                        <i class="fa-solid fa-plus"></i> Tilføj
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alphabet Filter -->
+            <div class="flex flex-wrap gap-1 px-6 py-3 border-b border-[#1a1a1a]" id="alphabetFilter">
+                <button class="alphabet-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white cursor-pointer transition-all" data-letter="all">Alle</button>
+            </div>
+
+            <div class="p-6">
+                <div id="passwordContainer">
+                    <!-- Renderes af JS med alfabetiske grupper -->
+                </div>
+                <div id="emptyState" class="hidden text-center py-16">
+                    <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                        <i class="fa-solid fa-lock text-3xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-text-primary mb-2">Ingen koder endnu</h3>
+                    <p class="text-text-secondary mb-6">Kom i gang ved at tilføje din første kode via knappen i toppen.</p>
+                    <button class="py-2.5 px-6 bg-primary rounded-lg text-white font-medium hover:bg-primary-hover transition-all" onclick="openModal()">
+                        <i class="fa-solid fa-plus mr-2"></i> Tilføj din første kode
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="modalOverlay" class="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] hidden">
+    <div class="bg-dark-card border border-[#333] rounded-xl w-[90%] max-w-[500px] max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-6 border-b border-[#1a1a1a]">
+            <h2 class="text-xl font-semibold text-text-primary">Tilføj ny adgangskode</h2>
+            <button class="w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary text-xl flex items-center justify-center hover:bg-error hover:border-error hover:text-white transition-all" id="closeModal">×</button>
+        </div>
+        <form id="passwordForm" class="p-6 space-y-5">
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Navn på tjeneste</label>
+                <input type="text" id="siteName" placeholder="f.eks. Netflix, Gmail, Facebook" required
+                    class="w-full px-4 py-3 bg-dark-hover border border-[#333] rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Weblink</label>
+                <input type="text" id="siteUrl" placeholder="f.eks. netflix.com" required
+                    class="w-full px-4 py-3 bg-dark-hover border border-[#333] rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Email / Brugernavn</label>
+                <input type="text" id="username" placeholder="bruger@mail.com" required
+                    class="w-full px-4 py-3 bg-dark-hover border border-[#333] rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Adgangskode</label>
+                <div class="relative">
+                    <input type="password" id="password" required
+                        class="w-full px-4 py-3 bg-dark-hover border border-[#333] rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary transition-colors pr-12">
+                    <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button type="button" id="cancelModal" class="flex-1 py-3 px-4 bg-dark-hover border border-[#333] rounded-lg text-text-secondary font-medium hover:bg-[#252f3a] transition-all">
+                    Annuller
+                </button>
+                <button type="submit" class="flex-1 py-3 px-4 bg-primary border-none rounded-lg text-white font-medium hover:bg-primary-hover transition-all">
+                    Gem adgangskode
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center">
+    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
+        <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-6 text-3xl text-error">
+            <i class="fa-solid fa-trash"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-text-primary mb-3">Slet permanent?</h3>
+        <p class="text-text-secondary mb-6">Er du helt sikker? Denne handling sletter din adgangskode fra databasen for altid.</p>
+        <div class="flex gap-3 justify-center">
+            <button class="py-3 px-6 bg-dark-hover border border-[#333] rounded-lg text-text-secondary font-medium hover:bg-[#252f3a] transition-all" id="cancelDelete">
+                Behold den
+            </button>
+            <button class="py-3 px-6 bg-error border-none rounded-lg text-white font-medium hover:bg-red-600 transition-all" id="confirmDelete">
+                Slet nu
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-6 right-6 px-5 py-3 rounded-lg text-white font-medium shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-[10001]"></div>
+
+<script src="/js/codes.js"></script>
+<script src="/js/modal.js"></script>
+<script src="/js/generel.js"></script>
+</body>
+</html>

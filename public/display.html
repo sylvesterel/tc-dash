@@ -22,6 +22,8 @@
                         "background-dark": "#101922",
                         "card-dark": "#1c232d",
                         "secondary-text": "#9dabb9",
+                        "sluse-brown": "#863b0c",
+                        "sluse-yellow": "#b4f500"
                     },
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
@@ -165,18 +167,21 @@
     </main>
 
     <footer class="flex-none px-8 py-2 text-center border-t border-[#283039] bg-[#0d1217]">
-        <p class="text-[10px] text-secondary-text uppercase tracking-[0.4em]">TourCare Sluse System | +45 3227 6666 (Vent for akuttelefon)</p>
+        <p class="text-[10px] text-secondary-text uppercase tracking-[0.4em]">TourCare Sluse System | +45 3227 6666
+            (Vent for akuttelefon)</p>
     </footer>
 
     <!-- Audio & Overlay -->
     <audio id="warningSound" src="/files/tc_benjamin.wav" preload="auto"></audio>
 
     <!-- Pauseskærm - Vises når porten er lukket -->
-    <div id="pauseScreen" class="fixed inset-0 z-50 bg-background-dark flex flex-col items-center justify-center hidden">
+    <div id="pauseScreen"
+        class="fixed inset-0 z-50 bg-background-dark flex flex-col items-center justify-center hidden">
         <div class="text-center max-w-3xl px-8">
             <!-- Logo/Icon -->
             <div class="mb-8">
-                <div class="size-24 mx-auto bg-primary/20 rounded-3xl flex items-center justify-center text-primary mb-6">
+                <div
+                    class="size-24 mx-auto bg-primary/20 rounded-3xl flex items-center justify-center text-primary mb-6">
                     <span class="material-symbols-outlined text-6xl">door_front</span>
                 </div>
                 <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Porten er lukket</h1>
@@ -213,7 +218,8 @@
         <!-- Animeret baggrund -->
         <div class="absolute inset-0 -z-10 overflow-hidden">
             <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
-            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse"
+                style="animation-delay: 1s;"></div>
         </div>
     </div>
 
@@ -225,15 +231,15 @@
         };
 
         const stallColors = [
-            'amber',   // #703817 → mørk brun/amber
-            'red',     // #FF0000 → rød
-            'orange',  // #FFA500 → orange
-            'yellow',  // #FFFF00 → gul
-            'green',   // #008000 → grøn
-            'blue',    // #0000FF → blå
-            'purple',  // #EE82EE → violet/lilla
-            'gray',    // #808080 → grå
-            'black'    // #000000 → sort
+            '[#703817a2]',   // #703817 → mørk brun/amber
+            'red-600/75',     // #FF0000 → rød
+            'orange-600/75',  // #FFA500 → orange
+            '[#b4f5008e]',  // #FFFF00 → gul
+            'green-600/75',   // #008000 → grøn
+            'blue-600/75',    // #0000FF → blå
+            'purple-600/75',  // #EE82EE → violet/lilla
+            'gray-600/75',    // #808080 → grå
+            'black-600/75'    // #000000 → sort
         ];
 
 
@@ -254,17 +260,18 @@
                 const hasCustomer = s.Kunde && s.Kunde.trim();
                 const name = displayNames[s.slusenavn] || s.slusenavn;
                 const color = stallColors[index % stallColors.length];
+                const iconColor = stallColors[index % stallColors.length].split("-")
 
                 if (hasCustomer) {
                     return `
                 <div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-card-dark shadow-lg h-full">
-                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full bg-${color}-600/75">
+                    <div class="p-4 sm:p-5 flex flex-col gap-4 sm:gap-5 h-full bg-${color}">
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
                                 <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
-                                <h2 class="text-2xl sm:text-1xl font-display font-bold text-white">${name}</h2>
+                                <h2 class="text-xl sm:text-3xl font-display text-white font-bold text-secondary-text [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">${name}</h2>
                             </div>
-                            <div class="size-8 sm:size-10 rounded-full bg-${color}-500/30 flex items-center justify-center text-${color}-500 flex-shrink-0">
+                            <div class="size-8 sm:size-10 rounded-full bg-black/20 flex items-center justify-center text-white-500 flex-shrink-0">
                                 <span class="material-symbols-outlined text-lg sm:text-xl">inventory_2</span>
                             </div>
                         </div>
@@ -299,7 +306,7 @@
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
                                 <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
-                                <h2 class="text-xl sm:text-2xl font-display font-bold text-secondary-text">${name}</h2>
+                                <h2 class="text-xl sm:text-3xl font-display font-bold text-secondary-text [text-shadow:2px_2px_2px_rgba(0,0,0,0.5)]">${name}</h2>
                             </div>
                             <div class="size-8 sm:size-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 flex-shrink-0">
                                 <span class="material-symbols-outlined text-lg sm:text-xl">check_circle</span>

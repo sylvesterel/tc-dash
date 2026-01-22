@@ -8,6 +8,12 @@ dotenv.config();
 
 const router = express.Router();
 
+// In-memory storage for selected sluse (iPad -> Display communication)
+let selectedSluse = {
+    slusenavn: null,
+    selectedAt: null
+};
+
 // Seam configuration
 const seam = new Seam({ apiKey: process.env.SEAM_API });
 const acsSystemId = process.env.SEAM_ACS_SYSTEM_ID;
@@ -38,6 +44,78 @@ function getDayName(dayNum) {
     return days[dayNum];
 }
 
+// GET /api/sluse/selected - Get currently selected sluse (for display)
+router.get("/selected", async (req, res) => {
+    try {
+        // Auto-clear after 2 minutes of inactivity
+        if (selectedSluse.selectedAt) {
+            const elapsed = Date.now() - selectedSluse.selectedAt;
+            if (elapsed > 2 * 60 * 1000) {
+                selectedSluse = { slusenavn: null, selectedAt: null };
+            }
+        }
+
+        if (!selectedSluse.slusenavn) {
+            return res.json({ success: true, selected: null });
+        }
+
+        // Get the sluse data
+        const [rows] = await slusePool.query(
+            'SELECT * FROM infoskaerm WHERE slusenavn = ?',
+            [selectedSluse.slusenavn]
+        );
+
+        if (rows.length === 0) {
+            return res.json({ success: true, selected: null });
+        }
+
+        const row = rows[0];
+        res.json({
+            success: true,
+            selected: {
+                slusenavn: row.slusenavn,
+                Kunde: row.Kunde,
+                Detaljer: row.Detaljer,
+                Dato: row.Dato,
+                color: SLUSE_COLORS[row.slusenavn] || '#808080',
+                selectedAt: selectedSluse.selectedAt
+            }
+        });
+    } catch (err) {
+        console.error('Error fetching selected sluse:', err);
+        res.status(500).json({ error: "Kunne ikke hente data" });
+    }
+});
+
+// POST /api/sluse/selected - Set selected sluse (from iPad)
+router.post("/selected", async (req, res) => {
+    try {
+        const { slusenavn } = req.body;
+
+        if (!slusenavn) {
+            // Clear selection
+            selectedSluse = { slusenavn: null, selectedAt: null };
+            return res.json({ success: true, message: "Selection cleared" });
+        }
+
+        selectedSluse = {
+            slusenavn: slusenavn,
+            selectedAt: Date.now()
+        };
+
+        res.json({ success: true, message: "Selection updated", selected: slusenavn });
+    } catch (err) {
+        console.error('Error setting selected sluse:', err);
+        res.status(500).json({ error: "Kunne ikke opdatere" });
+    }
+});
+
+// DELETE /api/sluse/selected - Clear selected sluse
+router.delete("/selected", (req, res) => {
+    selectedSluse = { slusenavn: null, selectedAt: null };
+    res.json({ success: true, message: "Selection cleared" });
+});
+
 // GET /api/sluse/public - Public endpoint for display screen
 router.get("/public", async (req, res) => {
     try {
@@ -59,21 +137,27 @@ router.get("/public", async (req, res) => {
 // GET /api/sluse/timer - Get timer status
 router.get("/timer", async (req, res) => {
     try {
-        const [rows] = await slusePool.query('SELECT livestatus, status, timer FROM settings LIMIT 1');
+        const [rows] = await slusePool.query(`
+            SELECT
+                id, portnavn, status, livestatus, warn, alarm, paused,
+                UNIX_TIMESTAMP(timer) AS timer_unix,
+                UNIX_TIMESTAMP(opdateret) AS opdateret_unix,
+                UNIX_TIMESTAMP(NOW()) AS now_unix
+            FROM portstatus
+            WHERE portnavn = 'sluse'
+        `);
+
         if (rows.length === 0) {
-            return res.json({ livestatus: 0, status: 0, difference: 0 });
+            return res.json({ error: 'Ingen data fundet' });
         }
-        const settings = rows[0];
-        const now = Math.floor(Date.now() / 1000);
-        const difference = settings.timer - now;
-        res.json({
-            livestatus: settings.livestatus,
-            status: settings.status,
-            difference: difference
-        });
+
+        const data = rows[0];
+        data.difference = data.timer_unix - data.now_unix;
+
+        res.json(data);
     } catch (err) {
-        console.error('Error fetching timer:', err);
-        res.status(500).json({ error: "Kunne ikke hente timer" });
+        console.error('Error fetching timer status:', err);
+        res.status(500).json({ error: "Kunne ikke hente timer status" });
     }
 });
 

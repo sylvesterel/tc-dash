@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Sluse - Vælg din boks</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#0a0e12', card: '#12171c' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; overflow: hidden; touch-action: manipulation; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        .stall-item { transition: all 0.15s ease; }
+        .stall-item:active { transform: scale(0.98); background: #1a2028; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        /* Confirmation overlay */
+        .confirmation-overlay {
+            position: fixed;
+            inset: 0;
+            background: #0a0e12;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .confirmation-overlay.active { display: flex; }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        .pulse-ring {
+            animation: pulse-ring 1.5s ease-out infinite;
+        }
+    </style>
+</head>
+<body class="font-sans bg-dark-bg text-white h-full select-none flex flex-col">
+
+<!-- Header -->
+<header class="flex-none px-6 py-5 border-b border-white/10">
+    <h1 class="text-2xl font-bold text-white">Vælg din boks</h1>
+    <p class="text-white/50 text-sm mt-1">Tryk på din boks for at se indhold på skærmen</p>
+</header>
+
+<!-- List -->
+<main class="flex-1 overflow-y-auto px-4 py-4" id="stallList">
+    <!-- Loading state -->
+    <div class="flex items-center justify-center h-full">
+        <div class="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="flex-none px-6 py-4 border-t border-white/10 bg-dark-card">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span class="text-white/40 text-xs">Live</span>
+        </div>
+        <span class="text-white/30 text-xs" id="updateTime">--:--</span>
+    </div>
+</footer>
+
+<!-- Confirmation Overlay - "Kig på skærmen" -->
+<div class="confirmation-overlay" id="confirmationOverlay">
+    <div class="text-center px-8">
+        <!-- Animated icon -->
+        <div class="relative w-32 h-32 mx-auto mb-8">
+            <div class="absolute inset-0 rounded-full bg-emerald-500/20 pulse-ring"></div>
+            <div class="absolute inset-0 rounded-full bg-emerald-500/10 pulse-ring" style="animation-delay: 0.5s"></div>
+            <div class="absolute inset-4 rounded-full bg-emerald-500/30 flex items-center justify-center">
+                <svg class="w-16 h-16 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-bold text-white mb-3">Kig på skærmen</h2>
+        <p class="text-white/60 text-lg mb-2" id="selectedName">Din boks vises nu</p>
+        <p class="text-white/40 text-sm">Skærmen opdateres automatisk</p>
+
+        <!-- Back button -->
+        <button onclick="clearSelection()" class="mt-10 px-8 py-4 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-2xl text-white font-medium transition-colors">
+            Vælg en anden boks
+        </button>
+    </div>
+</div>
+
+<script>
+// ============================================
+// iPad Sluse Selector
+// ============================================
+
+const displayNames = {
+    'Sluse1': 'Boks 1', 'Sluse2': 'Boks 2', 'Sluse3': 'Boks 3',
+    'Sluse4': 'Boks 4', 'Sluse5': 'Boks 5', 'Sluse6': 'Boks 6',
+    'Sluse7': 'Boks 7', 'Reol1': 'Reol 1', 'Reol2': 'Reol 2',
+};
+
+const colors = {
+    'Sluse1': '#703817', 'Sluse2': '#FF0000', 'Sluse3': '#FFA500',
+    'Sluse4': '#FFFF00', 'Sluse5': '#008000', 'Sluse6': '#0000FF',
+    'Sluse7': '#EE82EE', 'Reol1': '#808080', 'Reol2': '#1a1a1a',
+};
+
+let stallsData = [];
+
+// Load data
+async function loadData() {
+    try {
+        const res = await fetch('/api/sluse/public');
+        const json = await res.json();
+        if (json.success && json.data) {
+            stallsData = json.data;
+            render();
+            updateTime();
+        }
+    } catch (e) {
+        console.error('Error:', e);
+    }
+}
+
+// Render list
+function render() {
+    const list = document.getElementById('stallList');
+
+    // Filter only occupied stalls
+    const occupied = stallsData.filter(s => s.Kunde && s.Kunde.trim());
+
+    if (occupied.length === 0) {
+        list.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-center px-8">
+                <div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-white/80 mb-2">Ingen optagne bokse</h3>
+                <p class="text-white/40">Alle bokse er ledige lige nu</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = occupied.map((stall, index) => {
+        const name = displayNames[stall.slusenavn] || stall.slusenavn;
+        const color = colors[stall.slusenavn] || '#808080';
+
+        return `
+            <div class="stall-item flex items-center gap-4 p-4 rounded-2xl bg-dark-card border border-white/5 mb-3 cursor-pointer animate-in"
+                 style="animation-delay: ${index * 50}ms"
+                 onclick="selectStall('${stall.slusenavn}')">
+
+                <!-- Color indicator -->
+                <div class="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
+                     style="background-color: ${color}">
+                    <span class="text-white font-bold text-lg" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">
+                        ${stall.slusenavn.replace('Sluse', '').replace('Reol', 'R')}
+                    </span>
+                </div>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                    <p class="text-white/40 text-xs font-medium uppercase tracking-wider">${name}</p>
+                    <p class="text-white text-lg font-semibold truncate">${escapeHtml(stall.Kunde)}</p>
+                    ${stall.Dato ? `<p class="text-white/50 text-sm truncate">${escapeHtml(stall.Dato)}</p>` : ''}
+                </div>
+
+                <!-- Arrow -->
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Select stall
+async function selectStall(slusenavn) {
+    try {
+        // Send selection to server
+        await fetch('/api/sluse/selected', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slusenavn })
+        });
+
+        // Show confirmation
+        const name = displayNames[slusenavn] || slusenavn;
+        const stall = stallsData.find(s => s.slusenavn === slusenavn);
+        document.getElementById('selectedName').textContent = stall ? stall.Kunde : name;
+        document.getElementById('confirmationOverlay').classList.add('active');
+
+    } catch (e) {
+        console.error('Error selecting stall:', e);
+    }
+}
+
+// Clear selection
+async function clearSelection() {
+    try {
+        await fetch('/api/sluse/selected', { method: 'DELETE' });
+        document.getElementById('confirmationOverlay').classList.remove('active');
+    } catch (e) {
+        console.error('Error clearing selection:', e);
+    }
+}
+
+// Update time
+function updateTime() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('updateTime').textContent = `Opdateret ${time}`;
+}
+
+// Escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+}
+
+// Initialize
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>

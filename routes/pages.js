@@ -34,7 +34,7 @@ router.get("/indkob", authMiddleware, (req, res) => {
 });
 
 router.get("/codes", authMiddleware, (req, res) => {
-    res.sendFile(path.join(process.cwd(), "protected", "codes.html"));
+    res.sendFile(path.join(process.cwd(), "protected", "koder.html"));
 });
 
 router.get("/projects", authMiddleware, (req, res) => {

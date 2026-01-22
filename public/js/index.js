@@ -29,7 +29,7 @@ async function loadDashboardData() {
 
 async function loadDashboardStats() {
     try {
-        const response = await fetch('/api/dashboard-stats');
+        const response = await fetch('/api/stats');
         const data = await response.json();
 
         if (data.success) {

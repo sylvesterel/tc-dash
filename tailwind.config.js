@@ -15,6 +15,8 @@ export default {
         "card-dark": "#1c232d",
         "card-hover": "#252f3a",
         "secondary-text": "#9dabb9",
+        "sluse-brown": "#863b0ca2",
+        "sluse-yellow": "#b4f5008e"
       },
       fontFamily: {
         "display": ["Inter", "sans-serif"]
