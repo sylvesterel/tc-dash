@@ -1,119 +1,140 @@
 <!DOCTYPE html>
-<html lang="da">
-
+<html lang="da" class="dark">
 <head>
     <meta charset="UTF-8">
     <title>Appcare | Hjem</title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/style/base.css">
-    <link rel="stylesheet" href="/style/layout.css">
-    <link rel="stylesheet" href="/style/components.css">
-    <link rel="stylesheet" href="/style/pages/index.css">
-    <link rel="stylesheet" href="/style/responsive.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9DABB9; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 </head>
-<body>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
 
-<header>
-    <div class="header-url">
-        <h1>Generelt / Hjem</h1>
+<!-- Header -->
+<header class="h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[13px] tracking-wide">Generelt / Hjem</h1>
     </div>
-    <div class="user-container">
-        <div class="user-content">
-            <h1>Velkommen tilbage</h1>
-            <h2 id="user-name">...</h2>
+    <div class="text-right flex items-center gap-4">
+        <div>
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
         </div>
-        <img src="./img/user.png">
+        <img src="/img/user.png" class="h-[50px] w-[50px] rounded-full object-cover">
     </div>
 </header>
 
-<div class="content-wrapper">
-    <nav id="navbar">
-    </nav>
-    <main>
-        <div class="dashboard-header">
+<div class="flex flex-1">
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
+
+    <!-- Main Content -->
+    <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
             <div>
-                <h1>Velkommen tilbage</h1>
-                <p>Her er et overblik over dagens aktiviteter.</p>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Velkommen tilbage</h1>
+                <p class="text-base text-text-secondary">Her er et overblik over dagens aktiviteter.</p>
             </div>
-            <button class="refresh-btn" onclick="loadDashboardData()">
-                <span>↻</span>
-                Opdater data
+            <button class="flex items-center gap-2.5 py-3 px-6 bg-transparent border border-primary rounded-xl text-primary text-[15px] font-medium cursor-pointer transition-all hover:bg-primary hover:text-white" onclick="loadDashboardData()">
+                <span class="text-xl">↻</span> Opdater data
             </button>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon primary"><i class="fa-solid fa-headphones"></i></div>
-                    <span class="stat-badge neutral" id="projects-badge">-</span>
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-[52px] h-[52px] rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary"><i class="fa-solid fa-headphones"></i></div>
+                    <span class="badge px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="projects-badge">-</span>
                 </div>
-                <p class="stat-label">Ugens projekter</p>
-                <h2 class="stat-value" id="projects-count">-</h2>
-                <p class="stat-footer" id="projects-footer">Indlaser...</p>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Ugens projekter</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="projects-count">-</h2>
+                <p class="text-xs text-text-secondary" id="projects-footer">Indlaser...</p>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon warning"><i class="fa-solid fa-bug"></i></div>
-                    <span class="stat-badge neutral" id="errors-badge">-</span>
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-[52px] h-[52px] rounded-xl bg-warning/10 flex items-center justify-center text-2xl text-warning"><i class="fa-solid fa-bug"></i></div>
+                    <span class="badge px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="errors-badge">-</span>
                 </div>
-                <p class="stat-label">Uloste Fejl</p>
-                <h2 class="stat-value" id="errors-count">-</h2>
-                <p class="stat-footer" id="errors-footer">Indlaser...</p>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Uløste Fejl</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="errors-count">-</h2>
+                <p class="text-xs text-text-secondary" id="errors-footer">Indlaser...</p>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon info"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-[52px] h-[52px] rounded-xl bg-info/10 flex items-center justify-center text-2xl text-info"><i class="fa-solid fa-chart-line"></i></div>
                 </div>
-                <p class="stat-label">24h Aktiviteter</p>
-                <h2 class="stat-value" id="activity-count">-</h2>
-                <p class="stat-footer">Handlinger logget i systemet</p>
+                <p class="text-sm text-text-secondary mb-2 font-medium">24h Aktiviteter</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="activity-count">-</h2>
+                <p class="text-xs text-text-secondary">Handlinger logget i systemet</p>
             </div>
         </div>
 
-        <div class="dashboard-content">
-            <div class="main-content">
-                <div class="card weekly-menu-card">
-                    <div class="card-header">
-                        <div class="menu-header-left">
-                            <h3>Ugens Menu</h3>
-                            <div class="week-nav">
-                                <button class="week-nav-btn" id="prevWeekBtn" onclick="changeWeek(-1)">←</button>
-                                <span class="week-badge" id="week-number">Uge -</span>
-                                <button class="week-nav-btn" id="nextWeekBtn" onclick="changeWeek(1)">→</button>
-                            </div>
+        <!-- Dashboard Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Weekly Menu -->
+            <div class="lg:col-span-2 bg-dark-card border border-[#333] rounded-xl p-6">
+                <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                    <div class="flex items-center gap-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Ugens Menu</h3>
+                        <div class="flex items-center gap-2">
+                            <button class="w-8 h-8 rounded-lg bg-dark-hover border border-[#333] text-text-secondary hover:bg-primary hover:text-white transition-all" id="prevWeekBtn" onclick="changeWeek(-1)">←</button>
+                            <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold" id="week-number">Uge -</span>
+                            <button class="w-8 h-8 rounded-lg bg-dark-hover border border-[#333] text-text-secondary hover:bg-primary hover:text-white transition-all" id="nextWeekBtn" onclick="changeWeek(1)">→</button>
                         </div>
-                        <button class="btn-edit-menu" onclick="openMenuEditor()">
-                            <span><i class="fa-solid fa-pen-to-square"></i></span>
-                            Rediger
-                        </button>
                     </div>
-
-                    <div id="menu-container">
-                        <!-- Menu days will be loaded here dynamically -->
-                        <div class="menu-loading">Indlaser menu...</div>
-                    </div>
+                    <button class="flex items-center gap-2 py-2 px-4 bg-primary/10 border border-primary/20 rounded-lg text-primary text-sm font-medium hover:bg-primary hover:text-white transition-all" onclick="openMenuEditor()">
+                        <i class="fa-solid fa-pen-to-square"></i> Rediger
+                    </button>
+                </div>
+                <div id="menu-container">
+                    <div class="text-center py-8 text-text-secondary">Indlaser menu...</div>
                 </div>
             </div>
 
-            <div class="sidebar-content">
-                <div class="card notes-card">
-                    <div class="card-header">
-                        <h3>Noter</h3>
-                        <button class="btn-add-note" onclick="openNoteEditor()">
-                            <span><i class="fa-solid fa-plus"></i></span>
-                            Tilføj
-                        </button>
-                    </div>
-                    <div id="notes-container">
-                        <div class="notes-loading">Indlaser noter...</div>
-                    </div>
+            <!-- Notes -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                    <h3 class="text-lg font-semibold text-text-primary">Noter</h3>
+                    <button class="flex items-center gap-2 py-2 px-4 bg-primary/10 border border-primary/20 rounded-lg text-primary text-sm font-medium hover:bg-primary hover:text-white transition-all" onclick="openNoteEditor()">
+                        <i class="fa-solid fa-plus"></i> Tilføj
+                    </button>
+                </div>
+                <div id="notes-container">
+                    <div class="text-center py-8 text-text-secondary">Indlaser noter...</div>
                 </div>
             </div>
         </div>
@@ -121,28 +142,34 @@
 </div>
 
 <!-- Menu Editor Modal -->
-<div class="modal-overlay" id="menu-modal" style="display: none;">
-    <div class="modal-content" style="max-width: 800px;">
-        <div class="modal-header">
-            <h2>Rediger Ugens Menu</h2>
-            <button class="btn-close" onclick="closeMenuEditor()">×</button>
+<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] hidden" id="menu-modal">
+    <div class="bg-dark-card border border-[#333] rounded-xl w-[90%] max-w-[800px] max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-6 border-b border-[#1a1a1a]">
+            <h2 class="text-2xl font-semibold text-text-primary">Rediger Ugens Menu</h2>
+            <button class="w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary text-xl flex items-center justify-center hover:bg-error hover:border-error hover:text-white transition-all" onclick="closeMenuEditor()">×</button>
         </div>
-        <div class="modal-form" id="menu-editor-form">
-            <!-- Editor content loaded dynamically -->
-        </div>
+        <div class="p-6" id="menu-editor-form"></div>
     </div>
 </div>
 
 <!-- Note Editor Modal -->
-<div class="modal-overlay" id="note-modal" style="display: none;">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2 id="note-modal-title">Tilføj Note</h2>
-            <button class="btn-close" onclick="closeNoteEditor()">×</button>
+<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] hidden" id="note-modal">
+    <div class="bg-dark-card border border-[#333] rounded-xl w-[90%] max-w-[500px] max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-6 border-b border-[#1a1a1a]">
+            <h2 class="text-2xl font-semibold text-text-primary" id="note-modal-title">Tilføj Note</h2>
+            <button class="w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary text-xl flex items-center justify-center hover:bg-error hover:border-error hover:text-white transition-all" onclick="closeNoteEditor()">×</button>
         </div>
-        <div class="modal-form" id="note-editor-form">
-            <!-- Editor content loaded dynamically -->
-        </div>
+        <div class="p-6" id="note-editor-form"></div>
+    </div>
+</div>
+
+<!-- Global Modal -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center" id="globalModalOverlay">
+    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-3" id="globalModalTitle">Title</h3>
+        <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
+        <div class="flex gap-3 justify-center" id="globalModalButtons"></div>
     </div>
 </div>
 

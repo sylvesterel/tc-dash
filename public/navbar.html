@@ -1,35 +1,37 @@
-    <button class="hamburger-menu" id="hamburgerClose" aria-label="Luk menu">
-        <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div class="nav-header">
-        <h1>Appcare</h1>
-        <h2>Tourcare intranet</h2>
-    </div>
-    <div class="nav-content">
-        <div>
-            <h1>Generelt</h1>
-            <a href="/">Hjem</a>
-            <a href="/sluse">Sluse</a>
-            <a href="/adgang">Adgang</a>
-            <a href="/integration">Integration</a>
-            <a href="/indkob">Indkøb</a>
-        </div>
+<button class="lg:hidden absolute top-5 right-5 bg-transparent border-none text-text-secondary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover hover:text-text-primary transition-all z-10" id="hamburgerClose" aria-label="Luk menu">
+    <i class="fa-solid fa-xmark"></i>
+</button>
 
-        <div>
-            <h1>Bruger</h1>
-            <a href="/profil">Profil</a>
-            <a href="/users">Brugere</a>
-        </div>
+<div class="px-6 text-text-primary">
+    <h1 class="font-semibold text-[1.75rem]">Appcare</h1>
+    <h2 class="font-extralight text-[0.8rem]">Tourcare intranet</h2>
+</div>
 
-        <div>
-            <h1>Programmer</h1>
-            <a>Rentman</a>
-            <a>HubSpot</a>
-            <a>Gmail</a>
-        </div>
-    </div>
-    <div class="nav-bottom">
-        <h1>Log ud</h1>
-        <h2>app.tourcare.dk | v0.10</h2>
+<div class="flex flex-col gap-6 flex-1 mt-5 px-4 py-5">
+    <div class="flex flex-col gap-0.5">
+        <h1 class="font-bold text-[10px] text-text-secondary uppercase tracking-wider my-2 pl-1 opacity-70">Generelt</h1>
+        <a href="/" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline hover:bg-dark-hover hover:text-text-primary">Hjem</a>
+        <a href="/sluse" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline hover:bg-dark-hover hover:text-text-primary">Sluse</a>
+        <a href="/adgang" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline hover:bg-dark-hover hover:text-text-primary">Adgang</a>
+        <a href="/integration" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline hover:bg-dark-hover hover:text-text-primary">Integration</a>
+        <a href="/indkob" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline hover:bg-dark-hover hover:text-text-primary">Indkøb</a>
     </div>
 
+    <div class="flex flex-col gap-0.5">
+        <h1 class="font-bold text-[10px] text-text-secondary uppercase tracking-wider my-2 pl-1 opacity-70">Bruger</h1>
+        <a href="/profil" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline hover:bg-dark-hover hover:text-text-primary">Profil</a>
+        <a href="/users" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline hover:bg-dark-hover hover:text-text-primary">Brugere</a>
+    </div>
+
+    <div class="flex flex-col gap-0.5">
+        <h1 class="font-bold text-[10px] text-text-secondary uppercase tracking-wider my-2 pl-1 opacity-70">Programmer</h1>
+        <a class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline opacity-50">Rentman</a>
+        <a class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline opacity-50">HubSpot</a>
+        <a class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-text-secondary text-sm font-medium cursor-pointer transition-all no-underline opacity-50">Gmail</a>
+    </div>
+</div>
+
+<div class="border-t border-[#333] pt-3 px-4 mt-auto">
+    <h1 id="logoutBtn" class="flex items-center gap-2.5 py-2.5 px-3.5 bg-transparent rounded-lg text-red-500 text-sm font-medium cursor-pointer transition-all hover:bg-red-500/10">Log ud</h1>
+    <h2 class="text-[11px] text-gray-500 font-light text-center mt-2 pb-1">app.tourcare.dk | v0.10</h2>
+</div>

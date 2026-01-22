@@ -154,53 +154,45 @@ const UsersManager = {
         });
 
         main.innerHTML = `
-            <div class="dashboard-header">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
-                    <h1>Brugere</h1>
-                    <p>Administrer systemets brugere</p>
+                    <h1 class="text-2xl font-semibold text-text-primary">Brugere</h1>
+                    <p class="text-text-secondary mt-1">Administrer systemets brugere</p>
                 </div>
-                <div class="header-actions">
-                    <input 
-                        type="text" 
-                        id="searchUsers" 
-                        class="search-users" 
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input
+                        type="text"
+                        id="searchUsers"
+                        class="px-4 py-2.5 bg-dark-card border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors"
                         placeholder="Søg efter brugere..."
                         value="${filter}"
                     >
                     ${isAdmin ? `
-                        <button class="add-user-btn" onclick="UsersManager.showCreateModal()">
-                            <span>+</span>
+                        <button class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors" onclick="UsersManager.showCreateModal()">
+                            <span class="text-lg">+</span>
                             Ny bruger
                         </button>
                     ` : ''}
                 </div>
             </div>
 
-            <div class="users-stats">
-                <div class="stat-card">
-                    <div class="stat-content">
-                        <span class="stat-label">Total brugere</span>
-                        <span class="stat-value" id="totalUsers">0</span>
-                    </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="bg-dark-card border border-white/10 rounded-xl p-5">
+                    <span class="text-text-secondary text-sm">Total brugere</span>
+                    <span class="block text-2xl font-semibold text-text-primary mt-1" id="totalUsers">0</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-content">
-                        <span class="stat-label">Administratorer</span>
-                        <span class="stat-value" id="adminUsers">0</span>
-                    </div>
+                <div class="bg-dark-card border border-white/10 rounded-xl p-5">
+                    <span class="text-text-secondary text-sm">Administratorer</span>
+                    <span class="block text-2xl font-semibold text-text-primary mt-1" id="adminUsers">0</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-content">
-                        <span class="stat-label">Standard brugere</span>
-                        <span class="stat-value" id="standardUsers">0</span>
-                    </div>
+                <div class="bg-dark-card border border-white/10 rounded-xl p-5">
+                    <span class="text-text-secondary text-sm">Standard brugere</span>
+                    <span class="block text-2xl font-semibold text-text-primary mt-1" id="standardUsers">0</span>
                 </div>
             </div>
 
-            <div class="users-content">
-                <div class="users-grid">
-                    ${filtered.length === 0 ? this.renderEmptyState(filter) : filtered.map(user => this.renderUserCard(user)).join('')}
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                ${filtered.length === 0 ? this.renderEmptyState(filter) : filtered.map(user => this.renderUserCard(user)).join('')}
             </div>
         `;
 
@@ -219,46 +211,45 @@ const UsersManager = {
         const isAdmin = this.currentUser && this.currentUser.rolle === 'admin';
         const isCurrentUser = this.currentUser && this.currentUser.id === user.id;
         const rolleText = user.rolle === 'admin' ? 'Administrator' : 'Standard';
-        const rolleClass = user.rolle === 'admin' ? 'admin' : 'standard';
+        const rolleClass = user.rolle === 'admin' ? 'bg-primary/20 text-primary' : 'bg-white/10 text-text-secondary';
 
         return `
-            <div class="user-card">
-                <div class="user-info">
-                    <div class="user-avatar">
-                        <span class="avatar-text">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
+            <div class="bg-dark-card border border-white/10 rounded-xl p-5 flex flex-col gap-4">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <span class="text-primary font-semibold">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
                     </div>
-                    <div class="user-details">
-                        <div class="user-header">
-                            <h3>${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}</h3>
-                            ${isCurrentUser ? '<span class="you-badge">Dig</span>' : ''}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="font-semibold text-text-primary">${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}</h3>
+                            ${isCurrentUser ? '<span class="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400">Dig</span>' : ''}
                         </div>
-                        <p class="user-username">@${this.escapeHtml(user.brugernavn)}</p>
-                        ${user.title ? `<p class="user-title">${this.escapeHtml(user.title)}</p>` : ''}
+                        <p class="text-text-secondary text-sm">@${this.escapeHtml(user.brugernavn)}</p>
+                        ${user.title ? `<p class="text-text-secondary text-sm mt-1">${this.escapeHtml(user.title)}</p>` : ''}
                     </div>
                 </div>
-                <div class="user-meta">
-                    <div class="meta-row">
-                        <span class="meta-text">${this.escapeHtml(user.email)}</span>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center gap-2 text-text-secondary">
+                        <i class="fa-solid fa-envelope w-4"></i>
+                        <span class="truncate">${this.escapeHtml(user.email)}</span>
                     </div>
-                    <div class="meta-row">
-                        <span class="role-badge ${rolleClass}">${rolleText}</span>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-user-tag w-4 text-text-secondary"></i>
+                        <span class="px-2 py-0.5 text-xs rounded-full ${rolleClass}">${rolleText}</span>
                     </div>
-                    ${user.telefon ? `
-                        <div class="meta-row">
-                            <span class="meta-text">${this.escapeHtml(user.telefon)}</span>
-                        </div>
-                    ` : `
-                        <div class="meta-row">
-                            <span class="meta-text" style="opacity: 0.5">Ingen telefon</span>
-                        </div>
-                    `}
-                    <div class="meta-row">
-                        <span class="meta-text">${user.last_login ? this.formatDateTime(user.last_login) : 'Aldrig logget ind'}</span>
+                    <div class="flex items-center gap-2 text-text-secondary">
+                        <i class="fa-solid fa-phone w-4"></i>
+                        ${user.telefon ? `<span>${this.escapeHtml(user.telefon)}</span>` : '<span class="opacity-50">Ingen telefon</span>'}
+                    </div>
+                    <div class="flex items-center gap-2 text-text-secondary">
+                        <i class="fa-solid fa-clock w-4"></i>
+                        <span>${user.last_login ? this.formatDateTime(user.last_login) : 'Aldrig logget ind'}</span>
                     </div>
                 </div>
                 ${isAdmin && !isCurrentUser ? `
-                    <div class="user-actions">
-                        <button class="btn-action delete" onclick="UsersManager.confirmDelete(${user.id}, '${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}')" title="Slet bruger">
+                    <div class="pt-3 border-t border-white/10">
+                        <button class="w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" onclick="UsersManager.confirmDelete(${user.id}, '${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}')">
+                            <i class="fa-solid fa-trash mr-2"></i>
                             Slet bruger
                         </button>
                     </div>
@@ -270,16 +261,22 @@ const UsersManager = {
     renderEmptyState(filter) {
         if (filter) {
             return `
-                <div class="empty-state">
-                    <h3>Ingen brugere fundet</h3>
-                    <p>Prøv at søge efter noget andet</p>
+                <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-search text-2xl text-text-secondary"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Ingen brugere fundet</h3>
+                    <p class="text-text-secondary">Prøv at søge efter noget andet</p>
                 </div>
             `;
         }
         return `
-            <div class="empty-state">
-                <h3>Ingen brugere endnu</h3>
-                <p>Opret den første bruger for at komme i gang</p>
+            <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-users text-2xl text-text-secondary"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-text-primary mb-2">Ingen brugere endnu</h3>
+                <p class="text-text-secondary">Opret den første bruger for at komme i gang</p>
             </div>
         `;
     },
@@ -303,100 +300,78 @@ const UsersManager = {
     // ============================================
     showCreateModal() {
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+        modal.id = 'createUserModal';
         modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>
-                        Opret ny bruger
-                    </h2>
-                    <button class="btn-close" onclick="UsersManager.closeModal()">✕</button>
+            <div class="bg-dark-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between p-6 border-b border-white/10">
+                    <h2 class="text-xl font-semibold text-text-primary">Opret ny bruger</h2>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary transition-colors" onclick="UsersManager.closeModal()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <form id="createUserForm" class="modal-form">
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="newFornavn">
-                                Fornavn *
-                            </label>
-                            <input type="text" id="newFornavn" required>
+                <form id="createUserForm" class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newFornavn">Fornavn *</label>
+                            <input type="text" id="newFornavn" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                         </div>
-                        <div class="form-field">
-                            <label for="newEfternavn">
-                                Efternavn *
-                            </label>
-                            <input type="text" id="newEfternavn" required>
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newEfternavn">Efternavn *</label>
+                            <input type="text" id="newEfternavn" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="newBrugernavn">
-
-                                Brugernavn *
-                            </label>
-                            <input type="text" id="newBrugernavn" required>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newBrugernavn">Brugernavn *</label>
+                            <input type="text" id="newBrugernavn" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                         </div>
-                        <div class="form-field">
-                            <label for="newEmail">
-                                Email *
-                            </label>
-                            <input type="email" id="newEmail" required>
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newEmail">Email *</label>
+                            <input type="email" id="newEmail" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="newTelefon">
-                                Telefon
-                            </label>
-                            <input type="tel" id="newTelefon" placeholder="+45 12345678">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newTelefon">Telefon</label>
+                            <input type="tel" id="newTelefon" placeholder="+45 12345678" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                         </div>
-                        <div class="form-field">
-                            <label for="newTitle">
-                                Titel / Stilling
-                            </label>
-                            <input type="text" id="newTitle" placeholder="F.eks. Tekniker">
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newTitle">Titel / Stilling</label>
+                            <input type="text" id="newTitle" placeholder="F.eks. Tekniker" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                         </div>
                     </div>
 
-                    <div class="form-field">
-                        <label for="newPassword">
-                            Adgangskode *
-                        </label>
-                        <input type="password" id="newPassword" required minlength="8">
-                        <span class="field-hint">
-                            Mindst 8 tegn
-                        </span>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newPassword">Adgangskode *</label>
+                        <input type="password" id="newPassword" required minlength="8" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                        <span class="text-xs text-text-secondary mt-1 block">Mindst 8 tegn</span>
                     </div>
 
-                    <div class="form-field">
-                        <label for="newRolle">
-                            Rolle *
-                        </label>
-                        <select id="newRolle" required>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newRolle">Rolle *</label>
+                        <select id="newRolle" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                             <option value="standard">Standard Bruger</option>
                             <option value="admin">Administrator</option>
                         </select>
-                        <span class="field-hint">
-                            Standard brugere kan se alt, men ikke oprette nye brugere
-                        </span>
+                        <span class="text-xs text-text-secondary mt-1 block">Standard brugere kan se alt, men ikke oprette nye brugere</span>
                     </div>
 
-                    <div class="form-field checkbox-field">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="sendWelcomeEmail" checked>
-                            <span class="checkbox-text">Send velkomst-email med login-oplysninger</span>
-                        </label>
-                        <span class="field-hint">
-                            Brugeren modtager en email med brugernavn, adgangskode og link til dashboard
-                        </span>
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="sendWelcomeEmail" checked class="mt-1 w-4 h-4 rounded border-white/20 bg-dark-bg text-primary focus:ring-primary/50">
+                        <div>
+                            <label for="sendWelcomeEmail" class="text-sm text-text-primary cursor-pointer">Send velkomst-email med login-oplysninger</label>
+                            <span class="text-xs text-text-secondary block mt-0.5">Brugeren modtager en email med brugernavn, adgangskode og link til dashboard</span>
+                        </div>
                     </div>
 
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" onclick="UsersManager.closeModal()">
+                    <div class="flex gap-3 pt-4 border-t border-white/10">
+                        <button type="button" class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary rounded-lg font-medium transition-colors" onclick="UsersManager.closeModal()">
                             Annuller
                         </button>
-                        <button type="submit" class="btn-primary">
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors">
                             Opret bruger
                         </button>
                     </div>
@@ -421,7 +396,7 @@ const UsersManager = {
     },
 
     closeModal() {
-        const modal = document.querySelector('.modal-overlay');
+        const modal = document.getElementById('createUserModal');
         if (modal) {
             modal.remove();
         }

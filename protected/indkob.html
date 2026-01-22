@@ -1,93 +1,123 @@
 <!DOCTYPE html>
-<html lang="da">
-
+<html lang="da" class="dark">
 <head>
     <meta charset="UTF-8">
     <title>Appcare | Indkøb</title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/style/base.css">
-    <link rel="stylesheet" href="/style/layout.css">
-    <link rel="stylesheet" href="/style/components.css">
-    <link rel="stylesheet" href="/style/responsive.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    </style>
 </head>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
 
-<body>
-
-    <header>
-        <div class="header-url">
-            <h1>Generelt / Hjem</h1>
+<header class="h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[13px] tracking-wide">Generelt / Indkøb</h1>
+    </div>
+    <div class="text-right flex items-center gap-4">
+        <div>
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
         </div>
-        <div class="user-container">
-            <div class="user-content">
-                <h1>Velkommen tilbage</h1>
-                <h2 id="user-name">...</h2>
+        <img src="/img/user.png" class="h-[50px] w-[50px] rounded-full object-cover">
+    </div>
+</header>
+
+<div class="flex flex-1">
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
+
+    <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Indkøb</h1>
+                <p class="text-base text-text-secondary">Registrer indkøb</p>
             </div>
-            <img src="./img/user.png">
         </div>
-    </header>
 
-    <div class="content-wrapper">
-        <nav id="navbar">
-        </nav>
-        <main>
-            <div class="dashboard-header">
-                <div>
-                    <h1>Indkøb</h1>
-                    <p>Registrer indkøb</p>
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6">
+            <!-- Asana Form -->
+            <div class="bg-dark-card border border-[#333] rounded-xl overflow-hidden">
+                <iframe src="https://form.asana.com/?k=NHvASJQRXknBvEbK6u3kug&d=1212167179094710&embed=true" class="w-full h-[800px] border-none"></iframe>
+            </div>
+
+            <!-- Sidebar - Recent Purchases -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                    <h3 class="text-lg font-semibold text-text-primary">Seneste indkøb</h3>
                 </div>
-            </div>
 
-
-
-            <div class="dashboard-content">
-                <iframe src="https://form.asana.com/?k=NHvASJQRXknBvEbK6u3kug&d=1212167179094710&embed=true" style="height: 800px; width: 100%;"></iframe>
-
-                <div class="sidebar-content">
-
-                    <div class="card lunch-menu">
-                        <div class="card-header">
-                            <h3>Seneste indkøb</h3>
+                <div class="flex flex-col gap-4">
+                    <!-- Purchase Item 1 -->
+                    <div class="p-4 bg-dark-hover rounded-xl border border-[#333]">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm font-semibold text-text-primary">186 x AAA Batterier, Alkaline</span>
+                            <span class="px-2 py-1 rounded-full text-[10px] font-semibold bg-info/10 text-info">Forbrugsvarer</span>
                         </div>
-
-                        <div class="menu-day">
-                            <div class="menu-header">
-                                <span class="day-name">186 x AAA Batterier, Alkaline</span>
-                                <span class="today-badge">Forbrugsvarer</span>
-                            </div>
-                            <p class="menu-item">Godkendt | 14-01-2025</p>
-                        </div>
-
-                        <div class="menu-day">
-                            <div class="menu-header">
-                                <span class="day-name">56 x AA Batterier, Alkaline</span>
-                                <span class="today-badge">Forbrugsvarer</span>
-                            </div>
-                            <p class="menu-item">Godkendt | 13-01-2025</p>
-                        </div>
-
-                        <div class="menu-day">
-                            <div class="menu-header">
-                                <span class="day-name">15 x 5m XLR > JACK</span>
-                                <span class="today-badge">Udlejningsmateriel</span>
-                            </div>
-                            <p class="menu-item">Godkendt | 13-01-2025</p>
-                        </div>
-
+                        <p class="text-xs text-text-secondary">Godkendt | 14-01-2025</p>
                     </div>
 
+                    <!-- Purchase Item 2 -->
+                    <div class="p-4 bg-dark-hover rounded-xl border border-[#333]">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm font-semibold text-text-primary">56 x AA Batterier, Alkaline</span>
+                            <span class="px-2 py-1 rounded-full text-[10px] font-semibold bg-info/10 text-info">Forbrugsvarer</span>
+                        </div>
+                        <p class="text-xs text-text-secondary">Godkendt | 13-01-2025</p>
+                    </div>
+
+                    <!-- Purchase Item 3 -->
+                    <div class="p-4 bg-dark-hover rounded-xl border border-[#333]">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm font-semibold text-text-primary">15 x 5m XLR > JACK</span>
+                            <span class="px-2 py-1 rounded-full text-[10px] font-semibold bg-warning/10 text-warning">Udlejningsmateriel</span>
+                        </div>
+                        <p class="text-xs text-text-secondary">Godkendt | 13-01-2025</p>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
+</div>
+
+<!-- Global Modal -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center" id="globalModalOverlay">
+    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-3" id="globalModalTitle">Title</h3>
+        <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
+        <div class="flex gap-3 justify-center" id="globalModalButtons"></div>
     </div>
+</div>
 
-    <script src="/js/modal.js"></script>
-    <script src="/js/index.js"></script>
-    <script src="/js/generel.js"></script>
+<script src="/js/modal.js"></script>
+<script src="/js/generel.js"></script>
 </body>
-
 </html>

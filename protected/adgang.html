@@ -1,153 +1,168 @@
 <!DOCTYPE html>
-<html lang="da">
-
+<html lang="da" class="dark">
 <head>
     <meta charset="UTF-8">
     <title>Appcare | Adgang</title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/style/base.css">
-    <link rel="stylesheet" href="/style/layout.css">
-    <link rel="stylesheet" href="/style/components.css">
-    <link rel="stylesheet" href="/style/pages/adgang.css">
-    <link rel="stylesheet" href="/style/responsive.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    </style>
 </head>
-<body>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
 
-    <header>
-        <div class="header-url">
-            <h1>Generelt / Adgang</h1>
-        </div>
-        <div class="user-container">
-            <div class="user-content">
-                <h1>Velkommen tilbage</h1>
-                <h2 id="user-name">...</h2>
-            </div>
-            <img src="./img/user.png">
-        </div>
-    </header>
-
-    <div class="content-wrapper">
-        <nav id="navbar">
-        </nav>
-        <main class="adgang-page">
-            <div class="adgang-header">
-                <div>
-                    <h1>Sluse Adgang</h1>
-                    <p>Opret adgang til slusen via Salto.</p>
-                </div>
-                <div class="header-stats">
-                    <div class="stat-pill">
-                        <span class="stat-label">Aktive</span>
-                        <span class="stat-value" id="expiredCount">0</span>
-                    </div>
-                    <div class="stat-pill">
-                        <span class="stat-label">Udløbet</span>
-                        <span class="stat-value expired" id="activeCount">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="adgang-layout">
-                <!-- Create New Access Card -->
-                <div class="create-access-card">
-                    <div class="card-header">
-                        <div>
-                            <h3>Opret Ny Adgang</h3>
-                            <p>Opret en ny bruger i Salto med adgangskode</p>
-                        </div>
-                    </div>
-
-                    <form class="access-form" id="accessForm">
-                        <div class="form-field">
-                            <label>Vælg fra Rentman (valgfrit)</label>
-                            <div class="project-picker-wrapper">
-                                <div class="project-picker-trigger" id="projectPickerTrigger">
-                                    <span class="placeholder">Søg efter projekt...</span>
-                                    <span class="chevron">▼</span>
-                                </div>
-                                <div class="project-picker-dropdown" id="projectPickerDropdown">
-                                    <input type="text" class="project-picker-search" id="projectPickerSearch" placeholder="Søg projekt...">
-                                    <div class="project-picker-list" id="projectPickerList">
-                                        <!-- Items rendered by JS -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="section-divider">eller udfyld manuelt</div>
-
-                        <div class="form-field">
-                            <label for="artistName">
-                                Navn
-                            </label>
-                            <input
-                                type="text"
-                                id="artistName"
-                                placeholder="Indtast navn..."
-                                required
-                            >
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label for="startDate">
-                                    Start Dato
-                                </label>
-                                <input
-                                    type="date"
-                                    id="startDate"
-                                    required
-                                >
-                            </div>
-                            <div class="form-field">
-                                <label for="endDate">
-                                    Slut Dato
-                                </label>
-                                <input
-                                    type="date"
-                                    id="endDate"
-                                    required
-                                >
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-generate">
-                            Opret Adgang
-                        </button>
-                    </form>
-
-                    <!-- Status Box -->
-                    <div class="status-box" id="statusBox">
-                        <div class="status-header">Status</div>
-                        <div class="status-list" id="statusList">
-                            <!-- Status messages will appear here -->
-                        </div>
-                    </div>
-
-                    <!-- Pin Result -->
-                    <div class="pin-result" id="pinResult">
-                        <!-- Pin will be shown here -->
-                    </div>
-                </div>
-
-                <!-- Active Access Codes List -->
-                <div class="access-list-section">
-                    <div class="section-header">
-                        <h3>Aktive brugere</h3>
-                    </div>
-
-                    <div class="access-list" id="accessList">
-                        <!-- Users will be rendered here -->
-                    </div>
-                </div>
-            </div>
-        </main>
+<header class="h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[13px] tracking-wide">Generelt / Adgang</h1>
     </div>
+    <div class="text-right flex items-center gap-4">
+        <div>
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
+        </div>
+        <img src="/img/user.png" class="h-[50px] w-[50px] rounded-full object-cover">
+    </div>
+</header>
+
+<div class="flex flex-1">
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
+
+    <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Sluse Adgang</h1>
+                <p class="text-base text-text-secondary">Opret adgang til slusen via Salto.</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="flex items-center gap-2 px-4 py-2 bg-dark-card border border-[#333] rounded-xl">
+                    <span class="text-text-secondary text-sm">Aktive</span>
+                    <span class="px-2 py-1 rounded-full bg-success/10 text-success text-xs font-semibold" id="expiredCount">0</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-dark-card border border-[#333] rounded-xl">
+                    <span class="text-text-secondary text-sm">Udløbet</span>
+                    <span class="px-2 py-1 rounded-full bg-error/10 text-error text-xs font-semibold" id="activeCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-6">
+            <!-- Create New Access Card -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                <div class="mb-6 pb-4 border-b border-[#1a1a1a]">
+                    <h3 class="text-lg font-semibold text-text-primary mb-1">Opret Ny Adgang</h3>
+                    <p class="text-sm text-text-secondary">Opret en ny bruger i Salto med adgangskode</p>
+                </div>
+
+                <form class="flex flex-col gap-5" id="accessForm">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-text-secondary">Vælg fra Rentman (valgfrit)</label>
+                        <div class="relative">
+                            <div class="flex justify-between items-center p-3.5 bg-dark-hover border border-[#333] rounded-xl text-text-primary cursor-pointer transition-all hover:border-primary" id="projectPickerTrigger">
+                                <span class="placeholder text-text-secondary">Søg efter projekt...</span>
+                                <span class="chevron text-text-secondary">▼</span>
+                            </div>
+                            <div class="absolute top-full left-0 right-0 mt-1 bg-dark-card border border-[#333] rounded-xl shadow-2xl z-50 hidden" id="projectPickerDropdown">
+                                <input type="text" class="w-full p-3 bg-dark-hover border-b border-[#333] text-text-primary text-sm focus:outline-none placeholder:text-text-secondary" id="projectPickerSearch" placeholder="Søg projekt...">
+                                <div class="max-h-[250px] overflow-y-auto" id="projectPickerList">
+                                    <!-- Items rendered by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 text-text-secondary text-xs">
+                        <div class="flex-1 h-px bg-[#333]"></div>
+                        <span>eller udfyld manuelt</span>
+                        <div class="flex-1 h-px bg-[#333]"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label for="artistName" class="text-sm font-medium text-text-secondary">Navn</label>
+                        <input type="text" id="artistName" placeholder="Indtast navn..." required
+                            class="p-3.5 bg-dark-hover border border-[#333] rounded-xl text-text-primary text-sm transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(19,127,236,0.1)] placeholder:text-text-secondary">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label for="startDate" class="text-sm font-medium text-text-secondary">Start Dato</label>
+                            <input type="date" id="startDate" required
+                                class="p-3.5 bg-dark-hover border border-[#333] rounded-xl text-text-primary text-sm transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(19,127,236,0.1)]">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label for="endDate" class="text-sm font-medium text-text-secondary">Slut Dato</label>
+                            <input type="date" id="endDate" required
+                                class="p-3.5 bg-dark-hover border border-[#333] rounded-xl text-text-primary text-sm transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(19,127,236,0.1)]">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 px-6 bg-primary border-none rounded-xl text-white text-[15px] font-semibold cursor-pointer transition-all hover:bg-primary-hover">
+                        Opret Adgang
+                    </button>
+                </form>
+
+                <!-- Status Box -->
+                <div class="mt-6 bg-dark-hover border border-[#333] rounded-xl overflow-hidden hidden" id="statusBox">
+                    <div class="p-3 bg-dark-card border-b border-[#333] text-sm font-semibold text-text-primary">Status</div>
+                    <div class="p-4 max-h-[200px] overflow-y-auto" id="statusList">
+                        <!-- Status messages will appear here -->
+                    </div>
+                </div>
+
+                <!-- Pin Result -->
+                <div class="mt-6 p-6 bg-success/10 border border-success/30 rounded-xl text-center hidden" id="pinResult">
+                    <!-- Pin will be shown here -->
+                </div>
+            </div>
+
+            <!-- Active Access Codes List -->
+            <div class="bg-dark-card border border-[#333] rounded-xl overflow-hidden">
+                <div class="flex justify-between items-center p-4 border-b border-[#1a1a1a]">
+                    <h3 class="text-base font-semibold text-text-primary">Aktive brugere</h3>
+                </div>
+                <div class="p-4 max-h-[calc(100vh-300px)] overflow-y-auto" id="accessList">
+                    <!-- Users will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Global Modal -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center" id="globalModalOverlay">
+    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-3" id="globalModalTitle">Title</h3>
+        <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
+        <div class="flex gap-3 justify-center" id="globalModalButtons"></div>
+    </div>
+</div>
 
 <script src="/js/modal.js"></script>
 <script src="/js/generel.js"></script>

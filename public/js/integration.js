@@ -83,11 +83,11 @@ function updateStats(data) {
     if (data.currentStatus.isRunning) {
         statusEl.textContent = 'Kører';
         statusBadge.textContent = 'Syncing';
-        statusBadge.className = 'stat-badge warning';
+        statusBadge.className = 'px-2 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-400';
     } else {
         statusEl.textContent = 'Klar';
         statusBadge.textContent = 'Online';
-        statusBadge.className = 'stat-badge success';
+        statusBadge.className = 'px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400';
     }
 
     if (data.lastSync) {
@@ -105,13 +105,13 @@ function updateStats(data) {
 
     if (data.errors.criticalCount > 0) {
         errorBadge.textContent = 'Kritisk';
-        errorBadge.className = 'stat-badge error';
+        errorBadge.className = 'px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400';
     } else if (data.errors.unresolvedCount > 0) {
         errorBadge.textContent = 'Uløste';
-        errorBadge.className = 'stat-badge warning';
+        errorBadge.className = 'px-2 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-400';
     } else {
         errorBadge.textContent = 'OK';
-        errorBadge.className = 'stat-badge success';
+        errorBadge.className = 'px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400';
     }
 
     // Syncs
@@ -127,8 +127,9 @@ function updateStats(data) {
         : 100;
     successRateEl.textContent = `Succesrate: ${successRate}%`;
     syncsBadge.textContent = `${successRate}%`;
-    syncsBadge.className = successRate >= 90 ? 'stat-badge success' :
-                          successRate >= 70 ? 'stat-badge warning' : 'stat-badge error';
+    syncsBadge.className = successRate >= 90 ? 'px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400' :
+                          successRate >= 70 ? 'px-2 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-400' :
+                          'px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400';
 
     // Items processed
     const itemsEl = document.getElementById('itemsProcessed');
@@ -152,11 +153,11 @@ function updateSyncStatus(status, lastSync) {
     const subtitle = document.getElementById('currentStatusSubtitle');
 
     if (status.isRunning) {
-        dot.className = 'status-dot running';
+        dot.className = 'w-3 h-3 rounded-full bg-yellow-500 animate-pulse';
         title.textContent = `Synkroniserer ${formatSyncType(status.currentType)}`;
         subtitle.textContent = 'Sync i gang...';
     } else {
-        dot.className = 'status-dot idle';
+        dot.className = 'w-3 h-3 rounded-full bg-green-500';
         title.textContent = 'Integration Klar';
 
         if (lastSync) {
@@ -174,35 +175,53 @@ function updateErrorList(errors) {
 
     if (!errors || errors.length === 0) {
         container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon"><i class="fas fa-check-circle"></i></div>
-                <h4>Ingen uløste fejl</h4>
-                <p>Alt ser godt ud</p>
+            <div class="flex flex-col items-center justify-center py-8 text-center">
+                <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                    <i class="fas fa-check-circle text-green-400 text-xl"></i>
+                </div>
+                <h4 class="font-medium text-text-primary mb-1">Ingen uløste fejl</h4>
+                <p class="text-text-secondary text-sm">Alt ser godt ud</p>
             </div>
         `;
         return;
     }
 
+    const severityColors = {
+        'critical': 'border-red-500 bg-red-500/10',
+        'error': 'border-orange-500 bg-orange-500/10',
+        'warn': 'border-yellow-500 bg-yellow-500/10',
+        'info': 'border-blue-500 bg-blue-500/10',
+        'debug': 'border-gray-500 bg-gray-500/10'
+    };
+
+    const iconColors = {
+        'critical': 'bg-red-500/20 text-red-400',
+        'error': 'bg-orange-500/20 text-orange-400',
+        'warn': 'bg-yellow-500/20 text-yellow-400',
+        'info': 'bg-blue-500/20 text-blue-400',
+        'debug': 'bg-gray-500/20 text-gray-400'
+    };
+
     container.innerHTML = errors.map(error => `
-        <div class="error-item ${error.severity}">
-            <div class="error-icon ${error.severity}">
+        <div class="flex items-start gap-3 p-3 rounded-lg border-l-4 ${severityColors[error.severity] || severityColors['error']}">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${iconColors[error.severity] || iconColors['error']}">
                 ${getSeverityIcon(error.severity)}
             </div>
-            <div class="error-content">
-                <div class="error-message" title="${escapeHtml(error.error_message)}">
+            <div class="flex-1 min-w-0">
+                <div class="text-text-primary text-sm font-medium truncate" title="${escapeHtml(error.error_message)}">
                     ${escapeHtml(error.error_message)}
                 </div>
-                <div class="error-meta">
+                <div class="flex items-center gap-2 mt-1 text-xs text-text-secondary">
                     <span>${error.source_system || 'system'}</span>
+                    <span class="opacity-50">•</span>
                     <span>${error.error_type}</span>
+                    <span class="opacity-50">•</span>
                     <span>${formatRelativeTime(new Date(error.created_at))}</span>
                 </div>
             </div>
-            <div class="error-actions">
-                <button class="btn-resolve" onclick="resolveError(${error.id})">
-                    Løs
-                </button>
-            </div>
+            <button class="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 text-text-secondary rounded-lg transition-colors flex-shrink-0" onclick="resolveError(${error.id})">
+                Løs
+            </button>
         </div>
     `).join('');
 }
@@ -213,34 +232,42 @@ function updateSyncHistory(syncs) {
 
     if (!syncs || syncs.length === 0) {
         container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon"><i class="fas fa-history"></i></div>
-                <h4>Ingen sync historik</h4>
-                <p>Ingen syncs er koert endnu</p>
+            <div class="flex flex-col items-center justify-center py-8 text-center">
+                <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+                    <i class="fas fa-history text-text-secondary text-xl"></i>
+                </div>
+                <h4 class="font-medium text-text-primary mb-1">Ingen sync historik</h4>
+                <p class="text-text-secondary text-sm">Ingen syncs er koert endnu</p>
             </div>
         `;
         return;
     }
 
+    const statusColors = {
+        'completed': 'bg-green-500/20 text-green-400',
+        'failed': 'bg-red-500/20 text-red-400',
+        'partial': 'bg-yellow-500/20 text-yellow-400'
+    };
+
     container.innerHTML = syncs.map(sync => {
-        const statusClass = sync.status === 'completed' ? 'success' :
+        const statusClass = sync.status === 'completed' ? 'completed' :
                            sync.status === 'failed' ? 'failed' : 'partial';
         const icon = sync.status === 'completed' ? '<i class="fas fa-check"></i>' :
                     sync.status === 'failed' ? '<i class="fas fa-times"></i>' : '<i class="fas fa-exclamation"></i>';
 
         return `
-            <div class="history-item">
-                <div class="history-icon ${statusClass}">${icon}</div>
-                <div class="history-content">
-                    <div class="history-title">${formatSyncType(sync.sync_type)} Sync</div>
-                    <div class="history-meta">
+            <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${statusColors[statusClass] || statusColors['partial']}">${icon}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-text-primary text-sm font-medium">${formatSyncType(sync.sync_type)} Sync</div>
+                    <div class="text-xs text-text-secondary">
                         ${formatRelativeTime(new Date(sync.started_at))}
                         ${sync.triggered_by ? `• af ${sync.triggered_by}` : ''}
                     </div>
                 </div>
-                <div class="history-stats">
-                    <div class="stat success">${sync.success_count || 0} ok</div>
-                    ${sync.error_count > 0 ? `<div class="stat error">${sync.error_count} fejl</div>` : ''}
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400">${sync.success_count || 0} ok</span>
+                    ${sync.error_count > 0 ? `<span class="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400">${sync.error_count} fejl</span>` : ''}
                 </div>
             </div>
         `;
@@ -253,19 +280,30 @@ function updateWebhookList(webhooks) {
 
     if (!webhooks || webhooks.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="padding: 20px;">
-                <p style="font-size: 13px; color: var(--text-secondary);">Ingen webhooks modtaget endnu</p>
+            <div class="py-5 text-center">
+                <p class="text-text-secondary text-sm">Ingen webhooks modtaget endnu</p>
             </div>
         `;
         return;
     }
 
+    const sourceColors = {
+        'hubspot': 'bg-orange-500/20 text-orange-400',
+        'rentman': 'bg-blue-500/20 text-blue-400'
+    };
+
+    const statusColors = {
+        'processed': 'text-green-400',
+        'pending': 'text-yellow-400',
+        'failed': 'text-red-400'
+    };
+
     container.innerHTML = webhooks.slice(0, 10).map(webhook => `
-        <div class="webhook-item">
-            <span class="webhook-source ${webhook.source}">${webhook.source}</span>
-            <span class="webhook-type">${webhook.event_type || webhook.subscription_type || 'unknown'}</span>
-            <span class="webhook-status ${webhook.status}">${webhook.status}</span>
-            <span class="webhook-time">${formatRelativeTime(new Date(webhook.created_at))}</span>
+        <div class="flex items-center gap-3 py-2 px-3 hover:bg-white/5 rounded-lg transition-colors">
+            <span class="px-2 py-0.5 text-xs rounded-full ${sourceColors[webhook.source] || 'bg-white/10 text-text-secondary'}">${webhook.source}</span>
+            <span class="flex-1 text-text-primary text-sm truncate">${webhook.event_type || webhook.subscription_type || 'unknown'}</span>
+            <span class="text-xs ${statusColors[webhook.status] || 'text-text-secondary'}">${webhook.status}</span>
+            <span class="text-xs text-text-secondary">${formatRelativeTime(new Date(webhook.created_at))}</span>
         </div>
     `).join('');
 }
@@ -484,50 +522,25 @@ function escapeHtml(text) {
 }
 
 function showSuccess(message) {
-    // Simple toast notification - can be replaced with better UI
     const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 16px 24px;
-        background: rgba(0, 230, 118, 0.9);
-        color: #000;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 14px;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
+    toast.className = 'fixed bottom-5 right-5 px-6 py-4 bg-green-500 text-white rounded-xl font-semibold text-sm z-[10000] animate-slide-in';
     toast.textContent = message;
     document.body.appendChild(toast);
 
     setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s ease forwards';
+        toast.classList.add('opacity-0', 'transition-opacity');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
 function showError(message) {
     const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 16px 24px;
-        background: rgba(255, 82, 82, 0.9);
-        color: #fff;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 14px;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
+    toast.className = 'fixed bottom-5 right-5 px-6 py-4 bg-red-500 text-white rounded-xl font-semibold text-sm z-[10000] animate-slide-in';
     toast.textContent = message;
     document.body.appendChild(toast);
 
     setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s ease forwards';
+        toast.classList.add('opacity-0', 'transition-opacity');
         setTimeout(() => toast.remove(), 300);
     }, 4000);
 }
@@ -535,13 +548,12 @@ function showError(message) {
 // Add animation styles
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes slideIn {
+    @keyframes slide-in {
         from { transform: translateX(100px); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
     }
-    @keyframes fadeOut {
-        from { opacity: 1; }
-        to { opacity: 0; }
+    .animate-slide-in {
+        animation: slide-in 0.3s ease;
     }
 `;
 document.head.appendChild(style);

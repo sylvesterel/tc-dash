@@ -1,198 +1,245 @@
 <!DOCTYPE html>
-<html lang="da">
-
+<html lang="da" class="dark">
 <head>
     <meta charset="UTF-8">
     <title>Appcare | Integration</title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/style/base.css">
-    <link rel="stylesheet" href="/style/layout.css">
-    <link rel="stylesheet" href="/style/components.css">
-    <link rel="stylesheet" href="/style/responsive.css">
-    <link rel="stylesheet" href="/style/pages/integration.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .animate-pulse { animation: pulse 2s infinite; }
+    </style>
 </head>
-<body>
-<header>
-    <div class="header-url">
-        <h1>Generelt / Integration</h1>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
+
+<header class="h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[13px] tracking-wide">Generelt / Integration</h1>
     </div>
-    <div class="user-container">
-        <div class="user-content">
-            <h1>Velkommen tilbage</h1>
-            <h2 id="userName">...</h2>
+    <div class="text-right flex items-center gap-4">
+        <div>
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
         </div>
-        <img src="./img/user.png">
+        <img src="/img/user.png" class="h-[50px] w-[50px] rounded-full object-cover">
     </div>
 </header>
 
-<div class="content-wrapper">
-    <nav id="navbar">
-    </nav>
-    <main class="integration-page">
-        <div class="integration-header">
+<div class="flex flex-1">
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
+
+    <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
+        <!-- Page Header -->
+        <div class="flex justify-between items-center mb-8">
             <div>
-                <h1>HubSpot & Rentman Integration</h1>
-                <p>Administrer synkronisering mellem HubSpot CRM og Rentman</p>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">HubSpot & Rentman Integration</h1>
+                <p class="text-base text-text-secondary">Administrer synkronisering mellem HubSpot CRM og Rentman</p>
             </div>
-            <div class="header-actions">
-                <button class="btn-sync secondary" id="btnRefresh" onclick="refreshDashboard()">
+            <div class="flex gap-3">
+                <button class="flex items-center gap-2 py-3 px-6 bg-transparent border border-[#333] rounded-xl text-text-secondary text-[15px] font-semibold cursor-pointer transition-all hover:bg-dark-hover hover:text-text-primary" id="btnRefresh" onclick="refreshDashboard()">
                     Opdater
                 </button>
-                <button class="btn-sync primary admin-only" id="btnFullSync" onclick="runFullSync()">
+                <button class="flex items-center gap-2 py-3 px-6 bg-primary border-none rounded-xl text-white text-[15px] font-semibold cursor-pointer transition-all hover:bg-primary-hover hover:shadow-[0_4px_12px_rgba(19,127,236,0.3)] admin-only" id="btnFullSync" onclick="runFullSync()">
                     Kør Fuld Sync
                 </button>
             </div>
         </div>
 
         <!-- Stats Grid -->
-        <div class="integration-stats">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon success"><i class="fas fa-check"></i></div>
-                    <span class="stat-badge success" id="statusBadge">Online</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <!-- Status Card -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-2xl text-success"><i class="fas fa-check"></i></div>
+                    <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-success/10 text-success" id="statusBadge">Online</span>
                 </div>
-                <div class="stat-label">Integration Status</div>
-                <div class="stat-value" id="syncStatus">-</div>
-                <div class="stat-footer" id="lastSyncTime">Sidste sync: -</div>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Integration Status</p>
+                <h2 class="text-[2.2rem] font-bold text-text-primary" id="syncStatus">-</h2>
+                <p class="text-xs text-text-secondary mt-2" id="lastSyncTime">Sidste sync: -</p>
             </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon error"><i class="fas fa-exclamation-triangle"></i></div>
-                    <span class="stat-badge neutral" id="errorBadge">-</span>
+
+            <!-- Errors Card -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center text-2xl text-error"><i class="fas fa-exclamation-triangle"></i></div>
+                    <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="errorBadge">-</span>
                 </div>
-                <div class="stat-label">Uløste Fejl</div>
-                <div class="stat-value" id="unresolvedCount">-</div>
-                <div class="stat-footer" id="criticalCount">Kritiske: -</div>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Uløste Fejl</p>
+                <h2 class="text-[2.2rem] font-bold text-text-primary" id="unresolvedCount">-</h2>
+                <p class="text-xs text-text-secondary mt-2" id="criticalCount">Kritiske: -</p>
             </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon primary"><i class="fas fa-sync-alt"></i></div>
-                    <span class="stat-badge neutral" id="syncsBadge">-</span>
+
+            <!-- Syncs Card -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary"><i class="fas fa-sync-alt"></i></div>
+                    <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="syncsBadge">-</span>
                 </div>
-                <div class="stat-label">Syncs (30 dage)</div>
-                <div class="stat-value" id="totalSyncs">-</div>
-                <div class="stat-footer" id="successRate">Succesrate: -</div>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Syncs (30 dage)</p>
+                <h2 class="text-[2.2rem] font-bold text-text-primary" id="totalSyncs">-</h2>
+                <p class="text-xs text-text-secondary mt-2" id="successRate">Succesrate: -</p>
             </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon warning"><i class="fas fa-bolt"></i></div>
-                    <span class="stat-badge neutral">Webhooks</span>
+
+            <!-- Webhooks Card -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center text-2xl text-warning"><i class="fas fa-bolt"></i></div>
+                    <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary">Webhooks</span>
                 </div>
-                <div class="stat-label">Processerede Items</div>
-                <div class="stat-value" id="itemsProcessed">-</div>
-                <div class="stat-footer" id="todayItems">I dag: -</div>
+                <p class="text-sm text-text-secondary mb-2 font-medium">Processerede Items</p>
+                <h2 class="text-[2.2rem] font-bold text-text-primary" id="itemsProcessed">-</h2>
+                <p class="text-xs text-text-secondary mt-2" id="todayItems">I dag: -</p>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="integration-content">
-            <!-- Left Column - Errors & History -->
-            <div class="left-column">
-                <!-- Current Status -->
-                <div class="status-indicator" id="syncStatusIndicator">
-                    <div class="status-dot idle" id="statusDot"></div>
-                    <div class="status-text">
-                        <div class="status-title" id="currentStatusTitle">Integration Klar</div>
-                        <div class="status-subtitle" id="currentStatusSubtitle">Ingen aktiv sync</div>
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+            <!-- Left Column -->
+            <div class="flex flex-col gap-5">
+                <!-- Status Indicator -->
+                <div class="flex items-center gap-3 p-4 bg-dark-hover rounded-xl" id="syncStatusIndicator">
+                    <div class="w-3 h-3 rounded-full bg-success" id="statusDot"></div>
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-text-primary" id="currentStatusTitle">Integration Klar</p>
+                        <p class="text-xs text-text-secondary" id="currentStatusSubtitle">Ingen aktiv sync</p>
                     </div>
                 </div>
 
-                <!-- Error List -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Seneste Fejl</h3>
-                        <span class="view-all" onclick="showAllErrors()">Se alle</span>
+                <!-- Error List Card -->
+                <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                        <h3 class="text-lg font-semibold text-text-primary">Seneste Fejl</h3>
+                        <span class="text-sm text-primary font-semibold cursor-pointer hover:underline" onclick="showAllErrors()">Se alle</span>
                     </div>
-                    <div class="error-list" id="errorList">
-                        <div class="loading-state">
-                            <div class="loading-spinner"></div>
+                    <div class="flex flex-col gap-3 max-h-[500px] overflow-y-auto" id="errorList">
+                        <div class="flex items-center justify-center py-16">
+                            <div class="w-10 h-10 border-3 border-[#333] border-t-primary rounded-full animate-spin"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sync History -->
-                <div class="card" style="margin-top: 20px;">
-                    <div class="card-header">
-                        <h3>Sync Historik</h3>
+                <!-- Sync History Card -->
+                <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                        <h3 class="text-lg font-semibold text-text-primary">Sync Historik</h3>
                     </div>
-                    <div class="sync-history" id="syncHistory">
-                        <div class="loading-state">
-                            <div class="loading-spinner"></div>
+                    <div class="flex flex-col gap-3 max-h-[300px] overflow-y-auto" id="syncHistory">
+                        <div class="flex items-center justify-center py-16">
+                            <div class="w-10 h-10 border-3 border-[#333] border-t-primary rounded-full animate-spin"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column - Actions & Webhooks -->
-            <div class="right-column">
-                <!-- Sync Actions -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Sync Handlinger</h3>
+            <!-- Right Column -->
+            <div class="flex flex-col gap-5">
+                <!-- Sync Actions Card -->
+                <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                        <h3 class="text-lg font-semibold text-text-primary">Sync Handlinger</h3>
                     </div>
-                    <div class="sync-actions" id="syncActions">
-                        <button class="sync-action-btn admin-only" onclick="runSync('company')">
-                            <div class="action-icon"><i class="fas fa-building"></i></div>
-                            <div class="action-content">
-                                <div class="action-title">Sync Virksomheder</div>
-                                <div class="action-desc">Synkroniser virksomheder mellem systemer</div>
+                    <div class="flex flex-col gap-3" id="syncActions">
+                        <button class="flex items-center gap-4 p-4 bg-dark-hover border border-[#333] rounded-xl cursor-pointer transition-all hover:border-primary hover:bg-primary/5 text-left admin-only" onclick="runSync('company')">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl text-primary flex-shrink-0"><i class="fas fa-building"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-text-primary mb-1">Sync Virksomheder</p>
+                                <p class="text-xs text-text-secondary">Synkroniser virksomheder mellem systemer</p>
                             </div>
-                            <span class="action-badge">Admin</span>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-warning/10 text-warning">Admin</span>
                         </button>
-                        <button class="sync-action-btn admin-only" onclick="runSync('contact')">
-                            <div class="action-icon"><i class="fas fa-user"></i></div>
-                            <div class="action-content">
-                                <div class="action-title">Sync Kontakter</div>
-                                <div class="action-desc">Synkroniser kontaktpersoner</div>
+
+                        <button class="flex items-center gap-4 p-4 bg-dark-hover border border-[#333] rounded-xl cursor-pointer transition-all hover:border-primary hover:bg-primary/5 text-left admin-only" onclick="runSync('contact')">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl text-primary flex-shrink-0"><i class="fas fa-user"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-text-primary mb-1">Sync Kontakter</p>
+                                <p class="text-xs text-text-secondary">Synkroniser kontaktpersoner</p>
                             </div>
-                            <span class="action-badge">Admin</span>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-warning/10 text-warning">Admin</span>
                         </button>
-                        <button class="sync-action-btn admin-only" onclick="runSync('deal')">
-                            <div class="action-icon"><i class="fas fa-handshake"></i></div>
-                            <div class="action-content">
-                                <div class="action-title">Sync Deals</div>
-                                <div class="action-desc">Synkroniser deals/projekter</div>
+
+                        <button class="flex items-center gap-4 p-4 bg-dark-hover border border-[#333] rounded-xl cursor-pointer transition-all hover:border-primary hover:bg-primary/5 text-left admin-only" onclick="runSync('deal')">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl text-primary flex-shrink-0"><i class="fas fa-handshake"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-text-primary mb-1">Sync Deals</p>
+                                <p class="text-xs text-text-secondary">Synkroniser deals/projekter</p>
                             </div>
-                            <span class="action-badge">Admin</span>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-warning/10 text-warning">Admin</span>
                         </button>
-                        <button class="sync-action-btn admin-only" onclick="runSync('order')">
-                            <div class="action-icon"><i class="fas fa-box"></i></div>
-                            <div class="action-content">
-                                <div class="action-title">Sync Ordrer</div>
-                                <div class="action-desc">Synkroniser ordrer</div>
+
+                        <button class="flex items-center gap-4 p-4 bg-dark-hover border border-[#333] rounded-xl cursor-pointer transition-all hover:border-primary hover:bg-primary/5 text-left admin-only" onclick="runSync('order')">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl text-primary flex-shrink-0"><i class="fas fa-box"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-text-primary mb-1">Sync Ordrer</p>
+                                <p class="text-xs text-text-secondary">Synkroniser ordrer</p>
                             </div>
-                            <span class="action-badge">Admin</span>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-warning/10 text-warning">Admin</span>
                         </button>
-                        <button class="sync-action-btn admin-only" onclick="runFullSync()">
-                            <div class="action-icon"><i class="fas fa-rocket"></i></div>
-                            <div class="action-content">
-                                <div class="action-title">Fuld Sync</div>
-                                <div class="action-desc">Koer komplet synkronisering</div>
+
+                        <button class="flex items-center gap-4 p-4 bg-dark-hover border border-[#333] rounded-xl cursor-pointer transition-all hover:border-primary hover:bg-primary/5 text-left admin-only" onclick="runFullSync()">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl text-primary flex-shrink-0"><i class="fas fa-rocket"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-text-primary mb-1">Fuld Sync</p>
+                                <p class="text-xs text-text-secondary">Kør komplet synkronisering</p>
                             </div>
-                            <span class="action-badge">Admin</span>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-warning/10 text-warning">Admin</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Recent Webhooks -->
-                <div class="card" style="margin-top: 20px;">
-                    <div class="card-header">
-                        <h3>Seneste Webhooks</h3>
+                <!-- Webhooks Card -->
+                <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                        <h3 class="text-lg font-semibold text-text-primary">Seneste Webhooks</h3>
                     </div>
-                    <div class="webhook-list" id="webhookList">
-                        <div class="loading-state">
-                            <div class="loading-spinner"></div>
+                    <div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto" id="webhookList">
+                        <div class="flex items-center justify-center py-16">
+                            <div class="w-10 h-10 border-3 border-[#333] border-t-primary rounded-full animate-spin"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+</div>
+
+<!-- Global Modal -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center" id="globalModalOverlay">
+    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-3" id="globalModalTitle">Title</h3>
+        <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
+        <div class="flex gap-3 justify-center" id="globalModalButtons"></div>
+    </div>
 </div>
 
 <script src="/js/modal.js"></script>

@@ -105,138 +105,123 @@ const ProfileManager = {
         const rolleText = user.rolle === 'admin' ? 'Administrator' : 'Standard Bruger';
 
         main.innerHTML = `
-            <div class="dashboard-header">
-                <div>
-                    <h1>Min Profil</h1>
-                    <p>Administrer dine personlige oplysninger</p>
-                </div>
+            <div class="mb-8">
+                <h1 class="text-2xl font-semibold text-text-primary">Min Profil</h1>
+                <p class="text-text-secondary mt-1">Administrer dine personlige oplysninger</p>
             </div>
 
-            <div class="profile-content">
-                <div class="profile-sidebar">
-                    <div class="profile-card">
-                        <div class="profile-avatar">
-                            <span class="avatar-icon">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-dark-card border border-white/10 rounded-xl p-6 text-center">
+                        <div class="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-semibold text-primary">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
                         </div>
-                        <h2>${fullName}</h2>
-                        <p class="profile-role">${rolleText}</p>
-                        ${user.title ? `<p class="profile-title">${this.escapeHtml(user.title)}</p>` : ''}
-                        
-                        <div class="profile-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Brugernavn</span>
-                                <span class="stat-value">@${user.brugernavn}</span>
+                        <h2 class="text-xl font-semibold text-text-primary">${fullName}</h2>
+                        <p class="text-primary text-sm mt-1">${rolleText}</p>
+                        ${user.title ? `<p class="text-text-secondary text-sm mt-1">${this.escapeHtml(user.title)}</p>` : ''}
+
+                        <div class="mt-6 pt-6 border-t border-white/10 space-y-4 text-left">
+                            <div>
+                                <span class="text-text-secondary text-xs block">Brugernavn</span>
+                                <span class="text-text-primary">@${user.brugernavn}</span>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Oprettet</span>
-                                <span class="stat-value">${this.formatDate(user.created_at)}</span>
+                            <div>
+                                <span class="text-text-secondary text-xs block">Oprettet</span>
+                                <span class="text-text-primary">${this.formatDate(user.created_at)}</span>
                             </div>
                             ${user.last_login ? `
-                                <div class="stat-item">
-                                    <span class="stat-label">Sidst aktiv</span>
-                                    <span class="stat-value">${this.formatDateTime(user.last_login)}</span>
+                                <div>
+                                    <span class="text-text-secondary text-xs block">Sidst aktiv</span>
+                                    <span class="text-text-primary">${this.formatDateTime(user.last_login)}</span>
                                 </div>
                             ` : ''}
                         </div>
                     </div>
                 </div>
 
-                <div class="profile-main">
-                    <div class="profile-section">
-                        <div class="section-header">
-                            <h3>
-                                Personlige Oplysninger
-                            </h3>
-                            <button class="btn-edit" onclick="ProfileManager.enableEdit()">
+                <!-- Main Content -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Personal Info Section -->
+                    <div class="bg-dark-card border border-white/10 rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-text-primary">Personlige Oplysninger</h3>
+                            <button class="px-4 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors" onclick="ProfileManager.enableEdit()">
+                                <i class="fa-solid fa-pen mr-2"></i>
                                 Rediger
                             </button>
                         </div>
 
-                        <form id="profileForm" class="profile-form">
-                            <div class="form-row">
-                                <div class="form-field">
-                                    <label for="fornavn">
-                                        Fornavn
-                                    </label>
-                                    <input type="text" id="fornavn" value="${user.fornavn}" disabled>
+                        <form id="profileForm" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-text-secondary mb-1.5" for="fornavn">Fornavn</label>
+                                    <input type="text" id="fornavn" value="${user.fornavn}" disabled class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                                 </div>
-                                <div class="form-field">
-                                    <label for="efternavn">
-                                        Efternavn
-                                    </label>
-                                    <input type="text" id="efternavn" value="${user.efternavn}" disabled>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-secondary mb-1.5" for="efternavn">Efternavn</label>
+                                    <input type="text" id="efternavn" value="${user.efternavn}" disabled class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                                 </div>
                             </div>
 
-                            <div class="form-row">
-                                <div class="form-field">
-                                    <label for="email">
-                                        Email
-                                    </label>
-                                    <input type="email" id="email" value="${user.email}" disabled>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-text-secondary mb-1.5" for="email">Email</label>
+                                    <input type="email" id="email" value="${user.email}" disabled class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                                 </div>
-                                <div class="form-field">
-                                    <label for="telefon">
-                                        Telefon
-                                    </label>
-                                    <input type="tel" id="telefon" value="${user.telefon || ''}" placeholder="Ikke angivet" disabled>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-secondary mb-1.5" for="telefon">Telefon</label>
+                                    <input type="tel" id="telefon" value="${user.telefon || ''}" placeholder="Ikke angivet" disabled class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                                 </div>
                             </div>
 
-                            <div class="form-field">
-                                <label for="title">
-                                    Titel / Stilling
-                                </label>
-                                <input type="text" id="title" value="${user.title || ''}" placeholder="F.eks. Tekniker, Manager" disabled>
+                            <div>
+                                <label class="block text-sm font-medium text-text-secondary mb-1.5" for="title">Titel / Stilling</label>
+                                <input type="text" id="title" value="${user.title || ''}" placeholder="F.eks. Tekniker, Manager" disabled class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                             </div>
 
-                            <div class="form-actions" style="display: none;">
-                                <button type="button" class="btn-secondary" onclick="ProfileManager.cancelEdit()">
+                            <div class="hidden flex gap-3 pt-4 border-t border-white/10" id="profileFormActions">
+                                <button type="button" class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary rounded-lg font-medium transition-colors" onclick="ProfileManager.cancelEdit()">
                                     Annuller
                                 </button>
-                                <button type="submit" class="btn-primary">
+                                <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors">
                                     Gem ændringer
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <div class="profile-section">
-                        <div class="section-header">
-                            <h3>
-                                Sikkerhed
-                            </h3>
-                        </div>
+                    <!-- Security Section -->
+                    <div class="bg-dark-card border border-white/10 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-text-primary mb-6">Sikkerhed</h3>
 
-                        <form id="passwordForm" class="profile-form">
-                            <div class="form-field">
-                                <label for="newPassword">
-                                    Ny adgangskode
-                                </label>
-                                <input type="password" id="newPassword" placeholder="Mindst 8 tegn">
-                                <span class="field-hint">
-                                    Lad feltet være tomt, hvis du ikke vil ændre adgangskode
-                                </span>
+                        <form id="passwordForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newPassword">Ny adgangskode</label>
+                                <input type="password" id="newPassword" placeholder="Mindst 8 tegn" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                                <span class="text-xs text-text-secondary mt-1 block">Lad feltet være tomt, hvis du ikke vil ændre adgangskode</span>
                             </div>
 
-                            <div class="form-field">
-                                <label for="confirmPassword">
-                                    Bekræft adgangskode
-                                </label>
-                                <input type="password" id="confirmPassword" placeholder="Gentag ny adgangskode">
+                            <div>
+                                <label class="block text-sm font-medium text-text-secondary mb-1.5" for="confirmPassword">Bekræft adgangskode</label>
+                                <input type="password" id="confirmPassword" placeholder="Gentag ny adgangskode" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                             </div>
 
-                            <button type="submit" class="btn-primary">
+                            <button type="submit" class="px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors">
                                 Opdater adgangskode
                             </button>
                         </form>
                     </div>
 
-                    <div class="profile-section info-section">
-                        <div class="info-content">
+                    <!-- Info Section -->
+                    <div class="bg-primary/10 border border-primary/20 rounded-xl p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-info text-primary"></i>
+                            </div>
                             <div>
-                                <h4>Vil du ændre brugernavn eller rolle?</h4>
-                                <p>Kontakt en administrator for at ændre dit brugernavn eller din rolle.</p>
+                                <h4 class="font-medium text-text-primary">Vil du ændre brugernavn eller rolle?</h4>
+                                <p class="text-text-secondary text-sm mt-1">Kontakt en administrator for at ændre dit brugernavn eller din rolle.</p>
                             </div>
                         </div>
                     </div>
@@ -271,10 +256,13 @@ const ProfileManager = {
             }
         });
 
-        const formActions = document.querySelector('.form-actions');
-        if (formActions) formActions.style.display = 'flex';
+        const formActions = document.getElementById('profileFormActions');
+        if (formActions) {
+            formActions.classList.remove('hidden');
+            formActions.classList.add('flex');
+        }
 
-        const editBtn = document.querySelector('.btn-edit');
+        const editBtn = document.querySelector('button[onclick="ProfileManager.enableEdit()"]');
         if (editBtn) editBtn.style.display = 'none';
     },
 

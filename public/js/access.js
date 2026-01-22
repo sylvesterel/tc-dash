@@ -52,15 +52,21 @@ const AccessManager = {
         const statusList = document.getElementById('statusList');
         if (!statusList) return;
 
+        const typeColors = {
+            'info': 'text-text-secondary',
+            'success': 'text-green-400',
+            'error': 'text-red-400'
+        };
+
         const statusItem = document.createElement('div');
-        statusItem.className = `status-item ${type}`;
+        statusItem.className = `flex items-center gap-3 py-1.5 ${typeColors[type] || typeColors['info']}`;
 
         const now = new Date();
         const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
         statusItem.innerHTML = `
-            <span class="status-time">${time}</span>
-            <span class="status-message">${message}</span>
+            <span class="text-xs text-text-secondary opacity-60 font-mono">${time}</span>
+            <span class="text-sm">${message}</span>
         `;
 
         statusList.appendChild(statusItem);
@@ -203,10 +209,14 @@ const AccessManager = {
         const pinDisplay = document.getElementById('pinResult');
         if (pinDisplay) {
             pinDisplay.innerHTML = `
-                <div class="pin-success">
-                    <span class="pin-label">Pinkode:</span>
-                    <span class="pin-code">${pin} + #</span>
-                    <button class="btn-copy-pin" onclick="AccessManager.copyPin('${pin}')">Kopier</button>
+                <div class="flex items-center justify-between gap-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <span class="text-text-secondary text-sm">Pinkode:</span>
+                        <span class="text-2xl font-bold text-green-400 font-mono">${pin} + #</span>
+                    </div>
+                    <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors text-sm" onclick="AccessManager.copyPin('${pin}')">
+                        <i class="fa-solid fa-copy mr-2"></i>Kopier
+                    </button>
                 </div>
             `;
             pinDisplay.style.display = 'block';
@@ -360,10 +370,12 @@ const AccessManager = {
 
         if (this.seamUsers.length === 0) {
             list.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">-</div>
-                    <h3>Ingen brugere fundet</h3>
-                    <p>Opret en ny adgang ovenfor</p>
+                <div class="flex flex-col items-center justify-center py-12 text-center">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-key text-2xl text-text-secondary"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Ingen brugere fundet</h3>
+                    <p class="text-text-secondary">Opret en ny adgang ovenfor</p>
                 </div>
             `;
             return;
@@ -371,47 +383,51 @@ const AccessManager = {
 
         const now = new Date();
 
+        const statusStyles = {
+            'active': {
+                card: 'border-green-500/30',
+                badge: 'bg-green-500/20 text-green-400'
+            },
+            'expired': {
+                card: 'border-yellow-500/30',
+                badge: 'bg-yellow-500/20 text-yellow-400'
+            },
+            'revoked': {
+                card: 'border-red-500/30',
+                badge: 'bg-red-500/20 text-red-400'
+            }
+        };
+
         list.innerHTML = this.seamUsers.map(user => {
             const isExpired = user.access_schedule
                 ? new Date(user.access_schedule.ends_at) <= now
                 : false;
             const isSuspended = user.is_suspended;
-            const statusClass = isSuspended ? 'revoked' : (isExpired ? 'expired' : 'active');
+            const status = isSuspended ? 'revoked' : (isExpired ? 'expired' : 'active');
             const statusText = isSuspended ? 'Suspenderet' : (isExpired ? 'Udløbet' : 'Aktiv');
+            const styles = statusStyles[status];
             const escapedName = this.escapeHtml(user.full_name).replace(/'/g, "\\'");
 
             return `
-                <div class="access-card ${statusClass}">
-                    <div class="access-main">
-                        <div class="access-info">
-                            <div class="access-artist">
-                                <h4>${this.escapeHtml(user.full_name)}</h4>
-                            </div>
-                        </div>
-                        <div class="access-meta">
-                            ${user.access_schedule ? `
-                                <div class="meta-item">
-                                    <span class="meta-label">Periode:</span>
-                                    <span class="meta-value">
-                                        ${this.formatDate(user.access_schedule.starts_at)} -
-                                        ${this.formatDate(user.access_schedule.ends_at)}
-                                    </span>
-                                </div>
-                            ` : ''}
-                        </div>
+                <div class="bg-dark-card border ${styles.card} rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-text-primary">${this.escapeHtml(user.full_name)}</h4>
+                        ${user.access_schedule ? `
+                            <p class="text-text-secondary text-sm mt-1">
+                                ${this.formatDate(user.access_schedule.starts_at)} - ${this.formatDate(user.access_schedule.ends_at)}
+                            </p>
+                        ` : ''}
                     </div>
-                    <div class="access-actions">
-                        <div class="status-badge ${statusClass}">
-                            ${statusText}
-                        </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-3 py-1 text-xs rounded-full ${styles.badge}">${statusText}</span>
                         ${!isSuspended ? `
-                            <button class="btn-action suspend" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')" title="Suspender">
-                                    Suspender
+                            <button class="px-3 py-1.5 text-xs bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg transition-colors" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')">
+                                Suspender
                             </button>
                         ` : ''}
-                        <button class="btn-action delete" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')" title="Slet">
-                                Slet
-                        </div>
+                        <button class="px-3 py-1.5 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')">
+                            Slet
+                        </button>
                     </div>
                 </div>
             `;
@@ -466,7 +482,7 @@ const AccessManager = {
         // Toggle dropdown
         trigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isOpen = dropdown.classList.contains('show');
+            const isOpen = dropdown.classList.contains('block');
             if (isOpen) {
                 this.closeProjectPicker();
             } else {
@@ -497,8 +513,9 @@ const AccessManager = {
         const dropdown = document.getElementById('projectPickerDropdown');
         const search = document.getElementById('projectPickerSearch');
 
-        trigger?.classList.add('active');
-        dropdown?.classList.add('show');
+        trigger?.classList.add('border-primary/50');
+        dropdown?.classList.remove('hidden');
+        dropdown?.classList.add('block');
         search?.focus();
     },
 
@@ -506,8 +523,9 @@ const AccessManager = {
         const trigger = document.getElementById('projectPickerTrigger');
         const dropdown = document.getElementById('projectPickerDropdown');
 
-        trigger?.classList.remove('active');
-        dropdown?.classList.remove('show');
+        trigger?.classList.remove('border-primary/50');
+        dropdown?.classList.add('hidden');
+        dropdown?.classList.remove('block');
     },
 
     filterProjects(searchTerm) {
@@ -526,9 +544,11 @@ const AccessManager = {
 
         if (!this.projectsLoaded) {
             list.innerHTML = `
-                <div class="project-picker-empty">
-                    <div class="empty-icon">-</div>
-                    <p>Indlæser projekter...</p>
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+                        <i class="fa-solid fa-hourglass-end text-text-secondary"></i>
+                    </div>
+                    <p class="text-text-secondary text-sm">Indlæser projekter...</p>
                 </div>
             `;
             return;
@@ -536,9 +556,11 @@ const AccessManager = {
 
         if (data.length === 0) {
             list.innerHTML = `
-                <div class="project-picker-empty">
-                    <div class="empty-icon">-</div>
-                    <p>Ingen projekter fundet</p>
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+                        <i class="fa-regular fa-folder-open text-text-secondary"></i>
+                    </div>
+                    <p class="text-text-secondary text-sm">Ingen projekter fundet</p>
                 </div>
             `;
             return;
@@ -550,11 +572,11 @@ const AccessManager = {
             const endDate = item.end_date ? this.formatDateShort(item.end_date) : '?';
 
             return `
-                <div class="project-picker-item" onclick="AccessManager.selectProject(${originalIdx})">
-                    <div class="project-name">${this.escapeHtml(item.project_name)}</div>
-                    <div class="project-meta">
+                <div class="p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0" onclick="AccessManager.selectProject(${originalIdx})">
+                    <div class="text-text-primary text-sm font-medium">${this.escapeHtml(item.project_name)}</div>
+                    <div class="flex items-center gap-2 mt-1 text-xs text-text-secondary">
                         <span>${startDate} → ${endDate}</span>
-                        ${item.subproject_count > 1 ? `<span>${item.subproject_count} subprojekter</span>` : ''}
+                        ${item.subproject_count > 1 ? `<span class="opacity-50">•</span><span>${item.subproject_count} subprojekter</span>` : ''}
                     </div>
                 </div>
             `;
@@ -569,8 +591,8 @@ const AccessManager = {
         const trigger = document.getElementById('projectPickerTrigger');
         if (trigger) {
             trigger.innerHTML = `
-                <span class="selected-project">${this.escapeHtml(item.project_name)}</span>
-                <span class="chevron">▼</span>
+                <span class="text-text-primary">${this.escapeHtml(item.project_name)}</span>
+                <i class="fa-solid fa-chevron-down text-text-secondary text-xs"></i>
             `;
         }
 

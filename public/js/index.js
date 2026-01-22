@@ -53,13 +53,14 @@ async function loadDashboardStats() {
                 }
                 if (errorsBadge) {
                     errorsBadge.textContent = stats.unresolved_errors.status;
-                    errorsBadge.className = 'stat-badge';
+                    // Reset classes and apply Tailwind
+                    errorsBadge.className = 'px-2 py-0.5 text-xs rounded-full';
                     if (stats.unresolved_errors.count === 0) {
-                        errorsBadge.classList.add('success');
+                        errorsBadge.classList.add('bg-green-500/20', 'text-green-400');
                     } else if (stats.unresolved_errors.count <= 5) {
-                        errorsBadge.classList.add('warning');
+                        errorsBadge.classList.add('bg-yellow-500/20', 'text-yellow-400');
                     } else {
-                        errorsBadge.classList.add('danger');
+                        errorsBadge.classList.add('bg-red-500/20', 'text-red-400');
                     }
                 }
                 if (errorsFooter) {
@@ -168,46 +169,42 @@ function renderMenu(menu, today) {
         const isExpanded = isToday;
 
         html += `
-            <div class="menu-day-accordion ${isToday ? 'today' : ''} ${isExpanded ? 'expanded' : 'collapsed'}"
+            <div class="border ${isToday ? 'border-primary/50 bg-primary/5' : 'border-white/10'} rounded-lg overflow-hidden"
                  data-day="${day}">
-                <div class="menu-day-header" onclick="toggleMenuDay('${day}')">
-                    <div class="day-info">
-                        <span class="day-name">${dayLabels[day]}</span>
-                        ${isToday ? '<span class="today-badge">I dag</span>' : ''}
+                <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleMenuDay('${day}')">
+                    <div class="flex items-center gap-3">
+                        <span class="font-medium text-text-primary">${dayLabels[day]}</span>
+                        ${isToday ? '<span class="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">I dag</span>' : ''}
                     </div>
-                    <div class="day-preview">
-                        <span class="main-dish-preview">${dayMenu ? dayMenu.main_dish : 'Ingen menu'}</span>
-                        <span class="toggle-icon">${isExpanded ? '<i class="fa-solid fa-angles-down"></i>' : '<i class="fa-solid fa-angles-right"></i>'}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-text-secondary text-sm hidden sm:block">${dayMenu ? dayMenu.main_dish : 'Ingen menu'}</span>
+                        <span class="text-text-secondary text-xs" id="toggle-icon-${day}">${isExpanded ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-chevron-right"></i>'}</span>
                     </div>
                 </div>
-                <div class="menu-day-content" style="display: ${isExpanded ? 'block' : 'none'}">
+                <div class="border-t border-white/10 p-4 ${isExpanded ? 'block' : 'hidden'}" id="menu-content-${day}">
                     ${dayMenu ? `
-                        <div class="menu-details">
-                            <div class="menu-section">
-                                <div class="section-label">Varm ret</div>
-                                <div class="section-content">
+                        <div class="space-y-4">
+                            <div>
+                                <div class="text-xs text-text-secondary uppercase tracking-wider mb-1">Varm ret</div>
+                                <div class="text-text-primary">
                                     <strong>${dayMenu.main_dish}</strong>
-                                    ${dayMenu.main_dish_description ? `<br><span class="description">${dayMenu.main_dish_description}</span>` : ''}
+                                    ${dayMenu.main_dish_description ? `<br><span class="text-text-secondary text-sm">${dayMenu.main_dish_description}</span>` : ''}
                                 </div>
                             </div>
                             ${dayMenu.toppings && dayMenu.toppings.length > 0 ? `
-                                <div class="menu-section">
-                                    <div class="section-label">Paalag</div>
-                                    <div class="section-content">
-                                        ${dayMenu.toppings.join('<br>')}
-                                    </div>
+                                <div>
+                                    <div class="text-xs text-text-secondary uppercase tracking-wider mb-1">Paalag</div>
+                                    <div class="text-text-primary text-sm">${dayMenu.toppings.join('<br>')}</div>
                                 </div>
                             ` : ''}
                             ${dayMenu.salads && dayMenu.salads.length > 0 ? `
-                                <div class="menu-section">
-                                    <div class="section-label">Salat</div>
-                                    <div class="section-content">
-                                        ${dayMenu.salads.join('<br>')}
-                                    </div>
+                                <div>
+                                    <div class="text-xs text-text-secondary uppercase tracking-wider mb-1">Salat</div>
+                                    <div class="text-text-primary text-sm">${dayMenu.salads.join('<br>')}</div>
                                 </div>
                             ` : ''}
                         </div>
-                    ` : '<div class="no-menu">Ingen menu for denne dag</div>'}
+                    ` : '<div class="text-text-secondary text-sm">Ingen menu for denne dag</div>'}
                 </div>
             </div>
         `;
@@ -219,28 +216,25 @@ function renderMenu(menu, today) {
 function renderEmptyMenu() {
     const container = document.getElementById('menu-container');
     container.innerHTML = `
-        <div class="empty-menu">
-            <p>Ingen menu tilgangelig for denne uge.</p>
-            <button class="btn-primary" onclick="openMenuEditor()">Opret menu</button>
+        <div class="flex flex-col items-center justify-center py-8 text-center">
+            <p class="text-text-secondary mb-4">Ingen menu tilgangelig for denne uge.</p>
+            <button class="px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors" onclick="openMenuEditor()">Opret menu</button>
         </div>
     `;
 }
 
 function toggleMenuDay(day) {
-    const accordion = document.querySelector(`.menu-day-accordion[data-day="${day}"]`);
-    const content = accordion.querySelector('.menu-day-content');
-    const icon = accordion.querySelector('.toggle-icon');
+    const content = document.getElementById(`menu-content-${day}`);
+    const icon = document.getElementById(`toggle-icon-${day}`);
 
-    if (accordion.classList.contains('expanded')) {
-        accordion.classList.remove('expanded');
-        accordion.classList.add('collapsed');
-        content.style.display = 'none';
-        icon.innerHTML = '<i class="fa-solid fa-angles-right"></i>';
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        content.classList.add('block');
+        icon.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
     } else {
-        accordion.classList.remove('collapsed');
-        accordion.classList.add('expanded');
-        content.style.display = 'block';
-        icon.innerHTML = '<i class="fa-solid fa-angles-down"></i>';
+        content.classList.remove('block');
+        content.classList.add('hidden');
+        icon.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
     }
 }
 
@@ -268,44 +262,48 @@ function openMenuEditor() {
     }
 
     let html = `
-        <div class="menu-editor-header">
-            <p>Redigerer menu for <strong>Uge ${currentWeekNumber}, ${currentYear}</strong></p>
+        <div class="mb-6">
+            <p class="text-text-secondary">Redigerer menu for <strong class="text-text-primary">Uge ${currentWeekNumber}, ${currentYear}</strong></p>
         </div>
-        <div class="menu-editor-days">
+        <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
     `;
 
     dayNames.forEach(day => {
         const dayMenu = menuMap[day] || {};
 
         html += `
-            <div class="editor-day-section">
-                <h4>${dayLabels[day]}</h4>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label>Hovedret</label>
+            <div class="border-b border-white/10 pb-6 last:border-0">
+                <h4 class="font-semibold text-text-primary mb-4">${dayLabels[day]}</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5">Hovedret</label>
                         <input type="text" id="menu-${day}-main"
                                value="${dayMenu.main_dish || ''}"
-                               placeholder="F.eks. Kylling i karry">
+                               placeholder="F.eks. Kylling i karry"
+                               class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                     </div>
-                    <div class="form-field">
-                        <label>Beskrivelse</label>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5">Beskrivelse</label>
                         <input type="text" id="menu-${day}-desc"
                                value="${dayMenu.main_dish_description || ''}"
-                               placeholder="F.eks. Med ris og grontsager">
+                               placeholder="F.eks. Med ris og grontsager"
+                               class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label>Paalag (adskilt med komma)</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5">Paalag (adskilt med komma)</label>
                         <input type="text" id="menu-${day}-toppings"
                                value="${dayMenu.toppings ? dayMenu.toppings.join(', ') : ''}"
-                               placeholder="F.eks. Skinke, Ost, Leverpostej">
+                               placeholder="F.eks. Skinke, Ost, Leverpostej"
+                               class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                     </div>
-                    <div class="form-field">
-                        <label>Salater (adskilt med komma)</label>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5">Salater (adskilt med komma)</label>
                         <input type="text" id="menu-${day}-salads"
                                value="${dayMenu.salads ? dayMenu.salads.join(', ') : ''}"
-                               placeholder="F.eks. Pastasalat, Dagens salat">
+                               placeholder="F.eks. Pastasalat, Dagens salat"
+                               class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                     </div>
                 </div>
             </div>
@@ -314,9 +312,9 @@ function openMenuEditor() {
 
     html += `
         </div>
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="closeMenuEditor()">Annuller</button>
-            <button class="btn-primary" onclick="saveMenu()">Gem menu</button>
+        <div class="flex gap-3 pt-6 border-t border-white/10 mt-6">
+            <button class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary rounded-lg font-medium transition-colors" onclick="closeMenuEditor()">Annuller</button>
+            <button class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors" onclick="saveMenu()">Gem menu</button>
         </div>
     `;
 
@@ -404,26 +402,38 @@ function renderNotes() {
     };
 
     const priorityClasses = {
-        1: 'priority-critical',
-        2: 'priority-normal',
-        3: 'priority-low',
+        1: 'bg-red-500/20 text-red-400 border-red-500/30',
+        2: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+        3: 'bg-green-500/20 text-green-400 border-green-500/30',
+    };
+
+    const borderClasses = {
+        1: 'border-l-red-500',
+        2: 'border-l-yellow-500',
+        3: 'border-l-green-500',
     };
 
     let html = notesData.map(note => `
-        <div class="note-item ${priorityClasses[note.priority] || 'priority-normal'}">
-            <div class="note-header">
-                <span class="note-priority-badge ${priorityClasses[note.priority]}">${priorityLabels[note.priority] || 'Normal'}</span>
-                <div class="note-actions">
-                    <button class="note-action-btn" onclick="editNote(${note.id})" title="Rediger"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="note-action-btn" onclick="completeNote(${note.id})" title="Marker faerdig"><i class="fa-solid fa-check"></i></button>
-                    <button class="note-action-btn delete" onclick="deleteNote(${note.id})" title="Slet"><i class="fa-solid fa-trash-can"></i></button>
+        <div class="bg-dark-card border border-white/10 rounded-lg p-4 border-l-4 ${borderClasses[note.priority] || 'border-l-yellow-500'}">
+            <div class="flex items-start justify-between gap-4 mb-2">
+                <span class="px-2 py-0.5 text-xs rounded-full ${priorityClasses[note.priority] || priorityClasses[2]}">${priorityLabels[note.priority] || 'Normal'}</span>
+                <div class="flex items-center gap-1">
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary transition-colors" onclick="editNote(${note.id})" title="Rediger">
+                        <i class="fa-solid fa-pen-to-square text-sm"></i>
+                    </button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-green-500/10 text-green-400 transition-colors" onclick="completeNote(${note.id})" title="Marker faerdig">
+                        <i class="fa-solid fa-check text-sm"></i>
+                    </button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-red-400 transition-colors" onclick="deleteNote(${note.id})" title="Slet">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
                 </div>
             </div>
-            <div class="note-title">${escapeHtml(note.title)}</div>
-            ${note.content ? `<div class="note-content">${escapeHtml(note.content)}</div>` : ''}
-            <div class="note-meta">
-                <span class="note-author">${escapeHtml(note.created_by_name)}</span>
-                <span class="note-date">${formatDate(note.created_at)}</span>
+            <div class="font-medium text-text-primary mb-1">${escapeHtml(note.title)}</div>
+            ${note.content ? `<div class="text-text-secondary text-sm mb-3">${escapeHtml(note.content)}</div>` : ''}
+            <div class="flex items-center gap-3 text-xs text-text-secondary">
+                <span>${escapeHtml(note.created_by_name)}</span>
+                <span>${formatDate(note.created_at)}</span>
             </div>
         </div>
     `).join('');
@@ -434,8 +444,8 @@ function renderNotes() {
 function renderEmptyNotes() {
     const container = document.getElementById('notes-container');
     container.innerHTML = `
-        <div class="empty-notes">
-            <p>Ingen noter endnu.</p>
+        <div class="flex flex-col items-center justify-center py-8 text-center">
+            <p class="text-text-secondary">Ingen noter endnu.</p>
         </div>
     `;
 }
@@ -451,25 +461,27 @@ function openNoteEditor(noteId = null) {
     title.textContent = note ? 'Rediger Note' : 'Tilføj Note';
 
     form.innerHTML = `
-        <div class="form-field">
-            <label>Titel</label>
-            <input type="text" id="note-title" value="${note ? escapeHtml(note.title) : ''}" placeholder="Indtast titel...">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">Titel</label>
+                <input type="text" id="note-title" value="${note ? escapeHtml(note.title) : ''}" placeholder="Indtast titel..." class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">Indhold (valgfrit)</label>
+                <textarea id="note-content" rows="3" placeholder="Indtast beskrivelse..." class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors resize-none">${note ? escapeHtml(note.content || '') : ''}</textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">Prioritet</label>
+                <select id="note-priority" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                    <option value="1" ${note?.priority === 1 ? 'selected' : ''}>1 - Hoj</option>
+                    <option value="2" ${(!note || note.priority === 2) ? 'selected' : ''}>2 - Normal</option>
+                    <option value="3" ${note?.priority === 3 ? 'selected' : ''}>3 - Lav</option>
+                </select>
+            </div>
         </div>
-        <div class="form-field">
-            <label>Indhold (valgfrit)</label>
-            <textarea id="note-content" rows="3" placeholder="Indtast beskrivelse...">${note ? escapeHtml(note.content || '') : ''}</textarea>
-        </div>
-        <div class="form-field">
-            <label>Prioritet</label>
-            <select id="note-priority">
-                <option value="1" ${note?.priority === 1 ? 'selected' : ''}>1 - Hoj</option>
-                <option value="2" ${(!note || note.priority === 2) ? 'selected' : ''}>2 - Normal</option>
-                <option value="3" ${note?.priority === 3 ? 'selected' : ''}>3 - Lav</option>
-            </select>
-        </div>
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="closeNoteEditor()">Annuller</button>
-            <button class="btn-primary" onclick="saveNote()">Gem note</button>
+        <div class="flex gap-3 pt-6 border-t border-white/10 mt-6">
+            <button class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary rounded-lg font-medium transition-colors" onclick="closeNoteEditor()">Annuller</button>
+            <button class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors" onclick="saveNote()">Gem note</button>
         </div>
     `;
 

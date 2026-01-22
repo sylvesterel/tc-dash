@@ -109,18 +109,17 @@ const SluseManager = {
         filtered.forEach(item => {
             const isActive = this.selectedSluse === item.slusenavn;
             const hasContent = item.Kunde && item.Kunde.trim() !== '';
-            const color = this.colors[item.slusenavn] || '#808080';
-            const statusColor = hasContent ? "#d62f3d" : "var(--color-success)"
+            const statusColor = hasContent ? "bg-red-500" : "bg-green-500";
 
             const stallItem = document.createElement('button');
-            stallItem.className = `stall-item ${isActive ? 'active' : ''} ${hasContent ? 'optaget' : 'ledig'}`;
+            stallItem.className = `w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${isActive ? 'bg-primary/20 border border-primary/50' : 'bg-dark-card border border-white/10 hover:bg-white/5'}`;
             stallItem.innerHTML = `
-                <i class="fa-solid fa-box" style="color: var(--border-light); font-size: 21px;"></i>
-                <div class="stall-info">
-                    <span class="stall-name">${this.displayNames[item.slusenavn] || item.slusenavn}</span>
-                    <span class="stall-status">${hasContent ? item.Kunde : '— Ledig —'}</span>
+                <i class="fa-solid fa-box text-text-secondary text-xl"></i>
+                <div class="flex-1 min-w-0">
+                    <span class="block text-text-primary font-medium">${this.displayNames[item.slusenavn] || item.slusenavn}</span>
+                    <span class="block text-sm text-text-secondary truncate">${hasContent ? item.Kunde : '— Ledig —'}</span>
                 </div>
-                <div class="stall-indicator" style="background-color: ${statusColor}; border: 2px solid ${statusColor};"></div>
+                <div class="w-3 h-3 rounded-full ${statusColor} flex-shrink-0"></div>
             `;
             stallItem.onclick = () => this.selectSluse(item.slusenavn);
             stallList.appendChild(stallItem);
@@ -147,7 +146,7 @@ const SluseManager = {
         // Toggle dropdown
         trigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isOpen = dropdown.classList.contains('show');
+            const isOpen = dropdown.classList.contains('block');
             if (isOpen) {
                 this.closeProjectPicker();
             } else {
@@ -178,8 +177,9 @@ const SluseManager = {
         const dropdown = document.getElementById('projectPickerDropdown');
         const search = document.getElementById('projectPickerSearch');
 
-        trigger?.classList.add('active');
-        dropdown?.classList.add('show');
+        trigger?.classList.add('border-primary/50');
+        dropdown?.classList.remove('hidden');
+        dropdown?.classList.add('block');
         search?.focus();
     },
 
@@ -187,8 +187,9 @@ const SluseManager = {
         const trigger = document.getElementById('projectPickerTrigger');
         const dropdown = document.getElementById('projectPickerDropdown');
 
-        trigger?.classList.remove('active');
-        dropdown?.classList.remove('show');
+        trigger?.classList.remove('border-primary/50');
+        dropdown?.classList.add('hidden');
+        dropdown?.classList.remove('block');
     },
 
     filterProjects(searchTerm) {
@@ -207,9 +208,11 @@ const SluseManager = {
 
         if (!this.rentmanLoaded) {
             list.innerHTML = `
-                <div class="project-picker-empty">
-                    <div class="empty-icon"><i class="fa-solid fa-hourglass-end"></i></div>
-                    <p>Indlæser projekter...</p>
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+                        <i class="fa-solid fa-hourglass-end text-text-secondary"></i>
+                    </div>
+                    <p class="text-text-secondary text-sm">Indlæser projekter...</p>
                 </div>
             `;
             return;
@@ -217,9 +220,11 @@ const SluseManager = {
 
         if (data.length === 0) {
             list.innerHTML = `
-                <div class="project-picker-empty">
-                    <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                    <p>Ingen projekter fundet</p>
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+                        <i class="fa-regular fa-folder-open text-text-secondary"></i>
+                    </div>
+                    <p class="text-text-secondary text-sm">Ingen projekter fundet</p>
                 </div>
             `;
             return;
@@ -227,15 +232,15 @@ const SluseManager = {
 
         list.innerHTML = data.map((item, idx) => {
             const originalIdx = this.rentmanData.indexOf(item);
-            const statusClass = item.status == 4 ? 'status-out' : item.status == 5 ? 'status-in' : '';
+            const statusClass = item.status == 4 ? 'bg-orange-500/20 text-orange-400' : item.status == 5 ? 'bg-green-500/20 text-green-400' : '';
             const statusText = item.status == 4 ? 'Ud' : item.status == 5 ? 'Ind' : '';
 
             return `
-                <div class="project-picker-item" onclick="SluseManager.selectProject(${originalIdx})">
-                    <div class="project-name">${this.escapeHtml(item.sp_name)}</div>
-                    <div class="project-meta">
-                        ${statusText ? `<span class="project-status ${statusClass}">${statusText}</span>` : ''}
-                        <span>${item.st_sp_up || '?'} → ${item.end_sp_up || '?'}</span>
+                <div class="p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0" onclick="SluseManager.selectProject(${originalIdx})">
+                    <div class="text-text-primary text-sm font-medium">${this.escapeHtml(item.sp_name)}</div>
+                    <div class="flex items-center gap-2 mt-1">
+                        ${statusText ? `<span class="px-2 py-0.5 text-xs rounded-full ${statusClass}">${statusText}</span>` : ''}
+                        <span class="text-text-secondary text-xs">${item.st_sp_up || '?'} → ${item.end_sp_up || '?'}</span>
                     </div>
                 </div>
             `;
@@ -250,8 +255,8 @@ const SluseManager = {
         const trigger = document.getElementById('projectPickerTrigger');
         if (trigger) {
             trigger.innerHTML = `
-                <span>${this.escapeHtml(item.sp_name)}</span>
-                <span class="chevron">▼</span>
+                <span class="text-text-primary">${this.escapeHtml(item.sp_name)}</span>
+                <i class="fa-solid fa-chevron-down text-text-secondary text-xs"></i>
             `;
         }
 
@@ -286,10 +291,12 @@ const SluseManager = {
 
         if (!slusenavn) {
             editor.innerHTML = `
-                <div class="editor-placeholder">
-                    <div class="placeholder-icon">-</div>
-                    <h3>Vælg en bås</h3>
-                    <p>Vælg en bås fra listen til venstre for at redigere information.</p>
+                <div class="flex flex-col items-center justify-center h-full text-center py-16">
+                    <div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-hand-pointer text-3xl text-text-secondary"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Vælg en bås</h3>
+                    <p class="text-text-secondary">Vælg en bås fra listen til venstre for at redigere information.</p>
                 </div>
             `;
             return;
@@ -303,87 +310,76 @@ const SluseManager = {
         const hasContent = item.Kunde && item.Kunde.trim() !== '';
 
         const statusBadge = hasContent
-            ? '<div class="status-badge occupied">Optaget</div>'
-            : '<div class="status-badge available">Ledig</div>';
+            ? '<span class="px-3 py-1 text-sm rounded-full bg-red-500/20 text-red-400">Optaget</span>'
+            : '<span class="px-3 py-1 text-sm rounded-full bg-green-500/20 text-green-400">Ledig</span>';
 
         editor.innerHTML = `
-            <div class="editor-content">
-                <div class="editor-header">
-                    <div class="breadcrumb">
+            <div class="h-full flex flex-col">
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 text-sm text-text-secondary mb-2">
                         <span>Sluse</span>
                         <span>/</span>
-                        <span class="active-crumb">${displayName}</span>
+                        <span class="text-text-primary">${displayName}</span>
                     </div>
-                    <div class="editor-title-row">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <h2>Rediger ${displayName}</h2>
-                            <p>Opdater information for denne bås.</p>
+                            <h2 class="text-xl font-semibold text-text-primary">Rediger ${displayName}</h2>
+                            <p class="text-text-secondary text-sm mt-1">Opdater information for denne bås.</p>
                         </div>
                         ${statusBadge}
                     </div>
                 </div>
 
-                <div class="editor-card">
-                    <div class="color-stripe" style="background-color: ${color}"></div>
-                    <div class="editor-form">
-                        <div class="form-section">
-                            <div class="form-field">
-                                <label>Vælg fra Rentman</label>
-                                <div class="project-picker-wrapper">
-                                    <div class="project-picker-trigger" id="projectPickerTrigger">
-                                        <span class="placeholder">Søg efter projekt...</span>
-                                        <span class="chevron">▼</span>
-                                    </div>
-                                    <div class="project-picker-dropdown" id="projectPickerDropdown">
-                                        <input type="text" class="project-picker-search" id="projectPickerSearch" placeholder="Søg projekt...">
-                                        <div class="project-picker-list" id="projectPickerList">
-                                            <!-- Items rendered by JS -->
-                                        </div>
-                                    </div>
+                <div class="bg-dark-card border border-white/10 rounded-xl overflow-hidden flex-1">
+                    <div class="h-2" style="background-color: ${color}"></div>
+                    <div class="p-6 space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-2">Vælg fra Rentman</label>
+                            <div class="project-picker-wrapper relative">
+                                <div class="flex items-center justify-between px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg cursor-pointer hover:border-white/20 transition-colors" id="projectPickerTrigger">
+                                    <span class="text-text-secondary">Søg efter projekt...</span>
+                                    <i class="fa-solid fa-chevron-down text-text-secondary text-xs"></i>
                                 </div>
-                            </div>
-
-                            <div class="divider"></div>
-
-                            <div class="form-field">
-                                <label for="sluseKunde">
-                                    Kunde / Artist
-                                </label>
-                                <input type="text" id="sluseKunde" value="${this.escapeHtml(item.Kunde || '')}" placeholder="Indtast kunde eller artist navn">
-                            </div>
-                            <div class="form-field-two"> 
-                                <div class="form-field">
-                                    <label for="sluseDetaljer">
-                                        Detaljer / Kolli
-                                    </label>
-                                    <input type="text" id="sluseDetaljer" value="${this.escapeHtml(item.Detaljer || '')}" placeholder="Indtast detaljer eller kolli antal">
-                                </div>
-                                <div class="form-field">
-                                    <label for="sluseDato">
-                                        Dato (ud/ind)
-                                    </label>
-                                    <input type="text" id="sluseDato" value="${this.escapeHtml(item.Dato || '')}" placeholder="F.eks. Ud: 01/01 | Ind: 05/01">
+                                <div class="hidden absolute top-full left-0 right-0 mt-2 bg-dark-card border border-white/10 rounded-lg shadow-xl z-10 overflow-hidden" id="projectPickerDropdown">
+                                    <input type="text" class="w-full px-4 py-3 bg-dark-bg border-b border-white/10 text-text-primary placeholder-text-secondary focus:outline-none" id="projectPickerSearch" placeholder="Søg projekt...">
+                                    <div class="max-h-64 overflow-y-auto" id="projectPickerList">
+                                        <!-- Items rendered by JS -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="divider"></div>
+                        <div class="h-px bg-white/10"></div>
 
-                        <div class="form-section">
-                            <div class="color-section-header">
-                                <label>
-                                    Bås Farve
-                                </label>
-                                <p class="field-description">Farven er fast tildelt denne bås.</p>
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-2" for="sluseKunde">Kunde / Artist</label>
+                            <input type="text" id="sluseKunde" value="${this.escapeHtml(item.Kunde || '')}" placeholder="Indtast kunde eller artist navn" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-text-secondary mb-2" for="sluseDetaljer">Detaljer / Kolli</label>
+                                <input type="text" id="sluseDetaljer" value="${this.escapeHtml(item.Detaljer || '')}" placeholder="Indtast detaljer eller kolli antal" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                             </div>
-                            <div class="color-preview" style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background-color: ${color}; border: 2px solid rgba(255,255,255,0.2);"></div>
+                            <div>
+                                <label class="block text-sm font-medium text-text-secondary mb-2" for="sluseDato">Dato (ud/ind)</label>
+                                <input type="text" id="sluseDato" value="${this.escapeHtml(item.Dato || '')}" placeholder="F.eks. Ud: 01/01 | Ind: 05/01" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
                             </div>
                         </div>
 
-                        <div class="form-actions">
-                            <button class="btn-secondary" onclick="SluseManager.clearSluse()">Ryd bås</button>
-                            <button class="btn-primary" onclick="SluseManager.saveCurrentSluse()">
+                        <div class="h-px bg-white/10"></div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1">Bås Farve</label>
+                            <p class="text-text-secondary text-xs mb-3">Farven er fast tildelt denne bås.</p>
+                            <div class="w-10 h-10 rounded-lg border-2 border-white/20" style="background-color: ${color}"></div>
+                        </div>
+
+                        <div class="flex gap-3 pt-4 border-t border-white/10">
+                            <button class="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary rounded-lg font-medium transition-colors" onclick="SluseManager.clearSluse()">
+                                Ryd bås
+                            </button>
+                            <button class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors" onclick="SluseManager.saveCurrentSluse()">
                                 Gem ændringer
                             </button>
                         </div>

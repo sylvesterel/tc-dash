@@ -15,10 +15,10 @@ function setupMobileNav() {
     const header = document.querySelector('header');
     if (header) {
         const hamburgerBtn = document.createElement('button');
-        hamburgerBtn.className = 'hamburger-btn';
+        hamburgerBtn.className = 'md:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary transition-colors';
         hamburgerBtn.id = 'hamburgerBtn';
         hamburgerBtn.setAttribute('aria-label', 'Abn menu');
-        hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars text-lg"></i>';
         header.insertBefore(hamburgerBtn, header.firstChild);
 
         hamburgerBtn.addEventListener('click', toggleMobileNav);
@@ -26,7 +26,7 @@ function setupMobileNav() {
 
     // Add overlay element
     const overlay = document.createElement('div');
-    overlay.className = 'nav-overlay';
+    overlay.className = 'fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity';
     overlay.id = 'navOverlay';
     document.body.appendChild(overlay);
     overlay.addEventListener('click', closeMobileNav);
@@ -37,12 +37,14 @@ function toggleMobileNav() {
     const overlay = document.getElementById('navOverlay');
 
     if (nav && overlay) {
-        const isOpen = nav.classList.contains('mobile-open');
+        const isOpen = nav.classList.contains('translate-x-0');
         if (isOpen) {
             closeMobileNav();
         } else {
-            nav.classList.add('mobile-open');
-            overlay.classList.add('show');
+            nav.classList.remove('-translate-x-full');
+            nav.classList.add('translate-x-0');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('block');
             document.body.style.overflow = 'hidden';
         }
     }
@@ -52,8 +54,14 @@ function closeMobileNav() {
     const nav = document.getElementById('navbar');
     const overlay = document.getElementById('navOverlay');
 
-    if (nav) nav.classList.remove('mobile-open');
-    if (overlay) overlay.classList.remove('show');
+    if (nav) {
+        nav.classList.add('-translate-x-full');
+        nav.classList.remove('translate-x-0');
+    }
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('block');
+    }
     document.body.style.overflow = '';
 }
 
