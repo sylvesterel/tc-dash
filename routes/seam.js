@@ -7,6 +7,10 @@ const router = express.Router();
 
 const seam = new Seam({ apiKey: process.env.SEAM_API });
 const acsSystemId = process.env.SEAM_ACS_SYSTEM_ID;
+const accessGroupId = process.env.SEAM_ACCESS_GROUP_ID;
+
+// SSE clients for real-time access events
+const accessEventClients = new Set();
 
 // POST /create-user - Opret bruger i Seam med streaming status
 router.post("/create-user", authMiddleware, async (req, res) => {
