@@ -54,8 +54,8 @@ router.get("/", async (req, res) => {
     try {
         // All logged-in users can see all passwords
         const [rows] = await pool.query(
-            `SELECT id, site_name, url, username, password, created_at, updated_at
-             FROM passwords
+            `SELECT id, (SELECT fornavn FROM users as u WHERE u.id = p.user_id) as fornavn, (SELECT efternavn FROM users as u WHERE u.id = p.user_id) as efternavn, site_name, url, username, password, note, created_at, updated_at
+             FROM passwords as p
              ORDER BY site_name ASC`
         );
 
@@ -63,9 +63,11 @@ router.get("/", async (req, res) => {
         const passwords = rows.map(row => ({
             id: row.id,
             siteName: row.site_name,
+            user: `${row.fornavn} ${row.efternavn || ""}`,
             url: row.url,
             username: row.username,
             password: decrypt(row.password) || '********',
+            note: row.note,
             createdAt: row.created_at,
             updatedAt: row.updated_at
         }));
@@ -83,7 +85,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const userId = req.session.user.id;
-        const { siteName, url, username, password } = req.body;
+        const { siteName, url, username, password, note } = req.body;
 
         if (!siteName || !url || !username || !password) {
             return res.status(400).json({ error: 'Alle felter er påkrævet' });
@@ -93,9 +95,9 @@ router.post("/", async (req, res) => {
         const encryptedPassword = encrypt(password);
 
         const [result] = await pool.query(
-            `INSERT INTO passwords (user_id, site_name, url, username, password)
-             VALUES (?, ?, ?, ?, ?)`,
-            [userId, siteName.trim(), url.trim(), username.trim(), encryptedPassword]
+            `INSERT INTO passwords (user_id, site_name, url, username, password, note)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [userId, siteName.trim(), url.trim(), username.trim(), encryptedPassword, note]
         );
 
         res.status(201).json({
@@ -103,6 +105,7 @@ router.post("/", async (req, res) => {
             siteName,
             url,
             username,
+            note,
             message: 'Adgangskode gemt'
         });
     } catch (error) {

@@ -238,23 +238,35 @@ function render(searchFilter = "") {
             const item = document.createElement('div');
             item.className = 'flex items-center justify-between p-4 bg-dark-hover rounded-xl border border-transparent hover:border-[#333] transition-all group';
             item.innerHTML = `
-                <div class="flex items-center gap-4 flex-1 min-w-0">
-                    <img src="${escapeHtml(icon)}" class="w-10 h-10 rounded-lg object-contain bg-white/5 p-1" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🔒</text></svg>'">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="${escapeHtml(icon)}" class="w-10 h-10 rounded-lg object-contain bg-white/5 p-1"
+                        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🔒</text></svg>'">
                     <div class="min-w-0">
                         <h4 class="text-text-primary font-medium text-sm truncate">${escapeHtml(p.siteName)}</h4>
                         <p class="text-text-secondary text-xs truncate">${escapeHtml(domain)}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="text-right mr-4 hidden sm:block">
-                        <p class="text-text-secondary text-xs">${escapeHtml(p.username)}</p>
-                        <p class="text-text-secondary text-xs font-mono">••••••••</p>
+
+                <!-- Note + oprettet af + brugernavn -->
+                <div class="flex-1 flex justify-between items-center min-w-0 gap-4">
+                    <div class="flex flex-col truncate text-text-secondary text-xs min-w-0">
+                        <p class="text-text-secondary text-sm truncate">${escapeHtml(p.note)}</p>
+                        <p class="mt-1 text-[10px] text-text-tertiary truncate">Oprettet af: ${escapeHtml(p.user)}</p>
                     </div>
+                    <div class="flex flex-col text-right text-text-secondary text-xs min-w-[80px]">
+                        <p class="truncate">${escapeHtml(p.username)}</p>
+                        <p class="font-mono">••••••••</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 ml-3">
                     <button class="copy-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all" title="Kopiér adgangskode">
                         <i class="fa-regular fa-copy"></i>
                     </button>
                     <button class="link-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-info hover:border-info hover:text-white transition-all" title="Åbn link">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </button>
+                    <button class="copy-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all" title="Kopiér adgangskode">
+                        <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button class="delete-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-error hover:border-error hover:text-white transition-all" title="Slet">
                         <i class="fa-solid fa-trash"></i>
@@ -298,22 +310,24 @@ function render(searchFilter = "") {
 function updateStats() {
     document.getElementById('totalCountBadge').textContent = passwords.length;
     document.getElementById('totalValue').textContent = passwords.length;
-
+    let amn = 0
+    passwords.forEach(pass => amn += pass.password.length);
+   
     const unique = new Set(passwords.map(p => extractDomain(p.url))).size;
     document.getElementById('uniqueSites').textContent = unique;
 
     const score = document.getElementById('securityScore');
-    if (passwords.length > 10) {
+    if (amn / passwords.length > 16) {
         score.textContent = "Høj";
         score.className = "text-[2.8rem] font-semibold text-success mb-3";
-    } else if (passwords.length > 5) {
+    } else if (amn / passwords.length > 12) {
         score.textContent = "God";
         score.className = "text-[2.8rem] font-semibold text-info mb-3";
-    } else if (passwords.length > 0) {
-        score.textContent = "Middel<J";
+    } else if (amn / passwords.length > 8) {
+        score.textContent = "Middel";
         score.className = "text-[2.8rem] font-semibold text-warning mb-3";
     } else {
-        score.textContent = "-";
+        score.textContent = "Lav";
         score.className = "text-[2.8rem] font-semibold text-text-primary mb-3";
     }
 }
@@ -352,7 +366,8 @@ async function handleSubmit(e) {
         siteName: document.getElementById('siteName').value.trim(),
         url: document.getElementById('siteUrl').value.trim(),
         username: document.getElementById('username').value.trim(),
-        password: document.getElementById('password').value
+        password: document.getElementById('password').value,
+        note: document.getElementById('note').value
     };
 
     try {
@@ -406,7 +421,7 @@ function showToast(message, type = 'info') {
     toast.className = 'fixed bottom-6 right-6 px-5 py-3 rounded-lg text-white font-medium shadow-lg transition-all duration-300 z-[10001]';
 
     // Add type-specific background
-    switch(type) {
+    switch (type) {
         case 'success':
             toast.classList.add('bg-success');
             break;
