@@ -20,6 +20,7 @@ import seamRouter from "./routes/seam.js";
 import integrationRouter from "./routes/integration.js";
 import passwordsRouter from "./routes/passwords.js";
 import storageRouter from "./routes/storage.js";
+import pageStatusRouter from "./routes/pageStatus.js";
 
 dotenv.config();
 
@@ -76,6 +77,49 @@ app.use(session({
         sameSite: 'lax'
     }
 }));
+
+// ============================================
+// Protected Display Files (before static middleware)
+// These files require ?key=DISPLAY_KEY to access
+// ============================================
+const protectedDisplayFiles = [
+    'ipad.html',
+    'sluse-display.html',
+    'display.html',
+    'office-dashboard.html',
+    'lager-dashboard.html',
+    'new-lager-dashboard.html'
+];
+
+app.use((req, res, next) => {
+    // Check if requesting a protected display file
+    const requestedFile = req.path.replace(/^\//, ''); // Remove leading slash
+
+    if (protectedDisplayFiles.includes(requestedFile)) {
+        const displayKey = process.env.DISPLAY_KEY;
+        const providedKey = req.query.key;
+
+        if (!displayKey) {
+            console.error('DISPLAY_KEY not configured in .env');
+            return res.status(500).send('Server configuration error');
+        }
+
+        if (providedKey !== displayKey) {
+            return res.status(401).send(`
+                <!DOCTYPE html>
+                <html>
+                <head><title>Adgang nægtet</title></head>
+                <body style="font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #1a1a2e;">
+                    <div style="text-align: center; color: #fff;">
+                        <h1 style="color: #e74c3c;">Adgang nægtet</h1>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+    }
+    next();
+});
 
 // Static files
 app.use(express.static(path.join(process.cwd(), "public"), {
@@ -199,6 +243,7 @@ app.use("/api/seam", seamRouter);
 app.use("/api/integration", integrationRouter);
 app.use("/api/passwords", passwordsRouter);
 app.use("/api/storage", storageRouter);
+app.use("/api/page-status", pageStatusRouter);
 
 // Project routes (public lager dashboard endpoints)
 app.use("/projects", projectRoutes);
@@ -211,13 +256,31 @@ app.use(projectRoutes); // Also mount at root for /api/projects
 app.use(pageRoutes);
 
 // ============================================
-// Public iPad & Display
+// Display Routes (require display key via query parameter)
 // ============================================
 app.get("/ipad", (req, res) => {
+    const displayKey = process.env.DISPLAY_KEY;
+    if (req.query.key !== displayKey) {
+        return res.status(401).send(`
+            <!DOCTYPE html><html><head><title>Adgang nægtet</title></head>
+            <body style="font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#1a1a2e;">
+            <div style="text-align:center;color:#fff;"><h1 style="color:#e74c3c;">Adgang nægtet</h1></div>
+            </body></html>
+        `);
+    }
     res.sendFile(path.join(process.cwd(), "public", "ipad.html"));
 });
 
 app.get("/sluse-display", (req, res) => {
+    const displayKey = process.env.DISPLAY_KEY;
+    if (req.query.key !== displayKey) {
+        return res.status(401).send(`
+            <!DOCTYPE html><html><head><title>Adgang nægtet</title></head>
+            <body style="font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#1a1a2e;">
+            <div style="text-align:center;color:#fff;"><h1 style="color:#e74c3c;">Adgang nægtet</h1></div>
+            </body></html>
+        `);
+    }
     res.sendFile(path.join(process.cwd(), "public", "sluse-display.html"));
 });
 
@@ -258,7 +321,7 @@ async function startServer() {
     syncSeamUsers();
     setInterval(syncSeamUsers, 5 * 60 * 1000); // Every 5 minutes
 
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
         console.log(`Server running on port ${port}`);
         console.log(`Environment: ${isProduction ? 'production' : 'development'}`);
     });

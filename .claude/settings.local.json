@@ -7,7 +7,8 @@
       "Bash(Where-Object { $_FullName -notlike \"*node_modules*\" })",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(npm install:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(node -c:*)"
     ]
   }
 }

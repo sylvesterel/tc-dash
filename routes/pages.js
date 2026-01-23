@@ -1,6 +1,6 @@
 import express from "express";
 import path from "path";
-import { authMiddleware } from "../middleware/auth.js";
+import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -43,6 +43,10 @@ router.get("/projects", authMiddleware, (req, res) => {
 
 router.get("/opbevaring", authMiddleware, (req, res) => {
     res.sendFile(path.join(process.cwd(), "protected", "opbevaring.html"));
+});
+
+router.get("/admin", authMiddleware, adminMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "protected", "admin.html"));
 });
 
 export default router;

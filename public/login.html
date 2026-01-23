@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -27,44 +28,337 @@
     </script>
     <style>
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in-up { animation: fadeInUp 1s ease forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.8s ease forwards; }
+        .animate-fade-in { animation: fadeIn 1s ease forwards; }
+        .animate-slide-in-left { animation: slideInLeft 0.8s ease forwards; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        .glass {
+            background: rgba(17, 20, 24, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.15), 0 0 20px rgba(19, 127, 236, 0.1);
+        }
+
+        .btn-glow {
+            box-shadow: 0 4px 15px rgba(19, 127, 236, 0.3);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 6px 25px rgba(19, 127, 236, 0.5);
+        }
+
+        .pattern-dots {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
     </style>
 </head>
-<body class="font-sans m-0 p-0 h-screen">
-    <div class="relative w-full h-screen flex justify-center items-center">
-        <!-- Background -->
-        <div class="absolute w-full h-full">
-            <img src="img/login.jpg" alt="Koncert" class="w-full h-full object-cover brightness-[0.35]">
-            <div class="absolute inset-0 bg-gradient-to-br from-primary/60 to-primary-active/60"></div>
+<body class="font-sans m-0 p-0 min-h-screen bg-dark-bg overflow-hidden">
+    <div class="relative w-full min-h-screen flex">
+        <!-- Left Side - Branding -->
+        <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+            <!-- Background Image -->
+            <img src="img/login.jpg" alt="Koncert" class="absolute inset-0 w-full h-full object-cover">
+
+            <!-- Gradient Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-dark-bg/90"></div>
+
+            <!-- Pattern Overlay -->
+            <div class="absolute inset-0 pattern-dots opacity-30"></div>
+
+            <!-- Content -->
+            <div class="relative z-10 flex flex-col justify-between p-12 w-full">
+                <!-- Logo -->
+                <div class="animate-slide-in-left">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center">
+                            <img src="./img/logo.png" class="invert"></img>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">Appcare</h1>
+                            <p class="text-white/60 text-sm">Intern login</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Content -->
+                <div class="animate-fade-in-up">
+                    <h2 class="text-5xl font-bold text-white leading-tight mb-6">
+                        Velkommen til<br>
+                        <span class="text-white/90">Appcare Dashboard</span>
+                    </h2>
+                    <p class="text-white/70 text-lg max-w-md leading-relaxed">
+                        Tourcares interne kontrolpanel til administrative opgaver
+                    </p>
+
+                    <!-- Features -->
+                    <div class="mt-10 space-y-4">
+                        <div class="flex items-center gap-4 text-white/80 animate-fade-in opacity-0 delay-200" style="animation-fill-mode: forwards;">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                                <i class="fa-solid fa-warehouse text-sm"></i>
+                            </div>
+                            <span>Lager administration</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-white/80 animate-fade-in opacity-0 delay-300" style="animation-fill-mode: forwards;">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                                <i class="fa-solid fa-key text-sm"></i>
+                            </div>
+                            <span>Adgangskontrol</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-white/80 animate-fade-in opacity-0 delay-400" style="animation-fill-mode: forwards;">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                                <i class="fa-solid fa-chart-line text-sm"></i>
+                            </div>
+                            <span>Integration styring</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom -->
+                <div class="text-white/40 text-sm animate-fade-in opacity-0 delay-500" style="animation-fill-mode: forwards;">
+                    <p>&copy; 2026 Tourcare. Alle rettigheder forbeholdes.</p>
+                </div>
+            </div>
+
+            <!-- Floating Elements -->
+            <div class="absolute top-1/4 right-10 w-20 h-20 rounded-full bg-white/5 animate-float"></div>
+            <div class="absolute bottom-1/3 right-1/4 w-32 h-32 rounded-full bg-white/5 animate-float" style="animation-delay: 2s;"></div>
         </div>
 
-        <!-- Login Card -->
-        <div class="relative z-10 w-[380px] p-[60px_50px] rounded-[20px] bg-[rgba(20,20,30,0.8)] backdrop-blur-[15px] text-center text-white shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-fade-in-up">
-            <h1 class="text-5xl font-extrabold text-primary mb-2">Appcare</h1>
-            <p class="text-text-secondary text-[0.95rem] mb-10">Velkommen til Aula for Tourcare!</p>
-            <p id="status" class="text-red-400 text-sm mb-4"></p>
+        <!-- Right Side - Login Form -->
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 pattern-dots opacity-5"></div>
 
-            <form class="flex flex-col gap-5">
-                <input type="text" id="username" placeholder="Brugernavn" required
-                    class="p-4 rounded-xl border-none bg-white/10 text-white text-base transition-all focus:outline-none focus:bg-white/20 placeholder:text-text-secondary">
-                <input type="password" id="password" placeholder="Kodeord" required
-                    class="p-4 rounded-xl border-none bg-white/10 text-white text-base transition-all focus:outline-none focus:bg-white/20 placeholder:text-text-secondary">
-                <button id="loginBtn" type="submit"
-                    class="p-4 rounded-xl border-none bg-gradient-to-br from-primary to-primary-hover text-white text-base font-semibold cursor-pointer transition-all uppercase tracking-wider hover:bg-primary-hover">
-                    Log ind
-                </button>
-            </form>
+            <!-- Gradient Orbs -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
 
-            <div class="mt-6 text-[0.85rem] flex justify-center items-center gap-2 text-text-secondary">
-                <a href="/forgot-password.html" class="text-primary no-underline hover:underline">Glemt kodeord?</a>
-                <span>|</span>
-                <span>app.tourcare.dk | v0.02</span>
+            <!-- Login Card -->
+            <div class="relative z-10 w-full max-w-md">
+                <!-- Mobile Logo -->
+                <div class="lg:hidden text-center mb-10 animate-fade-in-up">
+                    <div class="inline-flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                            <i class="fa-solid fa-headphones text-primary text-xl"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold text-text-primary">Tourcare</h1>
+                    </div>
+                </div>
+
+                <!-- Card -->
+                <div class="glass rounded-3xl p-8 sm:p-10 animate-fade-in-up">
+                    <!-- Header -->
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-hover mb-4 btn-glow">
+                            <i class="fa-solid fa-lock text-white text-2xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-text-primary mb-2">Log ind</h2>
+                        <p class="text-text-secondary">Indtast dine oplysninger for at fortsætte</p>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-exclamation text-red-400"></i>
+                            </div>
+                            <p id="status" class="text-red-400 text-sm"></p>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form id="loginForm" class="space-y-5">
+                        <div class="space-y-2">
+                            <label for="username" class="block text-sm font-medium text-text-secondary">Brugernavn</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-user text-text-secondary"></i>
+                                </div>
+                                <input
+                                    type="text"
+                                    id="username"
+                                    placeholder="Indtast brugernavn"
+                                    required
+                                    autocomplete="username"
+                                    class="w-full pl-12 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-text-primary placeholder-text-secondary/50 transition-all duration-300 focus:outline-none focus:border-primary/50 focus:bg-white/10 input-glow"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="password" class="block text-sm font-medium text-text-secondary">Adgangskode</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-lock text-text-secondary"></i>
+                                </div>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    placeholder="Indtast adgangskode"
+                                    required
+                                    autocomplete="current-password"
+                                    class="w-full pl-12 pr-12 py-4 rounded-xl bg-white/5 border border-white/10 text-text-primary placeholder-text-secondary/50 transition-all duration-300 focus:outline-none focus:border-primary/50 focus:bg-white/10 input-glow"
+                                >
+                                <button
+                                    type="button"
+                                    id="togglePassword"
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-text-secondary hover:text-text-primary transition-colors"
+                                >
+                                    <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-sm">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" id="rememberMe" class="w-4 h-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary/50 focus:ring-offset-0">
+                                <span class="text-text-secondary group-hover:text-text-primary transition-colors">Husk mig</span>
+                            </label>
+                            <a href="/forgot-password.html" class="text-primary hover:text-primary-hover transition-colors">Glemt kodeord?</a>
+                        </div>
+
+                        <button
+                            id="loginBtn"
+                            type="submit"
+                            class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-primary to-primary-hover text-white font-semibold transition-all duration-300 hover:opacity-90 btn-glow flex items-center justify-center gap-2 group"
+                        >
+                            <span id="loginBtnText">Log ind</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform" id="loginBtnIcon"></i>
+                            <i class="fa-solid fa-spinner fa-spin hidden" id="loginBtnSpinner"></i>
+                        </button>
+                    </form>
+                <!-- Footer -->
+                <div class="text-center mt-8 text-text-secondary text-sm animate-fade-in opacity-0 delay-500" style="animation-fill-mode: forwards;">
+                    <p>app.tourcare.dk | v0.10</p>
+                </div>
             </div>
         </div>
     </div>
-    <script src="js/login.js"></script>
+
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('togglePasswordIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Show error message
+        function showError(message) {
+            const container = document.getElementById('statusContainer');
+            const status = document.getElementById('status');
+            container.classList.remove('hidden');
+            status.textContent = message;
+        }
+
+        // Hide error message
+        function hideError() {
+            const container = document.getElementById('statusContainer');
+            container.classList.add('hidden');
+        }
+
+        // Set loading state
+        function setLoading(loading) {
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const btnIcon = document.getElementById('loginBtnIcon');
+            const btnSpinner = document.getElementById('loginBtnSpinner');
+
+            if (loading) {
+                btn.disabled = true;
+                btn.classList.add('opacity-70', 'cursor-not-allowed');
+                btnText.textContent = 'Logger ind...';
+                btnIcon.classList.add('hidden');
+                btnSpinner.classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                btnText.textContent = 'Log ind';
+                btnIcon.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        // Handle form submit
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideError();
+            setLoading(true);
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    showError(data.error || 'Login fejlede. Prøv igen.');
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Der opstod en fejl. Prøv igen.');
+                setLoading(false);
+            }
+        });
+
+        // Focus username on load
+        document.getElementById('username').focus();
+    </script>
 </body>
 </html>

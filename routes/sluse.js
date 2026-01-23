@@ -1,6 +1,6 @@
 import express from "express";
 import { pool, slusePool, crmPool } from "../config/database.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { authMiddleware, webhookKeyMiddleware, displayKeyApiMiddleware } from "../middleware/auth.js";
 import { Seam } from "seam";
 import dotenv from "dotenv";
 
@@ -45,7 +45,7 @@ function getDayName(dayNum) {
 }
 
 // GET /api/sluse/selected - Get currently selected sluse (for display)
-router.get("/selected", async (req, res) => {
+router.get("/selected", displayKeyApiMiddleware, async (req, res) => {
     try {
         // Auto-clear after 2 minutes of inactivity
         if (selectedSluse.selectedAt) {
@@ -88,7 +88,7 @@ router.get("/selected", async (req, res) => {
 });
 
 // POST /api/sluse/selected - Set selected sluse (from iPad)
-router.post("/selected", async (req, res) => {
+router.post("/selected", displayKeyApiMiddleware, async (req, res) => {
     try {
         const { slusenavn } = req.body;
 
@@ -111,13 +111,13 @@ router.post("/selected", async (req, res) => {
 });
 
 // DELETE /api/sluse/selected - Clear selected sluse
-router.delete("/selected", (req, res) => {
+router.delete("/selected", displayKeyApiMiddleware, (req, res) => {
     selectedSluse = { slusenavn: null, selectedAt: null };
     res.json({ success: true, message: "Selection cleared" });
 });
 
-// GET /api/sluse/public - Public endpoint for display screen
-router.get("/public", async (req, res) => {
+// GET /api/sluse/public - Endpoint for display screen (requires display key)
+router.get("/public", displayKeyApiMiddleware, async (req, res) => {
     try {
         const [rows] = await slusePool.query('SELECT * FROM infoskaerm ORDER BY id');
         const sluseData = rows.map(row => ({
@@ -134,8 +134,8 @@ router.get("/public", async (req, res) => {
     }
 });
 
-// GET /api/sluse/timer - Get timer status
-router.get("/timer", async (req, res) => {
+// GET /api/sluse/timer - Get timer status (requires display key)
+router.get("/timer", displayKeyApiMiddleware, async (req, res) => {
     try {
         const [rows] = await slusePool.query(`
             SELECT
@@ -161,8 +161,8 @@ router.get("/timer", async (req, res) => {
     }
 });
 
-// GET /api/sluse/settings - Get sluse settings
-router.get("/settings", async (req, res) => {
+// GET /api/sluse/settings - Get sluse settings (requires display key)
+router.get("/settings", displayKeyApiMiddleware, async (req, res) => {
     try {
         const [rows] = await slusePool.query('SELECT * FROM settings LIMIT 1');
         if (rows.length === 0) {
@@ -175,33 +175,106 @@ router.get("/settings", async (req, res) => {
     }
 });
 
-// POST /api/sluse/webhook - Handle sluse webhook
-router.post("/webhook", async (req, res) => {
+// GET /api/sluse/webhook - Handle sluse webhook (requires webhook key)
+router.get("/webhook", webhookKeyMiddleware, async (req, res) => {
     try {
-        const payload = req.body;
-        console.log('Sluse webhook received:', JSON.stringify(payload).substring(0, 200));
+        const { port, warn, alarm, timer, portlive, paused } = req.query;
 
-        // Process webhook data
-        if (payload.event === 'door_opened') {
-            await slusePool.query('UPDATE settings SET livestatus = 1, status = 1 WHERE 1=1');
-        } else if (payload.event === 'door_closed') {
-            await slusePool.query('UPDATE settings SET livestatus = 0, status = 0 WHERE 1=1');
+        const params = [];
+        const values = [];
+
+        if (port !== undefined) {
+            switch (port) {
+                case 'closed':
+                    params.push("status = ?");
+                    values.push(0);
+                    break;
+                case 'closing':
+                    params.push("status = ?");
+                    values.push(1);
+                    break;
+                case 'open':
+                    params.push("status = ?");
+                    values.push(2);
+                    break;
+            }
         }
+
+        if (paused !== undefined) {
+            params.push("paused = ?");
+            values.push(paused === '1' || paused === 1 ? 1 : 0);
+        }
+
+        if (portlive !== undefined) {
+            switch (portlive) {
+                case 'closed':
+                    params.push("livestatus = ?");
+                    values.push(0);
+                    break;
+                case 'closing':
+                    params.push("livestatus = ?");
+                    values.push(1);
+                    break;
+                case 'open':
+                    params.push("livestatus = ?");
+                    values.push(2);
+                    break;
+            }
+        }
+
+        if (warn !== undefined) {
+            params.push("warn = ?");
+            values.push(parseInt(warn));
+        }
+
+        if (alarm !== undefined) {
+            params.push("alarm = ?");
+            values.push(parseInt(alarm));
+        }
+
+        if (timer !== undefined) {
+            const timeParts = timer.split(':');
+            if (timeParts.length === 2) {
+                const minutes = parseInt(timeParts[0]);
+                const seconds = parseInt(timeParts[1]);
+                params.push("timer = DATE_ADD(NOW(), INTERVAL ? SECOND)");
+                values.push(minutes * 60 + seconds);
+            }
+        }
+
+        params.push("opdateret = NOW()");
+
+        if (params.length === 1) {
+            return res.json({ success: true, message: 'No changes' });
+        }
+
+        const sql = `UPDATE portstatus SET ${params.join(", ")} WHERE portnavn = 'sluse'`;
+        await slusePool.query(sql, values);
+
+        // Log webhook call to sluselog
+        const varsForLog = Object.entries(req.query)
+            .filter(([key]) => key !== 'responseKey' && key !== 'key')
+            .map(([key, val]) => `${key}=${val}`)
+            .join('&');
+        await slusePool.query(
+            "INSERT INTO sluselog (slusenavn, action, variables) VALUES (?, 'statusMsg', ?)",
+            ['sluse', varsForLog]
+        );
 
         res.json({ success: true });
     } catch (err) {
-        console.error('Error processing sluse webhook:', err);
-        res.status(500).json({ error: "Webhook fejlede" });
+        console.error('Error processing webhook:', err);
+        res.status(500).json({ error: "Webhook processing failed" });
     }
 });
 
 // GET /api/sluse/webhook - Webhook status
-router.get("/webhook", async (req, res) => {
+router.get("/webhook/status", async (req, res) => {
     res.json({ status: 'active', message: 'Sluse webhook endpoint' });
 });
 
-// POST /api/sluse/weekly-reset - Reset weekly data
-router.post("/weekly-reset", async (req, res) => {
+// POST /api/sluse/weekly-reset - Reset weekly data (requires auth)
+router.post("/weekly-reset", authMiddleware, async (req, res) => {
     try {
         await slusePool.query('UPDATE infoskaerm SET Kunde = "", Detaljer = "", Dato = ""');
         res.json({ success: true, message: "Ugentlig nulstilling gennemført" });
@@ -211,8 +284,8 @@ router.post("/weekly-reset", async (req, res) => {
     }
 });
 
-// GET /api/sluse/weekly-reset - Get reset status
-router.get("/weekly-reset", async (req, res) => {
+// GET /api/sluse/weekly-reset - Get reset status (requires auth)
+router.get("/weekly-reset", authMiddleware, async (req, res) => {
     res.json({ success: true, message: "Weekly reset endpoint" });
 });
 
@@ -294,8 +367,8 @@ router.delete("/:slusenavn/clear", authMiddleware, async (req, res) => {
     }
 });
 
-// GET /api/office-dashboard - Public endpoint for office display
-router.get("/office-dashboard", async (req, res) => {
+// GET /api/office-dashboard - Endpoint for office display (requires display key)
+router.get("/office-dashboard", displayKeyApiMiddleware, async (req, res) => {
     try {
         const result = {
             success: true,

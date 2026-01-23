@@ -45,6 +45,14 @@ const AccessManager = {
                 form?.requestSubmit();
             }
         }));
+
+        // User search
+        const searchUsers = document.getElementById('searchUsers');
+        if (searchUsers) {
+            searchUsers.addEventListener('input', (e) => {
+                this.renderUsersList(e.target.value);
+            });
+        }
     },
 
     // Status box opdatering
@@ -364,18 +372,28 @@ const AccessManager = {
         if (expiredEl) expiredEl.textContent = expired;
     },
 
-    renderUsersList() {
+    renderUsersList(filter = '') {
         const list = document.getElementById('accessList');
         if (!list) return;
 
-        if (this.seamUsers.length === 0) {
+        // Filter users
+        let filteredUsers = this.seamUsers;
+        if (filter.trim()) {
+            const searchTerm = filter.toLowerCase();
+            filteredUsers = this.seamUsers.filter(user => {
+                const name = (user.full_name || '').toLowerCase();
+                return name.includes(searchTerm);
+            });
+        }
+
+        if (filteredUsers.length === 0) {
             list.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-12 text-center">
                     <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
                         <i class="fa-solid fa-key text-2xl text-text-secondary"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-text-primary mb-2">Ingen brugere fundet</h3>
-                    <p class="text-text-secondary">Opret en ny adgang ovenfor</p>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">${filter ? 'Ingen resultater' : 'Ingen brugere fundet'}</h3>
+                    <p class="text-text-secondary">${filter ? 'Prøv et andet søgeord' : 'Opret en ny adgang til venstre'}</p>
                 </div>
             `;
             return;
@@ -385,20 +403,23 @@ const AccessManager = {
 
         const statusStyles = {
             'active': {
-                card: 'border-green-500/30',
-                badge: 'bg-green-500/20 text-green-400'
+                card: 'bg-green-500/5 border-green-500/20 hover:border-green-500/40',
+                badge: 'bg-green-500/20 text-green-400',
+                icon: 'fa-user-check text-green-400'
             },
             'expired': {
-                card: 'border-yellow-500/30',
-                badge: 'bg-yellow-500/20 text-yellow-400'
+                card: 'bg-yellow-500/5 border-yellow-500/20 hover:border-yellow-500/40',
+                badge: 'bg-yellow-500/20 text-yellow-400',
+                icon: 'fa-clock text-yellow-400'
             },
             'revoked': {
-                card: 'border-red-500/30',
-                badge: 'bg-red-500/20 text-red-400'
+                card: 'bg-red-500/5 border-red-500/20 hover:border-red-500/40',
+                badge: 'bg-red-500/20 text-red-400',
+                icon: 'fa-user-slash text-red-400'
             }
         };
 
-        list.innerHTML = this.seamUsers.map(user => {
+        list.innerHTML = filteredUsers.map(user => {
             const isExpired = user.access_schedule
                 ? new Date(user.access_schedule.ends_at) <= now
                 : false;
@@ -409,24 +430,32 @@ const AccessManager = {
             const escapedName = this.escapeHtml(user.full_name).replace(/'/g, "\\'");
 
             return `
-                <div class="bg-dark-card border ${styles.card} rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-text-primary">${this.escapeHtml(user.full_name)}</h4>
+                <div class="border ${styles.card} rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-all duration-200">
+                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid ${styles.icon}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-text-primary truncate">${this.escapeHtml(user.full_name)}</h4>
                         ${user.access_schedule ? `
-                            <p class="text-text-secondary text-sm mt-1">
-                                ${this.formatDate(user.access_schedule.starts_at)} - ${this.formatDate(user.access_schedule.ends_at)}
-                            </p>
+                            <div class="flex items-center gap-2 mt-1 text-text-secondary text-sm">
+                                <i class="fa-regular fa-calendar text-xs"></i>
+                                <span>${this.formatDate(user.access_schedule.starts_at)} → ${this.formatDate(user.access_schedule.ends_at)}</span>
+                            </div>
                         ` : ''}
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <span class="px-3 py-1 text-xs rounded-full ${styles.badge}">${statusText}</span>
+                        <span class="px-3 py-1.5 text-xs font-medium rounded-lg ${styles.badge}">${statusText}</span>
                         ${!isSuspended ? `
-                            <button class="px-3 py-1.5 text-xs bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg transition-colors" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')">
-                                Suspender
+                            <button class="px-3 py-1.5 text-xs bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded-lg transition-all duration-200 flex items-center gap-1.5" onclick="AccessManager.suspendUser('${user.acs_user_id}', '${escapedName}')">
+                                <i class="fa-solid fa-pause text-[10px]"></i> Suspender
                             </button>
-                        ` : ''}
-                        <button class="px-3 py-1.5 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')">
-                            Slet
+                        ` : `
+                            <button class="px-3 py-1.5 text-xs bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg transition-all duration-200 flex items-center gap-1.5" onclick="AccessManager.unsuspendUser('${user.acs_user_id}', '${escapedName}')">
+                                <i class="fa-solid fa-play text-[10px]"></i> Aktiver
+                            </button>
+                        `}
+                        <button class="px-3 py-1.5 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all duration-200 flex items-center gap-1.5" onclick="AccessManager.deleteUser('${user.acs_user_id}', '${escapedName}')">
+                            <i class="fa-solid fa-trash text-[10px]"></i> Slet
                         </button>
                     </div>
                 </div>
@@ -463,12 +492,14 @@ const AccessManager = {
             const data = await res.json();
 
             if (data.success) {
-                this.projects = data.projects || [];
+                this.projects = data.data || [];
                 this.projectsLoaded = true;
                 this.renderProjectList();
             }
         } catch (err) {
             console.error('Error loading projects:', err);
+            this.projectsLoaded = true;
+            this.projects = [];
         }
     },
 
@@ -544,9 +575,9 @@ const AccessManager = {
 
         if (!this.projectsLoaded) {
             list.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-8 text-center">
-                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                        <i class="fa-solid fa-hourglass-end text-text-secondary"></i>
+                <div class="flex flex-col items-center justify-center py-8 text-center px-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
+                        <i class="fa-solid fa-spinner fa-spin text-primary"></i>
                     </div>
                     <p class="text-text-secondary text-sm">Indlæser projekter...</p>
                 </div>
@@ -556,9 +587,9 @@ const AccessManager = {
 
         if (data.length === 0) {
             list.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-8 text-center">
-                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                        <i class="fa-regular fa-folder-open text-text-secondary"></i>
+                <div class="flex flex-col items-center justify-center py-8 text-center px-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-3">
+                        <i class="fa-regular fa-folder-open text-text-secondary text-xl"></i>
                     </div>
                     <p class="text-text-secondary text-sm">Ingen projekter fundet</p>
                 </div>
@@ -572,11 +603,20 @@ const AccessManager = {
             const endDate = item.end_date ? this.formatDateShort(item.end_date) : '?';
 
             return `
-                <div class="p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0" onclick="AccessManager.selectProject(${originalIdx})">
-                    <div class="text-text-primary text-sm font-medium">${this.escapeHtml(item.project_name)}</div>
-                    <div class="flex items-center gap-2 mt-1 text-xs text-text-secondary">
-                        <span>${startDate} → ${endDate}</span>
-                        ${item.subproject_count > 1 ? `<span class="opacity-50">•</span><span>${item.subproject_count} subprojekter</span>` : ''}
+                <div class="p-3 hover:bg-white/5 cursor-pointer transition-all duration-150 border-b border-white/5 last:border-0 group" onclick="AccessManager.selectProject(${originalIdx})">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                            <i class="fa-solid fa-folder text-primary text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-text-primary text-sm font-medium truncate">${this.escapeHtml(item.project_name)}</div>
+                            <div class="flex items-center gap-2 mt-0.5 text-xs text-text-secondary">
+                                <i class="fa-regular fa-calendar text-[10px]"></i>
+                                <span>${startDate} → ${endDate}</span>
+                                ${item.subproject_count > 1 ? `<span class="opacity-50">•</span><span>${item.subproject_count} subprojekter</span>` : ''}
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-text-secondary text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
                 </div>
             `;
@@ -591,8 +631,11 @@ const AccessManager = {
         const trigger = document.getElementById('projectPickerTrigger');
         if (trigger) {
             trigger.innerHTML = `
-                <span class="text-text-primary">${this.escapeHtml(item.project_name)}</span>
-                <i class="fa-solid fa-chevron-down text-text-secondary text-xs"></i>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-folder text-primary"></i>
+                    <span class="text-text-primary font-medium">${this.escapeHtml(item.project_name)}</span>
+                </div>
+                <i class="fa-solid fa-chevron-down text-text-secondary text-xs transition-transform duration-200"></i>
             `;
         }
 

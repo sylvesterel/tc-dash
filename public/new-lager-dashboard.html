@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="robots" content="noindex, nofollow">
     <title>Tourcare | Lager Overblik - 65" Display</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -414,6 +415,10 @@
             fetchInterval: 120 // Seconds between data fetches
         };
 
+        // Hent display key fra URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const displayKey = urlParams.get('key') || '';
+
         /* =======================
            CLOCK
         ======================= */
@@ -452,7 +457,8 @@
 
         async function safeFetch(url) {
             try {
-                const res = await fetch(url);
+                const separator = url.includes('?') ? '&' : '?';
+                const res = await fetch(`${url}${separator}key=${encodeURIComponent(displayKey)}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return await res.json();
             } catch (e) {
@@ -476,6 +482,16 @@
         }
 
         /* =======================
+           SECURITY
+        ======================= */
+        function esc(text) {
+            if (!text) return '';
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        /* =======================
            RENDER
         ======================= */
         function renderList(containerId, items, borderClass) {
@@ -485,9 +501,9 @@
             container.innerHTML = items.map(item => `
                 <div class="lager-item ${borderClass}">
                     <div class="lager-item-info">
-                        <span class="lager-item-name">${item.displayname || ''}</span>
+                        <span class="lager-item-name">${esc(item.displayname || '')}</span>
                         ${item.project && item.project !== item.displayname ?
-                            `<span class="lager-item-project">${item.project}</span>` : ''}
+                            `<span class="lager-item-project">${esc(item.project)}</span>` : ''}
                     </div>
                     <span class="lager-item-date">${formatDate(item.sp_start_up || item.sp_end_pp)}</span>
                 </div>

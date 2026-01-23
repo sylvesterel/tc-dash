@@ -8,6 +8,22 @@ const StallsManager = {
     selectedStallId: null,
     apiEndpoint: '/api/stalls',
 
+    // Security: HTML Escaping
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
+    // Validate and sanitize color values
+    sanitizeColor(color) {
+        if (!color) return '#9DABB9';
+        // Only allow valid hex colors
+        const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+        return hexPattern.test(color) ? color : '#9DABB9';
+    },
+
     // ============================================
     // Initialize
     // ============================================
@@ -126,7 +142,7 @@ const StallsManager = {
         filtered.forEach(stall => {
             const isActive = this.selectedStallId === stall.id;
             const statusText = stall.status === 'occupied' ? 'Optaget' : 'Ledig';
-            const statusColor = stall.status === 'occupied' ? stall.color : '#9DABB9';
+            const statusColor = stall.status === 'occupied' ? this.sanitizeColor(stall.color) : '#9DABB9';
 
             const stallItem = document.createElement('button');
             stallItem.className = `stall-item ${isActive ? 'active' : ''}`;
@@ -134,7 +150,7 @@ const StallsManager = {
                 <div class="stall-icon">📦</div>
                 <div class="stall-info">
                     <span class="stall-name">Bås ${String(stall.stall_number).padStart(2, '0')}</span>
-                    <span class="stall-status">${statusText}</span>
+                    <span class="stall-status">${this.escapeHtml(statusText)}</span>
                 </div>
                 <div class="stall-indicator" style="background-color: ${statusColor}"></div>
             `;
@@ -192,7 +208,7 @@ const StallsManager = {
                 </div>
 
                 <div class="editor-card">
-                    <div class="color-stripe" style="background-color: ${stall.color}"></div>
+                    <div class="color-stripe" style="background-color: ${this.sanitizeColor(stall.color)}"></div>
                     <div class="editor-form">
                         <div class="form-section">
                             <div class="form-row">
@@ -201,7 +217,7 @@ const StallsManager = {
                                         <span class="label-icon">🏷️</span>
                                         Navn
                                     </label>
-                                    <input type="text" id="stallName" value="${stall.name || ''}" placeholder="Indtast navn på bås">
+                                    <input type="text" id="stallName" value="${this.escapeHtml(stall.name || '')}" placeholder="Indtast navn på bås">
                                 </div>
                                 <div class="form-field">
                                     <label for="stallQuantity">
@@ -241,16 +257,16 @@ const StallsManager = {
                             </div>
                             <div class="color-picker">
                                 <div class="color-options">
-                                    ${this.renderColorOptions(stall.color)}
+                                    ${this.renderColorOptions(this.sanitizeColor(stall.color))}
                                 </div>
                                 <div class="color-divider"></div>
                                 <div class="hex-input">
                                     <span class="hex-label">Hex</span>
                                     <div class="hex-field">
                                         <span class="hex-hash">#</span>
-                                        <input type="text" id="hexInput" value="${stall.color.replace('#', '')}" maxlength="6">
+                                        <input type="text" id="hexInput" value="${this.sanitizeColor(stall.color).replace('#', '')}" maxlength="6">
                                     </div>
-                                    <div class="hex-preview" id="hexPreview" style="background-color: ${stall.color}"></div>
+                                    <div class="hex-preview" id="hexPreview" style="background-color: ${this.sanitizeColor(stall.color)}"></div>
                                 </div>
                             </div>
                         </div>

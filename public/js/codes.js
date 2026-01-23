@@ -7,6 +7,16 @@ let deleteId = null;
 let activeFilter = 'all';
 
 // ============================================
+// Security: HTML Escaping
+// ============================================
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
 // DOM Elements
 // ============================================
 const passwordContainer = document.getElementById('passwordContainer');
@@ -229,15 +239,15 @@ function render(searchFilter = "") {
             item.className = 'flex items-center justify-between p-4 bg-dark-hover rounded-xl border border-transparent hover:border-[#333] transition-all group';
             item.innerHTML = `
                 <div class="flex items-center gap-4 flex-1 min-w-0">
-                    <img src="${icon}" class="w-10 h-10 rounded-lg object-contain bg-white/5 p-1" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🔒</text></svg>'">
+                    <img src="${escapeHtml(icon)}" class="w-10 h-10 rounded-lg object-contain bg-white/5 p-1" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🔒</text></svg>'">
                     <div class="min-w-0">
-                        <h4 class="text-text-primary font-medium text-sm truncate">${p.siteName}</h4>
-                        <p class="text-text-secondary text-xs truncate">${domain}</p>
+                        <h4 class="text-text-primary font-medium text-sm truncate">${escapeHtml(p.siteName)}</h4>
+                        <p class="text-text-secondary text-xs truncate">${escapeHtml(domain)}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="text-right mr-4 hidden sm:block">
-                        <p class="text-text-secondary text-xs">${p.username}</p>
+                        <p class="text-text-secondary text-xs">${escapeHtml(p.username)}</p>
                         <p class="text-text-secondary text-xs font-mono">••••••••</p>
                     </div>
                     <button class="copy-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all" title="Kopiér adgangskode">

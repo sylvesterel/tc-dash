@@ -3,48 +3,43 @@
  * Handles HubSpot & Rentman integration dashboard functionality
  */
 
-let currentUser = null;
-let isAdmin = false;
-let refreshInterval = null;
-let isSyncRunning = false;
+var integrationUser = null;
+var isIntegrationAdmin = false;
+var refreshInterval = null;
+var isSyncRunning = false;
 
 // Initialize dashboard on load
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadUserInfo();
-    await refreshDashboard();
-
-    // Auto refresh every 30 seconds
-    refreshInterval = setInterval(refreshDashboard, 30000);
+document.addEventListener('DOMContentLoaded', function() {
+    loadIntegrationUserInfo().then(function() {
+        return refreshDashboard();
+    }).then(function() {
+        // Auto refresh every 30 seconds
+        refreshInterval = setInterval(refreshDashboard, 30000);
+    });
 });
 
 // Load user info and set admin visibility
-async function loadUserInfo() {
-    try {
-        const response = await fetch('/me');
-        if (response.ok) {
-            const data = await response.json();
-            currentUser = data.user;
-            isAdmin = currentUser.rolle === 'admin';
-
-            // Update user name in header
-            const userNameEl = document.getElementById('userName');
-            if (userNameEl) {
-                userNameEl.textContent = currentUser.fornavn || currentUser.brugernavn;
-            }
-
-            // Show/hide admin-only elements
+function loadIntegrationUserInfo() {
+    return fetch('/me')
+        .then(function(response) {
+            if (response.ok) return response.json();
+            throw new Error('Failed to load user');
+        })
+        .then(function(data) {
+            integrationUser = data.user;
+            isIntegrationAdmin = integrationUser && integrationUser.rolle === 'admin';
             updateAdminVisibility();
-        }
-    } catch (error) {
-        console.error('Error loading user info:', error);
-    }
+        })
+        .catch(function(error) {
+            console.error('Error loading user info:', error);
+        });
 }
 
 // Update visibility of admin-only elements
 function updateAdminVisibility() {
     const adminElements = document.querySelectorAll('.admin-only');
     adminElements.forEach(el => {
-        if (!isAdmin) {
+        if (!isIntegrationAdmin) {
             el.style.display = 'none';
         }
     });
@@ -208,13 +203,13 @@ function updateErrorList(errors) {
                 ${getSeverityIcon(error.severity)}
             </div>
             <div class="flex-1 min-w-0">
-                <div class="text-text-primary text-sm font-medium truncate" title="${escapeHtml(error.error_message)}">
-                    ${escapeHtml(error.error_message)}
+                <div class="text-text-primary text-sm font-medium truncate" title="${escapeHtmlIntegration(error.error_message)}">
+                    ${escapeHtmlIntegration(error.error_message)}
                 </div>
                 <div class="flex items-center gap-2 mt-1 text-xs text-text-secondary">
-                    <span>${error.source_system || 'system'}</span>
+                    <span>${escapeHtmlIntegration(error.source_system || 'system')}</span>
                     <span class="opacity-50">•</span>
-                    <span>${error.error_type}</span>
+                    <span>${escapeHtmlIntegration(error.error_type)}</span>
                     <span class="opacity-50">•</span>
                     <span>${formatRelativeTime(new Date(error.created_at))}</span>
                 </div>
@@ -259,10 +254,10 @@ function updateSyncHistory(syncs) {
             <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${statusColors[statusClass] || statusColors['partial']}">${icon}</div>
                 <div class="flex-1 min-w-0">
-                    <div class="text-text-primary text-sm font-medium">${formatSyncType(sync.sync_type)} Sync</div>
+                    <div class="text-text-primary text-sm font-medium">${escapeHtmlIntegration(formatSyncType(sync.sync_type))} Sync</div>
                     <div class="text-xs text-text-secondary">
                         ${formatRelativeTime(new Date(sync.started_at))}
-                        ${sync.triggered_by ? `• af ${sync.triggered_by}` : ''}
+                        ${sync.triggered_by ? `• af ${escapeHtmlIntegration(sync.triggered_by)}` : ''}
                     </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -300,9 +295,9 @@ function updateWebhookList(webhooks) {
 
     container.innerHTML = webhooks.slice(0, 10).map(webhook => `
         <div class="flex items-center gap-3 py-2 px-3 hover:bg-white/5 rounded-lg transition-colors">
-            <span class="px-2 py-0.5 text-xs rounded-full ${sourceColors[webhook.source] || 'bg-white/10 text-text-secondary'}">${webhook.source}</span>
-            <span class="flex-1 text-text-primary text-sm truncate">${webhook.event_type || webhook.subscription_type || 'unknown'}</span>
-            <span class="text-xs ${statusColors[webhook.status] || 'text-text-secondary'}">${webhook.status}</span>
+            <span class="px-2 py-0.5 text-xs rounded-full ${sourceColors[webhook.source] || 'bg-white/10 text-text-secondary'}">${escapeHtmlIntegration(webhook.source)}</span>
+            <span class="flex-1 text-text-primary text-sm truncate">${escapeHtmlIntegration(webhook.event_type || webhook.subscription_type || 'unknown')}</span>
+            <span class="text-xs ${statusColors[webhook.status] || 'text-text-secondary'}">${escapeHtmlIntegration(webhook.status)}</span>
             <span class="text-xs text-text-secondary">${formatRelativeTime(new Date(webhook.created_at))}</span>
         </div>
     `).join('');
@@ -327,7 +322,7 @@ async function runSync(type) {
         return;
     }
 
-     if (!isAdmin) {
+     if (!isIntegrationAdmin) {
         showError('Kun administratorer kan køre sync');
         return;
     }
@@ -363,7 +358,7 @@ async function runSync(type) {
 
 // Run full sync (admin only)
 async function runFullSync() {
-    if (!isAdmin) {
+    if (!isIntegrationAdmin) {
         showError('Kun administratorer kan køre fuld sync');
         return;
     }
@@ -515,8 +510,8 @@ function getSeverityIcon(severity) {
     return icons[severity] || '<i class="fas fa-circle"></i>';
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
+function escapeHtmlIntegration(text) {
+    var div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
@@ -546,14 +541,8 @@ function showError(message) {
 }
 
 // Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slide-in {
-        from { transform: translateX(100px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    .animate-slide-in {
-        animation: slide-in 0.3s ease;
-    }
-`;
-document.head.appendChild(style);
+(function() {
+    var integrationStyle = document.createElement('style');
+    integrationStyle.textContent = '@keyframes slide-in { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } } .animate-slide-in { animation: slide-in 0.3s ease; }';
+    document.head.appendChild(integrationStyle);
+})();

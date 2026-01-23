@@ -1,6 +1,6 @@
 import express from "express";
 import { pool, addBusinessDays } from "../config/database.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { authMiddleware, displayKeyApiMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -26,11 +26,11 @@ async function queryProjects(res, sql, params = []) {
 }
 
 // ============================================
-// Public Lager Dashboard Endpoints (No Auth)
+// Lager Dashboard Endpoints (requires display key)
 // ============================================
 
 // GET /projects/confirmed - Skal pakkes (Status 3)
-router.get("/confirmed", (req, res) => {
+router.get("/confirmed", displayKeyApiMiddleware, (req, res) => {
     const today = new Date();
     const p = PERIODS.confirmed;
     queryProjects(res, `
@@ -54,7 +54,7 @@ router.get("/confirmed", (req, res) => {
 });
 
 // GET /projects/prepped - Er pakket (Status 4)
-router.get("/prepped", (req, res) => {
+router.get("/prepped", displayKeyApiMiddleware, (req, res) => {
     const today = new Date();
     const p = PERIODS.prepped;
     queryProjects(res, `
@@ -78,7 +78,7 @@ router.get("/prepped", (req, res) => {
 });
 
 // GET /projects/onlocation - Kommer hjem (Status 5)
-router.get("/onlocation", (req, res) => {
+router.get("/onlocation", displayKeyApiMiddleware, (req, res) => {
     const today = new Date();
     const p = PERIODS.onLocation;
     queryProjects(res, `
@@ -102,7 +102,7 @@ router.get("/onlocation", (req, res) => {
 });
 
 // GET /projects/tobeinvoiced - Pakket ud (Status 9)
-router.get("/tobeinvoiced", (req, res) => {
+router.get("/tobeinvoiced", displayKeyApiMiddleware, (req, res) => {
     const today = new Date();
     const p = PERIODS.toBeInvoiced;
     queryProjects(res, `
@@ -124,7 +124,7 @@ router.get("/tobeinvoiced", (req, res) => {
 });
 
 // GET /projects/delayed - Forsinket
-router.get("/delayed", (req, res) => {
+router.get("/delayed", displayKeyApiMiddleware, (req, res) => {
     const today = new Date();
     const p = PERIODS.delayed;
     queryProjects(res, `
@@ -141,7 +141,7 @@ router.get("/delayed", (req, res) => {
 });
 
 // GET /transports - Transport
-router.get("/transports", (req, res) => {
+router.get("/transports", displayKeyApiMiddleware, (req, res) => {
     const today = new Date();
     const p = PERIODS.transport;
     queryProjects(res, `

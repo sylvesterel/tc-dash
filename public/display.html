@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="robots" content="noindex, nofollow">
     <title>TourCare | Sluse System</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -224,6 +225,10 @@
     </div>
 
     <script>
+        // Hent display key fra URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const displayKey = urlParams.get('key') || '';
+
         const displayNames = {
             'Sluse1': 'BÅS 01', 'Sluse2': 'BÅS 02', 'Sluse3': 'BÅS 03',
             'Sluse4': 'BÅS 04', 'Sluse5': 'BÅS 05', 'Sluse6': 'BÅS 06',
@@ -269,7 +274,7 @@
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
                                 <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
-                                <h2 class="text-xl sm:text-3xl font-display text-white font-bold text-secondary-text [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">${name}</h2>
+                                <h2 class="text-xl sm:text-3xl font-display text-white font-bold text-secondary-text [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">${esc(name)}</h2>
                             </div>
                             <div class="size-8 sm:size-10 rounded-full bg-black/20 flex items-center justify-center text-white-500 flex-shrink-0">
                                 <span class="material-symbols-outlined text-lg sm:text-xl">inventory_2</span>
@@ -306,7 +311,7 @@
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
                                 <span class="text-secondary-text text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Bås</span>
-                                <h2 class="text-xl sm:text-3xl font-display font-bold text-secondary-text [text-shadow:2px_2px_2px_rgba(0,0,0,0.5)]">${name}</h2>
+                                <h2 class="text-xl sm:text-3xl font-display font-bold text-secondary-text [text-shadow:2px_2px_2px_rgba(0,0,0,0.5)]">${esc(name)}</h2>
                             </div>
                             <div class="size-8 sm:size-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 flex-shrink-0">
                                 <span class="material-symbols-outlined text-lg sm:text-xl">check_circle</span>
@@ -372,7 +377,7 @@
 
         async function fetchTimerData() {
             try {
-                const res = await fetch('/api/sluse/timer');
+                const res = await fetch(`/api/sluse/timer?key=${encodeURIComponent(displayKey)}`);
                 const data = await res.json();
                 const container = document.getElementById('headerTimer');
                 const placeholder = document.getElementById('timerPlaceholder');
@@ -405,7 +410,7 @@
 
         async function fetchData() {
             try {
-                const res = await fetch('/api/sluse/public');
+                const res = await fetch(`/api/sluse/public?key=${encodeURIComponent(displayKey)}`);
                 const json = await res.json();
                 if (json.success && json.data) render(json.data);
             } catch (e) { console.error(e); }

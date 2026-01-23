@@ -60,7 +60,7 @@ const SluseManager = {
 
     async loadRentmanData() {
         try {
-            const res = await fetch('/api/rentman/projects');
+            const res = await fetch('/api/sluse/rentman/projects');
             const result = await res.json();
 
             if (result.success) {
@@ -89,6 +89,121 @@ const SluseManager = {
                 this.renderStallList(e.target.value);
             });
         }
+
+        const searchProjectsInput = document.getElementById('searchProjects');
+        if (searchProjectsInput) {
+            searchProjectsInput.addEventListener('input', (e) => {
+                this.handleProjectSearch(e.target.value);
+            });
+            searchProjectsInput.addEventListener('focus', () => {
+                this.showProjectSearchResults();
+            });
+        }
+
+        // Close project search on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#searchProjects') && !e.target.closest('#projectSearchResults')) {
+                this.hideProjectSearchResults();
+            }
+        });
+    },
+
+    handleProjectSearch(searchTerm) {
+        if (!this.rentmanLoaded || !searchTerm.trim()) {
+            this.hideProjectSearchResults();
+            return;
+        }
+
+        const filtered = this.rentmanData.filter(item => {
+            const name = (item.sp_name || '').toLowerCase();
+            return name.includes(searchTerm.toLowerCase());
+        });
+
+        this.showProjectSearchResults(filtered);
+    },
+
+    showProjectSearchResults(items = null) {
+        let container = document.getElementById('projectSearchResults');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'projectSearchResults';
+            container.className = 'absolute top-full left-0 right-0 mt-2 bg-dark-card border border-[#333] rounded-xl shadow-2xl z-50 max-h-[300px] overflow-y-auto';
+            const searchInput = document.getElementById('searchProjects');
+            if (searchInput) {
+                searchInput.parentElement.appendChild(container);
+            }
+        }
+
+        const data = items || [];
+        const searchValue = document.getElementById('searchProjects')?.value || '';
+
+        if (!searchValue.trim()) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="p-4 text-center text-text-secondary text-sm">
+                    <i class="fa-regular fa-folder-open mb-2 text-lg"></i>
+                    <p>Ingen projekter fundet</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = data.slice(0, 10).map((item, idx) => {
+            const statusClass = item.status == 4 ? 'bg-orange-500/20 text-orange-400' : item.status == 5 ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-text-secondary';
+            const statusText = item.status == 4 ? 'Ud' : item.status == 5 ? 'Ind' : 'Aktiv';
+            return `
+                <div class="p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0" onclick="SluseManager.selectProjectFromSearch(${this.rentmanData.indexOf(item)})">
+                    <div class="text-text-primary text-sm font-medium">${this.escapeHtml(item.sp_name)}</div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="px-2 py-0.5 text-xs rounded-full ${statusClass}">${statusText}</span>
+                        <span class="text-text-secondary text-xs">${item.st_sp_up || '?'} → ${item.end_sp_up || '?'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    hideProjectSearchResults() {
+        const container = document.getElementById('projectSearchResults');
+        if (container) {
+            container.classList.add('hidden');
+        }
+    },
+
+    selectProjectFromSearch(idx) {
+        const item = this.rentmanData[idx];
+        if (!item) return;
+
+        // Find first empty stall or first stall
+        const emptyStall = this.data.find(s => !s.Kunde || s.Kunde.trim() === '');
+        const targetStall = emptyStall || this.data[0];
+
+        if (targetStall) {
+            this.selectSluse(targetStall.slusenavn);
+
+            // Fill in the project data
+            setTimeout(() => {
+                const kundeInput = document.getElementById('sluseKunde');
+                if (kundeInput) kundeInput.value = item.sp_name || '';
+
+                const datoInput = document.getElementById('sluseDato');
+                if (datoInput) {
+                    const udDato = item.st_sp_up || '';
+                    const indDato = item.end_sp_up || '';
+                    datoInput.value = item.status == 5 ? `Ind: ${indDato}` : `Ud: ${udDato} | Ind: ${indDato}`;
+                }
+            }, 100);
+        }
+
+        // Clear and hide search
+        document.getElementById('searchProjects').value = '';
+        this.hideProjectSearchResults();
     },
 
     renderStallList(filter = '') {
@@ -109,17 +224,29 @@ const SluseManager = {
         filtered.forEach(item => {
             const isActive = this.selectedSluse === item.slusenavn;
             const hasContent = item.Kunde && item.Kunde.trim() !== '';
-            const statusColor = hasContent ? "bg-red-500" : "bg-green-500";
+            const stallColor = this.colors[item.slusenavn] || '#808080';
 
             const stallItem = document.createElement('button');
-            stallItem.className = `w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${isActive ? 'bg-primary/20 border border-primary/50' : 'bg-dark-card border border-white/10 hover:bg-white/5'}`;
+            stallItem.className = `w-full flex items-center gap-3 p-3 mb-2 rounded-xl text-left transition-all duration-200 overflow-hidden relative ${
+                isActive
+                    ? 'bg-primary/15 ring-2 ring-primary/50 shadow-lg shadow-primary/10'
+                    : hasContent
+                        ? 'bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 hover:border-red-500/30'
+                        : 'bg-green-500/5 border border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
+            }`;
             stallItem.innerHTML = `
-                <i class="fa-solid fa-box text-text-secondary text-xl"></i>
-                <div class="flex-1 min-w-0">
-                    <span class="block text-text-primary font-medium">${this.displayNames[item.slusenavn] || item.slusenavn}</span>
-                    <span class="block text-sm text-text-secondary truncate">${hasContent ? item.Kunde : '— Ledig —'}</span>
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${hasContent ? 'bg-red-500/20' : 'bg-green-500/20'}">
+                    <i class="fa-solid ${hasContent ? 'fa-box-archive' : 'fa-box-open'} ${hasContent ? 'text-red-400' : 'text-green-400'}"></i>
                 </div>
-                <div class="w-3 h-3 rounded-full ${statusColor} flex-shrink-0"></div>
+                <div class="flex-1 min-w-0 pl-1">
+                    <span class="block text-text-primary font-semibold">${this.displayNames[item.slusenavn] || item.slusenavn}</span>
+                    <span class="block text-sm ${hasContent ? 'text-red-400/80' : 'text-green-400/80'} truncate">${hasContent ? item.Kunde : 'Ledig'}</span>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase tracking-wider ${hasContent ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}">
+                        ${hasContent ? 'Optaget' : 'Ledig'}
+                    </span>
+                </div>
             `;
             stallItem.onclick = () => this.selectSluse(item.slusenavn);
             stallList.appendChild(stallItem);
@@ -208,9 +335,9 @@ const SluseManager = {
 
         if (!this.rentmanLoaded) {
             list.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-8 text-center">
-                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                        <i class="fa-solid fa-hourglass-end text-text-secondary"></i>
+                <div class="flex flex-col items-center justify-center py-8 text-center px-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
+                        <i class="fa-solid fa-spinner fa-spin text-primary"></i>
                     </div>
                     <p class="text-text-secondary text-sm">Indlæser projekter...</p>
                 </div>
@@ -220,9 +347,9 @@ const SluseManager = {
 
         if (data.length === 0) {
             list.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-8 text-center">
-                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                        <i class="fa-regular fa-folder-open text-text-secondary"></i>
+                <div class="flex flex-col items-center justify-center py-8 text-center px-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-3">
+                        <i class="fa-regular fa-folder-open text-text-secondary text-xl"></i>
                     </div>
                     <p class="text-text-secondary text-sm">Ingen projekter fundet</p>
                 </div>
@@ -232,15 +359,23 @@ const SluseManager = {
 
         list.innerHTML = data.map((item, idx) => {
             const originalIdx = this.rentmanData.indexOf(item);
-            const statusClass = item.status == 4 ? 'bg-orange-500/20 text-orange-400' : item.status == 5 ? 'bg-green-500/20 text-green-400' : '';
-            const statusText = item.status == 4 ? 'Ud' : item.status == 5 ? 'Ind' : '';
+            const statusClass = item.status == 4 ? 'bg-orange-500/20 text-orange-400' : item.status == 5 ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-text-secondary';
+            const statusText = item.status == 4 ? 'Ud' : item.status == 5 ? 'Ind' : 'Aktiv';
 
             return `
-                <div class="p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0" onclick="SluseManager.selectProject(${originalIdx})">
-                    <div class="text-text-primary text-sm font-medium">${this.escapeHtml(item.sp_name)}</div>
-                    <div class="flex items-center gap-2 mt-1">
-                        ${statusText ? `<span class="px-2 py-0.5 text-xs rounded-full ${statusClass}">${statusText}</span>` : ''}
-                        <span class="text-text-secondary text-xs">${item.st_sp_up || '?'} → ${item.end_sp_up || '?'}</span>
+                <div class="p-3 hover:bg-white/5 cursor-pointer transition-all duration-150 border-b border-white/5 last:border-0 group" onclick="SluseManager.selectProject(${originalIdx})">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg ${item.status == 4 ? 'bg-orange-500/10' : item.status == 5 ? 'bg-green-500/10' : 'bg-primary/10'} flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid ${item.status == 4 ? 'fa-truck text-orange-400' : item.status == 5 ? 'fa-box-archive text-green-400' : 'fa-folder text-primary'} text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-text-primary text-sm font-medium truncate">${this.escapeHtml(item.sp_name)}</div>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="px-2 py-0.5 text-[10px] font-medium rounded-full ${statusClass}">${statusText}</span>
+                                <span class="text-text-secondary text-xs">${item.st_sp_up || '?'} → ${item.end_sp_up || '?'}</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-text-secondary text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
                 </div>
             `;

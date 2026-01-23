@@ -774,6 +774,10 @@
 </div>
 
 <script>
+// Hent display key fra URL parameter
+const urlParams = new URLSearchParams(window.location.search);
+const displayKey = urlParams.get('key') || '';
+
 // ============================================
 // Utility Functions
 // ============================================
@@ -1209,7 +1213,7 @@ let latestMenuForPopup = null;
 
 async function fetchData() {
     try {
-        const res = await fetch('/api/sluse/office-dashboard');
+        const res = await fetch(`/api/sluse/office-dashboard?key=${encodeURIComponent(displayKey)}`);
         const data = await res.json();
 
         console.log('Dashboard data:', data); // Debug log

@@ -1,12 +1,10 @@
 // ============================================
 // User Management JavaScript (Admin)
 // ============================================
-// Handles user administration - viewing and creating users
 
 const UsersManager = {
     users: [],
     currentUser: null,
-    selectedUserId: null,
     apiEndpoint: '/api/users',
 
     // ============================================
@@ -25,7 +23,6 @@ const UsersManager = {
         try {
             const response = await fetch('/me');
             if (!response.ok) throw new Error('Failed to load user');
-
             const data = await response.json();
             this.currentUser = data.user;
         } catch (error) {
@@ -37,14 +34,13 @@ const UsersManager = {
         try {
             const response = await fetch(this.apiEndpoint);
             if (!response.ok) throw new Error('Failed to load users');
-
             const data = await response.json();
             this.users = data.users || [];
             this.renderUserList();
             this.updateStats();
         } catch (error) {
             console.error('Error loading users:', error);
-            this.showError('Kunne ikke indlæse brugere. Prøv igen.');
+            this.showNotification('Kunne ikke indlæse brugere. Prøv igen.', 'error');
         }
     },
 
@@ -52,24 +48,45 @@ const UsersManager = {
         try {
             const response = await fetch(this.apiEndpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userData)
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to create user');
+                throw new Error(result.error || 'Failed to create user');
             }
 
-            const result = await response.json();
             await this.loadUsers();
-
             return result;
         } catch (error) {
             console.error('Error creating user:', error);
-            this.showError(error.message || 'Kunne ikke oprette bruger. Prøv igen.');
+            this.showNotification(error.message || 'Kunne ikke oprette bruger.', 'error');
+            throw error;
+        }
+    },
+
+    async updateUser(userId, userData) {
+        try {
+            const response = await fetch(`${this.apiEndpoint}/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to update user');
+            }
+
+            this.showNotification('Bruger opdateret!', 'success');
+            await this.loadUsers();
+            return result;
+        } catch (error) {
+            console.error('Error updating user:', error);
+            this.showNotification(error.message || 'Kunne ikke opdatere bruger.', 'error');
             throw error;
         }
     },
@@ -80,16 +97,17 @@ const UsersManager = {
                 method: 'DELETE'
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to delete user');
+                throw new Error(result.error || 'Failed to delete user');
             }
 
-            this.showSuccess('Bruger slettet!');
+            this.showNotification('Bruger slettet!', 'success');
             await this.loadUsers();
         } catch (error) {
             console.error('Error deleting user:', error);
-            this.showError(error.message || 'Kunne ikke slette bruger. Prøv igen.');
+            this.showNotification(error.message || 'Kunne ikke slette bruger.', 'error');
         }
     },
 
@@ -97,34 +115,6 @@ const UsersManager = {
     // Event Listeners
     // ============================================
     attachEventListeners() {
-        // Navigation buttons
-        document.querySelectorAll('.nav-content a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (this.getAttribute('href')) {
-                    document.querySelectorAll('.nav-content a').forEach(l => {
-                        l.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                }
-            });
-        });
-
-        // Logout button
-        const logoutBtn = document.querySelector('.nav-bottom h1');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-                if (confirm('Er du sikker på at du vil logge ud?')) {
-                    try {
-                        await fetch('/logout', { method: 'POST' });
-                        window.location.href = '/login.html';
-                    } catch (error) {
-                        console.error('Logout error:', error);
-                    }
-                }
-            });
-        }
-
-        // Search functionality
         const searchInput = document.getElementById('searchUsers');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
@@ -147,10 +137,7 @@ const UsersManager = {
             const fullName = `${user.fornavn} ${user.efternavn}`.toLowerCase();
             const username = user.brugernavn.toLowerCase();
             const email = user.email.toLowerCase();
-
-            return fullName.includes(searchTerm) ||
-                username.includes(searchTerm) ||
-                email.includes(searchTerm);
+            return fullName.includes(searchTerm) || username.includes(searchTerm) || email.includes(searchTerm);
         });
 
         main.innerHTML = `
@@ -160,16 +147,13 @@ const UsersManager = {
                     <p class="text-text-secondary mt-1">Administrer systemets brugere</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input
-                        type="text"
-                        id="searchUsers"
-                        class="px-4 py-2.5 bg-dark-card border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors"
-                        placeholder="Søg efter brugere..."
-                        value="${filter}"
-                    >
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary"></i>
+                        <input type="text" id="searchUsers" class="pl-11 pr-4 py-2.5 bg-dark-card border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors" placeholder="Søg brugere..." value="${this.escapeHtml(filter)}">
+                    </div>
                     ${isAdmin ? `
-                        <button class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors" onclick="UsersManager.showCreateModal()">
-                            <span class="text-lg">+</span>
+                        <button class="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl font-medium transition-all" onclick="UsersManager.showCreateModal()">
+                            <i class="fa-solid fa-plus"></i>
                             Ny bruger
                         </button>
                     ` : ''}
@@ -178,16 +162,37 @@ const UsersManager = {
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <div class="bg-dark-card border border-white/10 rounded-xl p-5">
-                    <span class="text-text-secondary text-sm">Total brugere</span>
-                    <span class="block text-2xl font-semibold text-text-primary mt-1" id="totalUsers">0</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <i class="fa-solid fa-users text-primary"></i>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary text-sm">Total brugere</span>
+                            <span class="block text-2xl font-semibold text-text-primary" id="totalUsers">0</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="bg-dark-card border border-white/10 rounded-xl p-5">
-                    <span class="text-text-secondary text-sm">Administratorer</span>
-                    <span class="block text-2xl font-semibold text-text-primary mt-1" id="adminUsers">0</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                            <i class="fa-solid fa-user-shield text-yellow-400"></i>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary text-sm">Administratorer</span>
+                            <span class="block text-2xl font-semibold text-text-primary" id="adminUsers">0</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="bg-dark-card border border-white/10 rounded-xl p-5">
-                    <span class="text-text-secondary text-sm">Standard brugere</span>
-                    <span class="block text-2xl font-semibold text-text-primary mt-1" id="standardUsers">0</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                            <i class="fa-solid fa-user text-green-400"></i>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary text-sm">Standard brugere</span>
+                            <span class="block text-2xl font-semibold text-text-primary" id="standardUsers">0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -199,9 +204,9 @@ const UsersManager = {
         // Re-attach search listener
         const newSearchInput = document.getElementById('searchUsers');
         if (newSearchInput) {
-            newSearchInput.addEventListener('input', (e) => {
-                this.renderUserList(e.target.value);
-            });
+            newSearchInput.addEventListener('input', (e) => this.renderUserList(e.target.value));
+            newSearchInput.focus();
+            newSearchInput.setSelectionRange(filter.length, filter.length);
         }
 
         this.updateStats();
@@ -211,49 +216,55 @@ const UsersManager = {
         const isAdmin = this.currentUser && this.currentUser.rolle === 'admin';
         const isCurrentUser = this.currentUser && this.currentUser.id === user.id;
         const rolleText = user.rolle === 'admin' ? 'Administrator' : 'Standard';
-        const rolleClass = user.rolle === 'admin' ? 'bg-primary/20 text-primary' : 'bg-white/10 text-text-secondary';
+        const rolleClass = user.rolle === 'admin' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
 
         return `
-            <div class="bg-dark-card border border-white/10 rounded-xl p-5 flex flex-col gap-4">
+            <div class="bg-dark-card border border-white/10 rounded-xl p-5 flex flex-col gap-4 hover:border-white/20 transition-colors">
                 <div class="flex items-start gap-4">
-                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <span class="text-primary font-semibold">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <span class="text-white font-semibold">${user.fornavn.charAt(0)}${user.efternavn.charAt(0)}</span>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
                             <h3 class="font-semibold text-text-primary">${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}</h3>
-                            ${isCurrentUser ? '<span class="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400">Dig</span>' : ''}
+                            ${isCurrentUser ? '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary/20 text-primary uppercase">Dig</span>' : ''}
                         </div>
                         <p class="text-text-secondary text-sm">@${this.escapeHtml(user.brugernavn)}</p>
-                        ${user.title ? `<p class="text-text-secondary text-sm mt-1">${this.escapeHtml(user.title)}</p>` : ''}
+                        ${user.title ? `<p class="text-text-secondary text-sm mt-0.5">${this.escapeHtml(user.title)}</p>` : ''}
                     </div>
                 </div>
                 <div class="space-y-2 text-sm">
-                    <div class="flex items-center gap-2 text-text-secondary">
-                        <i class="fa-solid fa-envelope w-4"></i>
+                    <div class="flex items-center gap-3 text-text-secondary">
+                        <i class="fa-solid fa-envelope w-4 text-center"></i>
                         <span class="truncate">${this.escapeHtml(user.email)}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-user-tag w-4 text-text-secondary"></i>
-                        <span class="px-2 py-0.5 text-xs rounded-full ${rolleClass}">${rolleText}</span>
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-shield-halved w-4 text-center text-text-secondary"></i>
+                        <span class="px-2 py-0.5 text-xs font-medium rounded-full ${rolleClass}">${rolleText}</span>
                     </div>
-                    <div class="flex items-center gap-2 text-text-secondary">
-                        <i class="fa-solid fa-phone w-4"></i>
-                        ${user.telefon ? `<span>${this.escapeHtml(user.telefon)}</span>` : '<span class="opacity-50">Ingen telefon</span>'}
+                    <div class="flex items-center gap-3 text-text-secondary">
+                        <i class="fa-solid fa-phone w-4 text-center"></i>
+                        ${user.telefon ? `<span>${this.escapeHtml(user.telefon)}</span>` : '<span class="opacity-50">Ikke angivet</span>'}
                     </div>
-                    <div class="flex items-center gap-2 text-text-secondary">
-                        <i class="fa-solid fa-clock w-4"></i>
+                    <div class="flex items-center gap-3 text-text-secondary">
+                        <i class="fa-solid fa-clock w-4 text-center"></i>
                         <span>${user.last_login ? this.formatDateTime(user.last_login) : 'Aldrig logget ind'}</span>
                     </div>
                 </div>
-                ${isAdmin && !isCurrentUser ? `
-                    <div class="pt-3 border-t border-white/10">
-                        <button class="w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" onclick="UsersManager.confirmDelete(${user.id}, '${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}')">
-                            <i class="fa-solid fa-trash mr-2"></i>
-                            Slet bruger
+                <div class="pt-3 border-t border-white/10 flex gap-2">
+                    ${isAdmin || isCurrentUser ? `
+                        <button class="flex-1 px-3 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-2" onclick="UsersManager.showEditModal(${user.id})">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            Rediger
                         </button>
-                    </div>
-                ` : ''}
+                    ` : ''}
+                    ${isAdmin && !isCurrentUser ? `
+                        <button class="flex-1 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center gap-2" onclick="UsersManager.confirmDelete(${user.id}, '${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)}')">
+                            <i class="fa-solid fa-trash"></i>
+                            Slet
+                        </button>
+                    ` : ''}
+                </div>
             </div>
         `;
     },
@@ -262,7 +273,7 @@ const UsersManager = {
         if (filter) {
             return `
                 <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
-                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
                         <i class="fa-solid fa-search text-2xl text-text-secondary"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-text-primary mb-2">Ingen brugere fundet</h3>
@@ -272,7 +283,7 @@ const UsersManager = {
         }
         return `
             <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
-                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
                     <i class="fa-solid fa-users text-2xl text-text-secondary"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-text-primary mb-2">Ingen brugere endnu</h3>
@@ -299,80 +310,98 @@ const UsersManager = {
     // Create User Modal
     // ============================================
     showCreateModal() {
+        this.showUserModal(null);
+    },
+
+    showEditModal(userId) {
+        const user = this.users.find(u => u.id === userId);
+        if (user) {
+            this.showUserModal(user);
+        }
+    },
+
+    showUserModal(user = null) {
+        const isEdit = user !== null;
+        const isAdmin = this.currentUser && this.currentUser.rolle === 'admin';
+        const title = isEdit ? 'Rediger bruger' : 'Opret ny bruger';
+
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
-        modal.id = 'createUserModal';
+        modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4';
+        modal.id = 'userModal';
         modal.innerHTML = `
-            <div class="bg-dark-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="bg-dark-card border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fade-in-up">
                 <div class="flex items-center justify-between p-6 border-b border-white/10">
-                    <h2 class="text-xl font-semibold text-text-primary">Opret ny bruger</h2>
-                    <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary transition-colors" onclick="UsersManager.closeModal()">
+                    <h2 class="text-xl font-semibold text-text-primary">${title}</h2>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary transition-colors" onclick="UsersManager.closeUserModal()">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <form id="createUserForm" class="p-6 space-y-4">
+                <form id="userForm" class="p-6 space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newFornavn">Fornavn *</label>
-                            <input type="text" id="newFornavn" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Fornavn *</label>
+                            <input type="text" id="userFornavn" required value="${isEdit ? this.escapeHtml(user.fornavn) : ''}" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newEfternavn">Efternavn *</label>
-                            <input type="text" id="newEfternavn" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Efternavn *</label>
+                            <input type="text" id="userEfternavn" required value="${isEdit ? this.escapeHtml(user.efternavn) : ''}" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newBrugernavn">Brugernavn *</label>
-                            <input type="text" id="newBrugernavn" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Brugernavn *</label>
+                            <input type="text" id="userBrugernavn" required ${isEdit ? 'disabled' : ''} value="${isEdit ? this.escapeHtml(user.brugernavn) : ''}" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors ${isEdit ? 'opacity-50 cursor-not-allowed' : ''}">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newEmail">Email *</label>
-                            <input type="email" id="newEmail" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Email *</label>
+                            <input type="email" id="userEmail" required value="${isEdit ? this.escapeHtml(user.email) : ''}" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newTelefon">Telefon</label>
-                            <input type="tel" id="newTelefon" placeholder="+45 12345678" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Telefon</label>
+                            <input type="tel" id="userTelefon" placeholder="+45 12345678" value="${isEdit && user.telefon ? this.escapeHtml(user.telefon) : ''}" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newTitle">Titel / Stilling</label>
-                            <input type="text" id="newTitle" placeholder="F.eks. Tekniker" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Titel / Stilling</label>
+                            <input type="text" id="userTitle" placeholder="F.eks. Tekniker" value="${isEdit && user.title ? this.escapeHtml(user.title) : ''}" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newPassword">Adgangskode *</label>
-                        <input type="password" id="newPassword" required minlength="8" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5">${isEdit ? 'Ny adgangskode (lad stå tom for at beholde)' : 'Adgangskode *'}</label>
+                        <input type="password" id="userPassword" ${isEdit ? '' : 'required'} minlength="8" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
                         <span class="text-xs text-text-secondary mt-1 block">Mindst 8 tegn</span>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1.5" for="newRolle">Rolle *</label>
-                        <select id="newRolle" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-lg text-text-primary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-colors">
-                            <option value="standard">Standard Bruger</option>
-                            <option value="admin">Administrator</option>
-                        </select>
-                        <span class="text-xs text-text-secondary mt-1 block">Standard brugere kan se alt, men ikke oprette nye brugere</span>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" id="sendWelcomeEmail" checked class="mt-1 w-4 h-4 rounded border-white/20 bg-dark-bg text-primary focus:ring-primary/50">
+                    ${isAdmin ? `
                         <div>
-                            <label for="sendWelcomeEmail" class="text-sm text-text-primary cursor-pointer">Send velkomst-email med login-oplysninger</label>
-                            <span class="text-xs text-text-secondary block mt-0.5">Brugeren modtager en email med brugernavn, adgangskode og link til dashboard</span>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Rolle *</label>
+                            <select id="userRolle" required class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary focus:outline-none focus:border-primary/50 transition-colors">
+                                <option value="standard" ${isEdit && user.rolle === 'standard' ? 'selected' : ''}>Standard Bruger</option>
+                                <option value="admin" ${isEdit && user.rolle === 'admin' ? 'selected' : ''}>Administrator</option>
+                            </select>
                         </div>
-                    </div>
+                    ` : ''}
+
+                    ${!isEdit ? `
+                        <div class="flex items-start gap-3 p-4 bg-white/5 rounded-xl">
+                            <input type="checkbox" id="sendWelcomeEmail" checked class="mt-0.5 w-4 h-4 rounded border-white/20 bg-dark-bg text-primary focus:ring-primary/50">
+                            <div>
+                                <label for="sendWelcomeEmail" class="text-sm text-text-primary cursor-pointer font-medium">Send velkomst-email</label>
+                                <span class="text-xs text-text-secondary block mt-0.5">Brugeren modtager login-oplysninger på email</span>
+                            </div>
+                        </div>
+                    ` : ''}
 
                     <div class="flex gap-3 pt-4 border-t border-white/10">
-                        <button type="button" class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary rounded-lg font-medium transition-colors" onclick="UsersManager.closeModal()">
+                        <button type="button" class="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-text-secondary rounded-xl font-medium transition-colors" onclick="UsersManager.closeUserModal()">
                             Annuller
                         </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-colors">
-                            Opret bruger
+                        <button type="submit" class="flex-1 px-4 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl font-medium transition-colors">
+                            ${isEdit ? 'Gem ændringer' : 'Opret bruger'}
                         </button>
                     </div>
                 </form>
@@ -381,88 +410,159 @@ const UsersManager = {
 
         document.body.appendChild(modal);
 
+        // Store user ID for editing
+        modal.dataset.userId = isEdit ? user.id : '';
+
         // Attach form listener
-        const form = document.getElementById('createUserForm');
-        if (form) {
-            form.addEventListener('submit', (e) => this.handleCreateUser(e));
-        }
+        document.getElementById('userForm').addEventListener('submit', (e) => this.handleUserFormSubmit(e, isEdit));
 
         // Close on overlay click
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.closeModal();
-            }
+            if (e.target === modal) this.closeUserModal();
         });
+
+        // Close on Escape
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeUserModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
     },
 
-    closeModal() {
-        const modal = document.getElementById('createUserModal');
-        if (modal) {
-            modal.remove();
-        }
+    closeUserModal() {
+        const modal = document.getElementById('userModal');
+        if (modal) modal.remove();
     },
 
-    async handleCreateUser(e) {
+    async handleUserFormSubmit(e, isEdit) {
         e.preventDefault();
 
+        const modal = document.getElementById('userModal');
+        const userId = modal?.dataset.userId;
+        const isAdmin = this.currentUser && this.currentUser.rolle === 'admin';
+
         const userData = {
-            fornavn: document.getElementById('newFornavn').value.trim(),
-            efternavn: document.getElementById('newEfternavn').value.trim(),
-            brugernavn: document.getElementById('newBrugernavn').value.trim(),
-            email: document.getElementById('newEmail').value.trim(),
-            telefon: document.getElementById('newTelefon').value.trim() || null,
-            title: document.getElementById('newTitle').value.trim() || null,
-            password: document.getElementById('newPassword').value,
-            rolle: document.getElementById('newRolle').value,
-            sendEmail: document.getElementById('sendWelcomeEmail').checked
+            fornavn: document.getElementById('userFornavn').value.trim(),
+            efternavn: document.getElementById('userEfternavn').value.trim(),
+            email: document.getElementById('userEmail').value.trim(),
+            telefon: document.getElementById('userTelefon').value.trim() || null,
+            title: document.getElementById('userTitle').value.trim() || null,
         };
 
-        try {
-            const result = await this.createUser(userData);
-            this.closeModal();
+        const password = document.getElementById('userPassword').value;
+        if (password) userData.password = password;
 
-            // Show email status
-            if (userData.sendEmail) {
-                if (result.emailSent) {
-                    this.showSuccess('Bruger oprettet og velkomst-email sendt!');
+        if (!isEdit) {
+            userData.brugernavn = document.getElementById('userBrugernavn').value.trim();
+            userData.sendEmail = document.getElementById('sendWelcomeEmail')?.checked || false;
+        }
+
+        if (isAdmin) {
+            userData.rolle = document.getElementById('userRolle')?.value || 'standard';
+        }
+
+        try {
+            if (isEdit) {
+                await this.updateUser(userId, userData);
+            } else {
+                const result = await this.createUser(userData);
+                if (userData.sendEmail) {
+                    this.showNotification(result.emailSent ? 'Bruger oprettet og email sendt!' : 'Bruger oprettet (email kunne ikke sendes)', result.emailSent ? 'success' : 'warning');
                 } else {
-                    this.showError('Bruger oprettet, men email kunne ikke sendes. Tjek email-konfiguration.');
+                    this.showNotification('Bruger oprettet!', 'success');
                 }
             }
+            this.closeUserModal();
         } catch (error) {
-            // Error already handled
+            // Error already shown
         }
     },
 
     // ============================================
-    // User Actions
+    // Delete Confirmation
     // ============================================
-    async confirmDelete(userId, userName) {
-        const confirmed = await Modal.show({
-            type: 'danger',
-            title: 'Slet bruger',
-            message: `Er du sikker på at du vil slette brugeren <strong>"${this.escapeHtml(userName)}"</strong>?<br><br>Denne handling kan ikke fortrydes.`,
-            confirmText: 'Ja, slet bruger',
-            cancelText: 'Annuller'
-        });
+    confirmDelete(userId, userName) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4';
+        modal.id = 'deleteConfirmModal';
+        modal.innerHTML = `
+            <div class="bg-dark-card border border-white/10 rounded-2xl w-full max-w-md p-6 text-center animate-fade-in-up">
+                <div class="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-trash text-red-400 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-text-primary mb-2">Slet bruger</h3>
+                <p class="text-text-secondary mb-6">Er du sikker på at du vil slette<br><strong class="text-text-primary">${this.escapeHtml(userName)}</strong>?<br><br>Denne handling kan ikke fortrydes.</p>
+                <div class="flex gap-3">
+                    <button class="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-text-secondary rounded-xl font-medium transition-colors" onclick="UsersManager.closeDeleteModal()">
+                        Annuller
+                    </button>
+                    <button class="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors" onclick="UsersManager.executeDelete(${userId})">
+                        Ja, slet bruger
+                    </button>
+                </div>
+            </div>
+        `;
 
-        if (confirmed) {
-            this.deleteUser(userId);
-        }
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) this.closeDeleteModal();
+        });
+    },
+
+    closeDeleteModal() {
+        const modal = document.getElementById('deleteConfirmModal');
+        if (modal) modal.remove();
+    },
+
+    async executeDelete(userId) {
+        this.closeDeleteModal();
+        await this.deleteUser(userId);
+    },
+
+    // ============================================
+    // Notifications
+    // ============================================
+    showNotification(message, type = 'info') {
+        // Remove existing notifications
+        document.querySelectorAll('.user-notification').forEach(n => n.remove());
+
+        const colors = {
+            success: 'bg-green-500/20 border-green-500/30 text-green-400',
+            error: 'bg-red-500/20 border-red-500/30 text-red-400',
+            warning: 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400',
+            info: 'bg-primary/20 border-primary/30 text-primary'
+        };
+
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+
+        const notification = document.createElement('div');
+        notification.className = `user-notification fixed top-4 right-4 z-[10000] px-5 py-4 rounded-xl border ${colors[type]} flex items-center gap-3 shadow-2xl animate-fade-in-up`;
+        notification.innerHTML = `
+            <i class="fa-solid ${icons[type]}"></i>
+            <span class="font-medium">${this.escapeHtml(message)}</span>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateY(-10px)';
+            notification.style.transition = 'all 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
     },
 
     // ============================================
     // Utility Functions
     // ============================================
-    formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    },
-
     formatDateTime(dateString) {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -471,7 +571,7 @@ const UsersManager = {
         const year = date.getFullYear();
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
+        return `${day}/${month}/${year} kl. ${hours}:${minutes}`;
     },
 
     escapeHtml(text) {
@@ -479,14 +579,6 @@ const UsersManager = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    },
-
-    showSuccess(message) {
-        Modal.success('Succes', message);
-    },
-
-    showError(message) {
-        Modal.error('Fejl', message);
     }
 };
 

@@ -16,6 +16,14 @@ const Modal = {
     resolvePromise: null,
     initialized: false,
 
+    // Security: HTML Escaping
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
     // ============================================
     // Initialize
     // ============================================
@@ -112,7 +120,11 @@ const Modal = {
         this.icon.innerHTML = icons[type] || icons.info;
         this.icon.className = `w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4 ${iconColors[type] || iconColors.info}`;
         this.title.textContent = title;
-        this.message.innerHTML = message;
+        // Tillad simpel HTML (<br>, <strong>) i beskeder, escape alt andet
+        this.message.innerHTML = this.escapeHtml(message)
+            .replace(/&lt;br&gt;/gi, '<br>')
+            .replace(/&lt;strong&gt;/gi, '<strong>')
+            .replace(/&lt;\/strong&gt;/gi, '</strong>');
         this.confirmBtn.textContent = confirmText;
         this.confirmBtn.className = `px-5 py-2.5 rounded-lg font-medium transition-colors ${buttonColors[type] || buttonColors.info}`;
 

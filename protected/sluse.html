@@ -30,6 +30,9 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #101922; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
 <body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
@@ -55,12 +58,21 @@
     <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
 
     <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
             <div>
-                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Sluse Administration</h1>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-1">Sluse Administration</h1>
                 <p class="text-base text-text-secondary">Administrer og rediger information for alle 9 båse.</p>
             </div>
-            <input type="text" class="py-3 px-5 pl-11 bg-dark-card border border-[#333] rounded-xl text-text-primary text-sm transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(19,127,236,0.1)] bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239DABB9%22 stroke-width=%222%22><circle cx=%2211%22 cy=%2211%22 r=%228%22/><path d=%22m21 21-4.35-4.35%22/></svg>')] bg-no-repeat bg-[15px_center] placeholder:text-text-secondary" placeholder="Søg båse..." id="searchStalls">
+            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary"></i>
+                    <input type="text" class="py-3 px-5 pl-11 w-full sm:w-[200px] bg-dark-card border border-[#333] rounded-xl text-text-primary text-sm transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(19,127,236,0.1)] placeholder:text-text-secondary" placeholder="Søg båse..." id="searchStalls">
+                </div>
+                <div class="relative">
+                    <i class="fa-solid fa-folder-open absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary"></i>
+                    <input type="text" class="py-3 px-5 pl-11 w-full sm:w-[220px] bg-dark-card border border-[#333] rounded-xl text-text-primary text-sm transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(19,127,236,0.1)] placeholder:text-text-secondary" placeholder="Søg projekter..." id="searchProjects">
+                </div>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 h-[calc(100%-100px)]">
@@ -92,12 +104,15 @@
 </div>
 
 <!-- Global Modal -->
-<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center" id="globalModalOverlay">
-    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
-        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold" id="globalModalIcon">!</div>
-        <h3 class="text-xl font-semibold text-text-primary mb-3" id="globalModalTitle">Title</h3>
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="globalModalOverlay">
+    <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>
         <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
-        <div class="flex gap-3 justify-center" id="globalModalButtons"></div>
+        <div class="flex gap-3 justify-center" id="globalModalButtons">
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors bg-white/5 hover:bg-white/10 text-text-secondary border border-white/10" id="globalModalCancel">Annuller</button>
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors" id="globalModalConfirm">Bekræft</button>
+        </div>
     </div>
 </div>
 

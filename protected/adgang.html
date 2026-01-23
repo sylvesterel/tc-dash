@@ -30,6 +30,9 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #101922; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
 <body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
@@ -55,41 +58,67 @@
     <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
 
     <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
             <div>
-                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Sluse Adgang</h1>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-1">Sluse Adgang</h1>
                 <p class="text-base text-text-secondary">Opret adgang til slusen via Salto.</p>
             </div>
-            <div class="flex gap-3">
-                <div class="flex items-center gap-2 px-4 py-2 bg-dark-card border border-[#333] rounded-xl">
-                    <span class="text-text-secondary text-sm">Aktive</span>
-                    <span class="px-2 py-1 rounded-full bg-success/10 text-success text-xs font-semibold" id="expiredCount">0</span>
+            <div class="flex flex-wrap gap-3">
+                <div class="flex items-center gap-3 px-4 py-3 bg-dark-card border border-[#333] rounded-xl transition-all hover:border-success/30">
+                    <div class="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center">
+                        <i class="fa-solid fa-user-check text-success text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-text-secondary">Aktive</span>
+                        <span class="block text-lg font-semibold text-success" id="expiredCount">0</span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2 px-4 py-2 bg-dark-card border border-[#333] rounded-xl">
-                    <span class="text-text-secondary text-sm">Udløbet</span>
-                    <span class="px-2 py-1 rounded-full bg-error/10 text-error text-xs font-semibold" id="activeCount">0</span>
+                <div class="flex items-center gap-3 px-4 py-3 bg-dark-card border border-[#333] rounded-xl transition-all hover:border-error/30">
+                    <div class="w-8 h-8 rounded-lg bg-error/20 flex items-center justify-center">
+                        <i class="fa-solid fa-user-xmark text-error text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-text-secondary">Udløbet</span>
+                        <span class="block text-lg font-semibold text-error" id="activeCount">0</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-6">
             <!-- Create New Access Card -->
-            <div class="bg-dark-card border border-[#333] rounded-xl p-6">
-                <div class="mb-6 pb-4 border-b border-[#1a1a1a]">
-                    <h3 class="text-lg font-semibold text-text-primary mb-1">Opret Ny Adgang</h3>
-                    <p class="text-sm text-text-secondary">Opret en ny bruger i Salto med adgangskode</p>
+            <div class="bg-dark-card border border-[#333] rounded-xl overflow-hidden">
+                <div class="bg-gradient-to-r from-primary/10 to-transparent p-6 border-b border-[#1a1a1a]">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                            <i class="fa-solid fa-key text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-text-primary">Opret Ny Adgang</h3>
+                            <p class="text-sm text-text-secondary mt-0.5">Opret en ny bruger i Salto med adgangskode</p>
+                        </div>
+                    </div>
                 </div>
+                <div class="p-6">
 
                 <form class="flex flex-col gap-5" id="accessForm">
                     <div class="flex flex-col gap-2">
                         <label class="text-sm font-medium text-text-secondary">Vælg fra Rentman (valgfrit)</label>
-                        <div class="relative">
-                            <div class="flex justify-between items-center p-3.5 bg-dark-hover border border-[#333] rounded-xl text-text-primary cursor-pointer transition-all hover:border-primary" id="projectPickerTrigger">
-                                <span class="placeholder text-text-secondary">Søg efter projekt...</span>
-                                <span class="chevron text-text-secondary">▼</span>
+                        <div class="project-picker-wrapper relative">
+                            <div class="flex justify-between items-center p-3.5 bg-dark-hover border border-[#333] rounded-xl text-text-primary cursor-pointer transition-all hover:border-primary/50" id="projectPickerTrigger">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-folder-open text-text-secondary"></i>
+                                    <span class="placeholder text-text-secondary">Søg efter projekt...</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-text-secondary text-xs transition-transform duration-200"></i>
                             </div>
-                            <div class="absolute top-full left-0 right-0 mt-1 bg-dark-card border border-[#333] rounded-xl shadow-2xl z-50 hidden" id="projectPickerDropdown">
-                                <input type="text" class="w-full p-3 bg-dark-hover border-b border-[#333] text-text-primary text-sm focus:outline-none placeholder:text-text-secondary" id="projectPickerSearch" placeholder="Søg projekt...">
+                            <div class="absolute top-full left-0 right-0 mt-2 bg-dark-card border border-[#333] rounded-xl shadow-2xl z-50 hidden overflow-hidden" id="projectPickerDropdown">
+                                <div class="p-3 bg-dark-hover border-b border-[#333]">
+                                    <div class="relative">
+                                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
+                                        <input type="text" class="w-full py-2.5 px-4 pl-9 bg-dark-card border border-[#333] rounded-lg text-text-primary text-sm focus:outline-none focus:border-primary placeholder:text-text-secondary" id="projectPickerSearch" placeholder="Søg projekt...">
+                                    </div>
+                                </div>
                                 <div class="max-h-[250px] overflow-y-auto" id="projectPickerList">
                                     <!-- Items rendered by JS -->
                                 </div>
@@ -139,14 +168,22 @@
                 <div class="mt-6 p-6 bg-success/10 border border-success/30 rounded-xl text-center hidden" id="pinResult">
                     <!-- Pin will be shown here -->
                 </div>
+                </div>
             </div>
 
             <!-- Active Access Codes List -->
             <div class="bg-dark-card border border-[#333] rounded-xl overflow-hidden">
-                <div class="flex justify-between items-center p-4 border-b border-[#1a1a1a]">
-                    <h3 class="text-base font-semibold text-text-primary">Aktive brugere</h3>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 border-b border-[#1a1a1a]">
+                    <h3 class="text-base font-semibold text-text-primary flex items-center gap-2">
+                        <i class="fa-solid fa-users text-text-secondary"></i>
+                        Aktive brugere
+                    </h3>
+                    <div class="relative w-full sm:w-auto">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
+                        <input type="text" class="py-2 px-4 pl-9 w-full sm:w-[200px] bg-dark-hover border border-[#333] rounded-lg text-text-primary text-sm transition-all focus:outline-none focus:border-primary placeholder:text-text-secondary" placeholder="Søg brugere..." id="searchUsers">
+                    </div>
                 </div>
-                <div class="p-4 max-h-[calc(100vh-300px)] overflow-y-auto" id="accessList">
+                <div class="p-4 max-h-[calc(100vh-300px)] overflow-y-auto space-y-3" id="accessList">
                     <!-- Users will be rendered here -->
                 </div>
             </div>
@@ -155,12 +192,15 @@
 </div>
 
 <!-- Global Modal -->
-<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center" id="globalModalOverlay">
-    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
-        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold" id="globalModalIcon">!</div>
-        <h3 class="text-xl font-semibold text-text-primary mb-3" id="globalModalTitle">Title</h3>
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="globalModalOverlay">
+    <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>
         <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
-        <div class="flex gap-3 justify-center" id="globalModalButtons"></div>
+        <div class="flex gap-3 justify-center" id="globalModalButtons">
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors bg-white/5 hover:bg-white/10 text-text-secondary border border-white/10" id="globalModalCancel">Annuller</button>
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors" id="globalModalConfirm">Bekræft</button>
+        </div>
     </div>
 </div>
 

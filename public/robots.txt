@@ -14,4 +14,4 @@ Allow: /js/
 Allow: /img/
 
 # Sitemap
-# Sitemap: https://yourdomain.com/sitemap.xml
+# Sitemap: https://app.tourcare.dk/sitemap.xml

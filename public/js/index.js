@@ -155,61 +155,89 @@ function renderMenu(menu, today) {
         'torsdag': 'Torsdag',
         'fredag': 'Fredag'
     };
+    const dayIcons = {
+        'mandag': 'fa-calendar-day',
+        'tirsdag': 'fa-calendar-day',
+        'onsdag': 'fa-calendar-day',
+        'torsdag': 'fa-calendar-day',
+        'fredag': 'fa-calendar-week'
+    };
 
     const menuMap = {};
     menu.forEach(item => {
         menuMap[item.day_of_week] = item;
     });
 
-    let html = '';
+    let html = '<div class="space-y-2">';
 
     dayNames.forEach(day => {
         const isToday = day === today;
         const dayMenu = menuMap[day];
         const isExpanded = isToday;
+        const hasMenu = dayMenu && dayMenu.main_dish && dayMenu.main_dish !== 'Ingen menu';
 
         html += `
-            <div class="border ${isToday ? 'border-primary/50 bg-primary/5' : 'border-white/10'} rounded-lg overflow-hidden"
+            <div class="group rounded-xl overflow-hidden transition-all duration-200 ${isToday ? 'bg-primary/10 ring-1 ring-primary/30' : 'bg-dark-hover/50 hover:bg-dark-hover'}"
                  data-day="${day}">
-                <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleMenuDay('${day}')">
-                    <div class="flex items-center gap-3">
-                        <span class="font-medium text-text-primary">${dayLabels[day]}</span>
-                        ${isToday ? '<span class="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">I dag</span>' : ''}
+                <div class="flex items-center justify-between p-4 cursor-pointer transition-all duration-200" onclick="toggleMenuDay('${day}')">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg ${isToday ? 'bg-primary/20' : 'bg-white/5'} flex items-center justify-center transition-colors">
+                            <i class="fa-solid ${dayIcons[day]} ${isToday ? 'text-primary' : 'text-text-secondary'}"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold ${isToday ? 'text-primary' : 'text-text-primary'}">${dayLabels[day]}</span>
+                                ${isToday ? '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary text-white uppercase tracking-wider">I dag</span>' : ''}
+                            </div>
+                            <span class="text-text-secondary text-sm mt-0.5 block">${hasMenu ? dayMenu.main_dish : '<span class="italic opacity-60">Ingen menu</span>'}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-text-secondary text-sm hidden sm:block">${dayMenu ? dayMenu.main_dish : 'Ingen menu'}</span>
-                        <span class="text-text-secondary text-xs" id="toggle-icon-${day}">${isExpanded ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-chevron-right"></i>'}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center transition-all duration-200 group-hover:bg-white/10" id="toggle-icon-${day}">
+                            <i class="fa-solid fa-chevron-down text-text-secondary text-xs transition-transform duration-200 ${isExpanded ? '' : '-rotate-90'}"></i>
+                        </span>
                     </div>
                 </div>
-                <div class="border-t border-white/10 p-4 ${isExpanded ? 'block' : 'hidden'}" id="menu-content-${day}">
-                    ${dayMenu ? `
-                        <div class="space-y-4">
-                            <div>
-                                <div class="text-xs text-text-secondary uppercase tracking-wider mb-1">Varm ret</div>
-                                <div class="text-text-primary">
-                                    <strong>${dayMenu.main_dish}</strong>
-                                    ${dayMenu.main_dish_description ? `<br><span class="text-text-secondary text-sm">${dayMenu.main_dish_description}</span>` : ''}
+                <div class="overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}" id="menu-content-${day}">
+                    <div class="px-4 pb-4 pt-0">
+                        <div class="h-px bg-white/10 mb-4"></div>
+                        ${hasMenu ? `
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="bg-dark-card/50 rounded-lg p-3">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fa-solid fa-fire text-warning text-xs"></i>
+                                        <span class="text-xs text-text-secondary uppercase tracking-wider font-medium">Varm ret</span>
+                                    </div>
+                                    <div class="text-text-primary font-medium">${dayMenu.main_dish}</div>
+                                    ${dayMenu.main_dish_description ? `<div class="text-text-secondary text-sm mt-1">${dayMenu.main_dish_description}</div>` : ''}
                                 </div>
+                                ${dayMenu.toppings && dayMenu.toppings.length > 0 ? `
+                                    <div class="bg-dark-card/50 rounded-lg p-3">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <i class="fa-solid fa-bread-slice text-warning text-xs"></i>
+                                            <span class="text-xs text-text-secondary uppercase tracking-wider font-medium">Pålæg</span>
+                                        </div>
+                                        <div class="text-text-primary text-sm space-y-0.5">${dayMenu.toppings.map(t => `<div>${t}</div>`).join('')}</div>
+                                    </div>
+                                ` : ''}
+                                ${dayMenu.salads && dayMenu.salads.length > 0 ? `
+                                    <div class="bg-dark-card/50 rounded-lg p-3">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <i class="fa-solid fa-leaf text-success text-xs"></i>
+                                            <span class="text-xs text-text-secondary uppercase tracking-wider font-medium">Salat</span>
+                                        </div>
+                                        <div class="text-text-primary text-sm space-y-0.5">${dayMenu.salads.map(s => `<div>${s}</div>`).join('')}</div>
+                                    </div>
+                                ` : ''}
                             </div>
-                            ${dayMenu.toppings && dayMenu.toppings.length > 0 ? `
-                                <div>
-                                    <div class="text-xs text-text-secondary uppercase tracking-wider mb-1">Paalag</div>
-                                    <div class="text-text-primary text-sm">${dayMenu.toppings.join('<br>')}</div>
-                                </div>
-                            ` : ''}
-                            ${dayMenu.salads && dayMenu.salads.length > 0 ? `
-                                <div>
-                                    <div class="text-xs text-text-secondary uppercase tracking-wider mb-1">Salat</div>
-                                    <div class="text-text-primary text-sm">${dayMenu.salads.join('<br>')}</div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    ` : '<div class="text-text-secondary text-sm">Ingen menu for denne dag</div>'}
+                        ` : '<div class="text-text-secondary text-sm italic">Ingen menu for denne dag</div>'}
+                    </div>
                 </div>
             </div>
         `;
     });
 
+    html += '</div>';
     container.innerHTML = html;
 }
 
@@ -226,15 +254,16 @@ function renderEmptyMenu() {
 function toggleMenuDay(day) {
     const content = document.getElementById(`menu-content-${day}`);
     const icon = document.getElementById(`toggle-icon-${day}`);
+    const chevron = icon?.querySelector('i');
 
-    if (content.classList.contains('hidden')) {
-        content.classList.remove('hidden');
-        content.classList.add('block');
-        icon.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+    if (content.classList.contains('max-h-0')) {
+        content.classList.remove('max-h-0', 'opacity-0');
+        content.classList.add('max-h-96', 'opacity-100');
+        chevron?.classList.remove('-rotate-90');
     } else {
-        content.classList.remove('block');
-        content.classList.add('hidden');
-        icon.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+        content.classList.remove('max-h-96', 'opacity-100');
+        content.classList.add('max-h-0', 'opacity-0');
+        chevron?.classList.add('-rotate-90');
     }
 }
 

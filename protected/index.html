@@ -30,9 +30,12 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #101922; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9DABB9; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        * { transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
     </style>
 </head>
 <body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
@@ -78,9 +81,9 @@
                     <div class="w-[52px] h-[52px] rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary"><i class="fa-solid fa-headphones"></i></div>
                     <span class="badge px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="projects-badge">-</span>
                 </div>
-                <p class="text-sm text-text-secondary mb-2 font-medium">Ugens projekter</p>
-                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="projects-count">-</h2>
-                <p class="text-xs text-text-secondary" id="projects-footer">Indlaser...</p>
+                <p class="text-sm text-text-secondary font-medium">Ugens projekter</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mt-4 mb-3" id="projects-count">-</h2>
+                <p class="text-xs text-text-secondary mt-2" id="projects-footer">Indlaser...</p>
             </div>
 
             <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
@@ -88,18 +91,18 @@
                     <div class="w-[52px] h-[52px] rounded-xl bg-warning/10 flex items-center justify-center text-2xl text-warning"><i class="fa-solid fa-bug"></i></div>
                     <span class="badge px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="errors-badge">-</span>
                 </div>
-                <p class="text-sm text-text-secondary mb-2 font-medium">Uløste Fejl</p>
-                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="errors-count">-</h2>
-                <p class="text-xs text-text-secondary" id="errors-footer">Indlaser...</p>
+                <p class="text-sm text-text-secondary font-medium">Uløste Fejl</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mt-4 mb-3" id="errors-count">-</h2>
+                <p class="text-xs text-text-secondary mt-2" id="errors-footer">Indlaser...</p>
             </div>
 
             <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
                 <div class="flex justify-between items-center mb-4">
                     <div class="w-[52px] h-[52px] rounded-xl bg-info/10 flex items-center justify-center text-2xl text-info"><i class="fa-solid fa-chart-line"></i></div>
                 </div>
-                <p class="text-sm text-text-secondary mb-2 font-medium">24h Aktiviteter</p>
-                <h2 class="text-[2.8rem] font-semibold text-text-primary mb-3" id="activity-count">-</h2>
-                <p class="text-xs text-text-secondary">Handlinger logget i systemet</p>
+                <p class="text-sm text-text-secondary font-medium">24h Aktiviteter</p>
+                <h2 class="text-[2.8rem] font-semibold text-text-primary mt-4 mb-3" id="activity-count">-</h2>
+                <p class="text-xs text-text-secondary mt-2">Handlinger logget i systemet</p>
             </div>
         </div>
 
@@ -164,12 +167,15 @@
 </div>
 
 <!-- Global Modal -->
-<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000] hidden justify-center items-center" id="globalModalOverlay">
-    <div class="bg-dark-card border border-[#333] rounded-2xl p-8 max-w-[420px] w-[90%] text-center shadow-2xl">
-        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold" id="globalModalIcon">!</div>
-        <h3 class="text-xl font-semibold text-text-primary mb-3" id="globalModalTitle">Title</h3>
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="globalModalOverlay">
+    <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>
         <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
-        <div class="flex gap-3 justify-center" id="globalModalButtons"></div>
+        <div class="flex gap-3 justify-center" id="globalModalButtons">
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors bg-white/5 hover:bg-white/10 text-text-secondary border border-white/10" id="globalModalCancel">Annuller</button>
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors" id="globalModalConfirm">Bekræft</button>
+        </div>
     </div>
 </div>
 
