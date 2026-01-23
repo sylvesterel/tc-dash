@@ -310,7 +310,7 @@ function updateStats() {
         score.textContent = "God";
         score.className = "text-[2.8rem] font-semibold text-info mb-3";
     } else if (passwords.length > 0) {
-        score.textContent = "Middel";
+        score.textContent = "Middel<J";
         score.className = "text-[2.8rem] font-semibold text-warning mb-3";
     } else {
         score.textContent = "-";

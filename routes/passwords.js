@@ -52,13 +52,11 @@ router.use(authMiddleware);
 // ============================================
 router.get("/", async (req, res) => {
     try {
-        const userId = req.session.user.id;
+        // All logged-in users can see all passwords
         const [rows] = await pool.query(
             `SELECT id, site_name, url, username, password, created_at, updated_at
              FROM passwords
-             WHERE user_id = ?
-             ORDER BY site_name ASC`,
-            [userId]
+             ORDER BY site_name ASC`
         );
 
         // Decrypt passwords before sending
@@ -118,14 +116,13 @@ router.post("/", async (req, res) => {
 // ============================================
 router.put("/:id", async (req, res) => {
     try {
-        const userId = req.session.user.id;
         const { id } = req.params;
         const { siteName, url, username, password } = req.body;
 
-        // Verify ownership
+        // Verify password exists
         const [existing] = await pool.query(
-            'SELECT id FROM passwords WHERE id = ? AND user_id = ?',
-            [id, userId]
+            'SELECT id FROM passwords WHERE id = ?',
+            [id]
         );
 
         if (existing.length === 0) {
@@ -158,10 +155,10 @@ router.put("/:id", async (req, res) => {
         }
 
         updates.push('updated_at = NOW()');
-        values.push(id, userId);
+        values.push(id);
 
         await pool.query(
-            `UPDATE passwords SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
+            `UPDATE passwords SET ${updates.join(', ')} WHERE id = ?`,
             values
         );
 
@@ -177,12 +174,11 @@ router.put("/:id", async (req, res) => {
 // ============================================
 router.delete("/:id", async (req, res) => {
     try {
-        const userId = req.session.user.id;
         const { id } = req.params;
 
         const [result] = await pool.query(
-            'DELETE FROM passwords WHERE id = ? AND user_id = ?',
-            [id, userId]
+            'DELETE FROM passwords WHERE id = ?',
+            [id]
         );
 
         if (result.affectedRows === 0) {
