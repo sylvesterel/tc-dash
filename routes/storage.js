@@ -1,11 +1,65 @@
 import express from "express";
-import { pool } from "../config/database.js";
+import { pool, equipmentPool } from "../config/database.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // Apply auth to all routes
 router.use(authMiddleware);
+
+// ============================================
+// GET /api/storage/rentals - Get storage rentals from equipment database
+// ============================================
+router.get("/rentals", async (req, res) => {
+    try {
+        const [rows] = await equipmentPool.query(`
+            SELECT
+                s.project_name,
+                s.subproject_name,
+                g.displayname AS equipment_group,
+                n.n as nummer,
+                e.displayname AS equipment,
+                g.usageperiod_end,
+                g.usageperiod_start
+            FROM project_equipment AS e
+            JOIN project_equipment_group AS g
+                ON CAST(SUBSTRING_INDEX(e.equipment_group, '/', -1) AS UNSIGNED) = g.id
+            JOIN maestromedia_dashboard.project_with_sp AS s
+                ON CAST(SUBSTRING_INDEX(g.subproject, '/', -1) AS UNSIGNED) = s.subproject_id
+            JOIN equipment AS eq
+                ON CAST(SUBSTRING_INDEX(e.equipment, '/', -1) AS UNSIGNED) = eq.id
+            JOIN numbers n
+                ON n.n <= e.quantity
+            WHERE eq.displayname LIKE "%Opbevaring%"
+                AND s.sp_status = 3
+        `);
+
+        // Parse equipment field to extract bay ID (e.g., "Opbevaring | H-C" -> "H-C")
+        const rentals = rows.map(row => {
+            let bayId = null;
+            if (row.equipment) {
+                const match = row.equipment.match(/\|\s*([A-Z]-[A-Z])/i);
+                if (match) {
+                    bayId = match[1].toUpperCase();
+                }
+            }
+            return {
+                project_name: row.project_name,
+                subproject_name: row.subproject_name,
+                equipment_group: row.equipment_group,
+                equipment: row.equipment,
+                bay_id: bayId,
+                start_date: row.usageperiod_start,
+                end_date: row.usageperiod_end
+            };
+        });
+
+        res.json({ success: true, rentals });
+    } catch (error) {
+        console.error('Error fetching storage rentals:', error);
+        res.status(500).json({ error: 'Kunne ikke hente udlejninger' });
+    }
+});
 
 // ============================================
 // GET /api/storage/bookings - Get all bookings

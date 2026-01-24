@@ -42,6 +42,19 @@ const crmDatabaseConfig = {
 
 export const crmPool = mysql.createPool(crmDatabaseConfig);
 
+// Database Configuration - Equipment (Rentman)
+const equipmentDatabaseConfig = {
+    host: process.env.SYL_DB_HOST,
+    user: process.env.SYL_DB_USER,
+    password: process.env.SYL_DB_PASSWORD,
+    database: process.env.EQUIPMENT_DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
+
+export const equipmentPool = mysql.createPool(equipmentDatabaseConfig);
+
 // Helper function to add business days
 export function addBusinessDays(date, days) {
     const d = new Date(date);
@@ -54,4 +67,4 @@ export function addBusinessDays(date, days) {
     return d;
 }
 
-export default { pool, slusePool, crmPool, addBusinessDays };
+export default { pool, slusePool, crmPool, equipmentPool, addBusinessDays };
