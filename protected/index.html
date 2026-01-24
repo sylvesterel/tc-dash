@@ -79,7 +79,6 @@
             <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
                 <div class="flex justify-between items-center mb-4">
                     <div class="w-[52px] h-[52px] rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary"><i class="fa-solid fa-headphones"></i></div>
-                    <span class="badge px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="projects-badge">-</span>
                 </div>
                 <p class="text-sm text-text-secondary font-medium">Ugens projekter</p>
                 <h2 class="text-[2.8rem] font-semibold text-text-primary mt-4 mb-3" id="projects-count">-</h2>
@@ -141,6 +140,22 @@
                 </div>
             </div>
         </div>
+
+        <!-- Activity Feed -->
+        <div class="mt-6 bg-dark-card border border-[#333] rounded-xl p-6">
+            <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-lg font-semibold text-text-primary">Seneste Aktivitet</h3>
+                    <span class="px-2 py-0.5 text-xs rounded-full bg-info/20 text-info" id="activity-badge">24 timer</span>
+                </div>
+                <button class="flex items-center gap-2 py-2 px-4 bg-white/5 border border-[#333] rounded-lg text-text-secondary text-sm font-medium hover:bg-white/10 transition-all" onclick="loadActivities()">
+                    <i class="fa-solid fa-arrows-rotate text-xs"></i> Opdater
+                </button>
+            </div>
+            <div id="activity-container" class="max-h-[400px] overflow-y-auto">
+                <div class="text-center py-8 text-text-secondary">Indlæser aktiviteter...</div>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -167,7 +182,7 @@
 </div>
 
 <!-- Global Modal -->
-<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="globalModalOverlay">
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4" id="globalModalOverlay">
     <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
         <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
         <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>

@@ -66,7 +66,7 @@ const Modal = {
     // ============================================
     createModalHTML() {
         const modalHTML = `
-            <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="globalModalOverlay">
+            <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4" id="globalModalOverlay">
                 <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
                     <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon"></div>
                     <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Titel</h3>
@@ -120,11 +120,14 @@ const Modal = {
         this.icon.innerHTML = icons[type] || icons.info;
         this.icon.className = `w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4 ${iconColors[type] || iconColors.info}`;
         this.title.textContent = title;
-        // Tillad simpel HTML (<br>, <strong>) i beskeder, escape alt andet
+        // Tillad simpel HTML (<br>, <strong>, <span class/style>) i beskeder, escape alt andet
         this.message.innerHTML = this.escapeHtml(message)
             .replace(/&lt;br&gt;/gi, '<br>')
             .replace(/&lt;strong&gt;/gi, '<strong>')
-            .replace(/&lt;\/strong&gt;/gi, '</strong>');
+            .replace(/&lt;\/strong&gt;/gi, '</strong>')
+            .replace(/&lt;span class=&quot;([^&]*)&quot;&gt;/gi, '<span class="$1">')
+            .replace(/&lt;span style=&quot;([^&]*)&quot;&gt;/gi, '<span style="$1">')
+            .replace(/&lt;\/span&gt;/gi, '</span>');
         this.confirmBtn.textContent = confirmText;
         this.confirmBtn.className = `px-5 py-2.5 rounded-lg font-medium transition-colors ${buttonColors[type] || buttonColors.info}`;
 

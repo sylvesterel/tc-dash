@@ -211,15 +211,6 @@ async function loadUserInfo() {
             if (userNameEl) {
                 userNameEl.textContent = data.user.fornavn;
             }
-
-            // Show admin link if user is admin
-            if (data.user.rolle === 'admin') {
-                const adminLink = document.getElementById('adminNavLink');
-                if (adminLink) {
-                    adminLink.classList.remove('hidden');
-                    adminLink.classList.add('flex');
-                }
-            }
         }
     } catch (error) {
         console.error('Error loading user info:', error);

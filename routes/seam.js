@@ -2,12 +2,13 @@ import express from "express";
 import { Seam } from "seam";
 import { pool, crmPool } from "../config/database.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { generateAccessGuidePDF } from "../utils/pdfGenerator.js";
 
 const router = express.Router();
 
 const seam = new Seam({ apiKey: process.env.SEAM_API });
 const acsSystemId = process.env.SEAM_ACS_SYSTEM_ID;
-const accessGroupId = process.env.SEAM_ACCESS_GROUP_ID;
+const accessGroupId = process.env.SEAM_ACCESS_GROUP;
 
 // SSE clients for real-time access events
 const accessEventClients = new Set();
@@ -71,6 +72,21 @@ router.post("/create-user", authMiddleware, async (req, res) => {
             console.error('Error saving seam user to database:', dbErr);
         }
 
+        // Log aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, resource_name, description)
+                VALUES (?, ?, 'create', 'seam_access', ?, ?)
+            `, [
+                req.session.user.id,
+                `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`,
+                fullName,
+                `Oprettede adgang til slusen for ${artist_name}`
+            ]);
+        } catch (logErr) {
+            console.error('Error logging seam activity:', logErr);
+        }
+
         writeStatus(`CREDENTIAL_ID:${credential.acs_credential_id}`);
         writeStatus(`USER_ID:${acsUser.acs_user_id}`);
 
@@ -122,6 +138,14 @@ router.post("/users/:id/suspend", authMiddleware, async (req, res) => {
 
         await seam.acs.users.suspend({ acs_user_id: id });
 
+        // Log aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, resource_id, description)
+                VALUES (?, ?, 'update', 'seam_access', ?, 'Suspenderede adgang')
+            `, [req.session.user.id, `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`, id]);
+        } catch (logErr) { console.error('Log error:', logErr); }
+
         res.json({ success: true, message: "Bruger suspenderet" });
     } catch (err) {
         console.error('Error suspending seam user:', err);
@@ -136,6 +160,14 @@ router.post("/users/:id/unsuspend", authMiddleware, async (req, res) => {
 
         await seam.acs.users.unsuspend({ acs_user_id: id });
 
+        // Log aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, resource_id, description)
+                VALUES (?, ?, 'update', 'seam_access', ?, 'Genaktiverede adgang')
+            `, [req.session.user.id, `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`, id]);
+        } catch (logErr) { console.error('Log error:', logErr); }
+
         res.json({ success: true, message: "Bruger genaktiveret" });
     } catch (err) {
         console.error('Error unsuspending seam user:', err);
@@ -149,6 +181,14 @@ router.delete("/users/:id", authMiddleware, async (req, res) => {
         const { id } = req.params;
 
         await seam.acs.users.delete({ acs_user_id: id });
+
+        // Log aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, resource_id, description)
+                VALUES (?, ?, 'delete', 'seam_access', ?, 'Slettede adgang')
+            `, [req.session.user.id, `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`, id]);
+        } catch (logErr) { console.error('Log error:', logErr); }
 
         res.json({ success: true, message: "Bruger slettet" });
     } catch (err) {
@@ -184,6 +224,41 @@ router.get("/access-events/stream", (req, res) => {
         accessEventClients.delete(res);
         console.log(`[SSE] Client disconnected. Total clients: ${accessEventClients.size}`);
     });
+});
+
+// GET /generate-pdf - Generer adgangsvejledning PDF
+router.get("/generate-pdf", authMiddleware, (req, res) => {
+    try {
+        const { pin, name, details } = req.query;
+
+        if (!pin || !name) {
+            return res.status(400).json({ error: "pin og name er påkrævet" });
+        }
+
+        const contactName = req.session.user?.fornavn
+            ? `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`.trim()
+            : 'TourCare';
+
+        const doc = generateAccessGuidePDF({
+            pinCode: pin,
+            ownerName: name,
+            ownerDetails: details || '',
+            contactName: contactName
+        });
+
+        // Set response headers for PDF download
+        const filename = `Adgangsvejledning - ${name.replace(/[^a-zA-Z0-9æøåÆØÅ ]/g, '')}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+
+        // Pipe the PDF to the response
+        doc.pipe(res);
+        doc.end();
+
+    } catch (err) {
+        console.error('PDF generation error:', err);
+        res.status(500).json({ error: "Kunne ikke generere PDF: " + err.message });
+    }
 });
 
 export default router;

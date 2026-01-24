@@ -7,6 +7,23 @@ const AccessManager = {
     seamUsers: [],
     projects: [],
     projectsLoaded: false,
+    lastCreatedName: null,  // Gem navn til PDF generering
+    processingActions: new Set(),  // Idempotency: track igangværende handlinger
+
+    // Idempotency helpers
+    isProcessing(actionId) {
+        return this.processingActions.has(actionId);
+    },
+
+    startProcessing(actionId) {
+        if (this.processingActions.has(actionId)) return false;
+        this.processingActions.add(actionId);
+        return true;
+    },
+
+    stopProcessing(actionId) {
+        this.processingActions.delete(actionId);
+    },
 
     init() {
         this.attachEventListeners();
@@ -98,6 +115,11 @@ const AccessManager = {
     async handleFormSubmit(e) {
         e.preventDefault();
 
+        const actionId = 'create-user';
+        if (!this.startProcessing(actionId)) {
+            return; // Allerede i gang med at oprette
+        }
+
         const artistName = document.getElementById('artistName').value.trim();
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
@@ -105,13 +127,18 @@ const AccessManager = {
 
         if (!artistName || !startDate || !endDate) {
             this.showError('Udfyld alle felter!');
+            this.stopProcessing(actionId);
             return;
         }
 
         if (new Date(startDate) > new Date(endDate)) {
-            this.showError('Start dato skal vaere foer slut dato.');
+            this.showError('Start dato skal være før slut dato.');
+            this.stopProcessing(actionId);
             return;
         }
+
+        // Gem navnet til PDF generering
+        this.lastCreatedName = artistName;
 
         // Disable button and show status
         submitBtn.disabled = true;
@@ -176,6 +203,7 @@ const AccessManager = {
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Opret Adgang';
+            this.stopProcessing(actionId);
         }
     },
 
@@ -216,14 +244,21 @@ const AccessManager = {
     showPinResult(pin) {
         const pinDisplay = document.getElementById('pinResult');
         if (pinDisplay) {
+            const name = this.lastCreatedName || 'Ukendt';
             pinDisplay.innerHTML = `
-                <div class="flex items-center justify-between gap-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
-                    <div class="flex items-center gap-3">
-                        <span class="text-text-secondary text-sm">Pinkode:</span>
-                        <span class="text-2xl font-bold text-green-400 font-mono">${pin} + #</span>
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center justify-between gap-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <span class="text-text-secondary text-sm">Pinkode:</span>
+                            <span class="text-2xl font-bold text-green-400 font-mono">${pin} + #</span>
+                        </div>
+                        <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors text-sm" onclick="AccessManager.copyPin('${pin}')">
+                            <i class="fa-solid fa-copy mr-2"></i>Kopier
+                        </button>
                     </div>
-                    <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors text-sm" onclick="AccessManager.copyPin('${pin}')">
-                        <i class="fa-solid fa-copy mr-2"></i>Kopier
+                    <button class="w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2" onclick="AccessManager.downloadPDF('${pin}', '${name.replace(/'/g, "\\'")}')">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        Download Adgangsvejledning (PDF)
                     </button>
                 </div>
             `;
@@ -240,19 +275,41 @@ const AccessManager = {
         }
     },
 
+    downloadPDF(pin, name) {
+        const url = `/api/seam/generate-pdf?pin=${encodeURIComponent(pin)}&name=${encodeURIComponent(name)}`;
+        window.open(url, '_blank');
+        this.updateStatus('PDF download startet', 'success');
+    },
+
     // Suspend bruger
     async suspendUser(userId, userName) {
-        const confirmed = await Modal.show({
-            type: 'warning',
-            title: 'Suspender bruger',
-            message: `Er du sikker paa at du vil suspendere<br><strong>${userName}</strong>?<br><br>Brugeren vil miste adgang indtil de genaktiveres.`,
-            confirmText: 'Suspender',
-            cancelText: 'Annuller'
-        });
-
-        if (!confirmed) return;
+        const actionId = `suspend-${userId}`;
+        if (!this.startProcessing(actionId)) {
+            return; // Allerede i gang
+        }
 
         try {
+            const confirmed = await Modal.show({
+                type: 'warning',
+                title: 'Suspender bruger',
+                message: `Er du sikker på at du vil suspendere<br><strong>${userName}</strong>?<br><br>Brugeren vil miste adgang indtil de genaktiveres.`,
+                confirmText: 'Suspender',
+                cancelText: 'Annuller'
+            });
+
+            if (!confirmed) {
+                this.stopProcessing(actionId);
+                return;
+            }
+
+            // Optimistisk UI: Marker brugeren som suspenderet med det samme
+            const user = this.seamUsers.find(u => u.acs_user_id === userId);
+            if (user) {
+                user.is_suspended = true;
+                this.renderUsersList();
+                this.updateCounts();
+            }
+
             const res = await fetch(`/api/seam/users/${userId}/suspend`, {
                 method: 'POST'
             });
@@ -262,29 +319,49 @@ const AccessManager = {
                 this.showStatusBox();
                 this.updateStatus(`Bruger "${userName}" er suspenderet`, 'success');
                 await Modal.success('Bruger suspenderet', `<strong>${userName}</strong> er nu suspenderet og har ikke længere adgang.`);
-                await this.loadSeamUsers();
             } else {
+                // Rollback ved fejl
+                await this.loadSeamUsers();
                 await Modal.error('Fejl', data.error || 'Kunne ikke suspendere bruger');
             }
         } catch (err) {
             console.error('Suspend error:', err);
+            await this.loadSeamUsers();
             await Modal.error('Fejl', 'Fejl ved suspendering: ' + err.message);
+        } finally {
+            this.stopProcessing(actionId);
         }
     },
 
     // Genaktiver bruger
     async unsuspendUser(userId, userName) {
-        const confirmed = await Modal.show({
-            type: 'success',
-            title: 'Genaktiver bruger',
-            message: `Er du sikker paa at du vil genaktivere<br><strong>${userName}</strong>?<br><br>Brugeren vil få adgang igen.`,
-            confirmText: 'Genaktiver',
-            cancelText: 'Annuller'
-        });
-
-        if (!confirmed) return;
+        const actionId = `unsuspend-${userId}`;
+        if (!this.startProcessing(actionId)) {
+            return; // Allerede i gang
+        }
 
         try {
+            const confirmed = await Modal.show({
+                type: 'success',
+                title: 'Genaktiver bruger',
+                message: `Er du sikker på at du vil genaktivere<br><strong>${userName}</strong>?<br><br>Brugeren vil få adgang igen.`,
+                confirmText: 'Genaktiver',
+                cancelText: 'Annuller'
+            });
+
+            if (!confirmed) {
+                this.stopProcessing(actionId);
+                return;
+            }
+
+            // Optimistisk UI: Marker brugeren som aktiv med det samme
+            const user = this.seamUsers.find(u => u.acs_user_id === userId);
+            if (user) {
+                user.is_suspended = false;
+                this.renderUsersList();
+                this.updateCounts();
+            }
+
             const res = await fetch(`/api/seam/users/${userId}/unsuspend`, {
                 method: 'POST'
             });
@@ -294,29 +371,46 @@ const AccessManager = {
                 this.showStatusBox();
                 this.updateStatus(`Bruger "${userName}" er genaktiveret`, 'success');
                 await Modal.success('Bruger genaktiveret', `<strong>${userName}</strong> er nu genaktiveret og har adgang igen.`);
-                await this.loadSeamUsers();
             } else {
+                // Rollback ved fejl
+                await this.loadSeamUsers();
                 await Modal.error('Fejl', data.error || 'Kunne ikke genaktivere bruger');
             }
         } catch (err) {
             console.error('Unsuspend error:', err);
+            await this.loadSeamUsers();
             await Modal.error('Fejl', 'Fejl ved genaktivering: ' + err.message);
+        } finally {
+            this.stopProcessing(actionId);
         }
     },
 
     // Slet bruger
     async deleteUser(userId, userName) {
-        const confirmed = await Modal.show({
-            type: 'danger',
-            title: 'Slet bruger permanent',
-            message: `Er du sikker paa at du vil slette<br><strong>${userName}</strong>?<br><br><span style="color: #ef4444;">Denne handling kan IKKE fortrydes!</span>`,
-            confirmText: 'Ja, slet bruger',
-            cancelText: 'Annuller'
-        });
-
-        if (!confirmed) return;
+        const actionId = `delete-${userId}`;
+        if (!this.startProcessing(actionId)) {
+            return; // Allerede i gang
+        }
 
         try {
+            const confirmed = await Modal.show({
+                type: 'danger',
+                title: 'Slet bruger permanent',
+                message: `Er du sikker på at du vil slette<br><strong>${userName}</strong>?<br><br><span style="color: #ef4444;">Denne handling kan IKKE fortrydes!</span>`,
+                confirmText: 'Ja, slet bruger',
+                cancelText: 'Annuller'
+            });
+
+            if (!confirmed) {
+                this.stopProcessing(actionId);
+                return;
+            }
+
+            // Optimistisk UI: Fjern brugeren med det samme
+            this.seamUsers = this.seamUsers.filter(u => u.acs_user_id !== userId);
+            this.renderUsersList();
+            this.updateCounts();
+
             const res = await fetch(`/api/seam/users/${userId}`, {
                 method: 'DELETE'
             });
@@ -326,13 +420,18 @@ const AccessManager = {
                 this.showStatusBox();
                 this.updateStatus(`Bruger "${userName}" er slettet`, 'success');
                 await Modal.success('Bruger slettet', `<strong>${userName}</strong> er blevet slettet permanent.`);
-                await this.loadSeamUsers();
             } else {
+                // Rollback: Genindlæs listen ved fejl
+                await this.loadSeamUsers();
                 await Modal.error('Fejl', data.error || 'Kunne ikke slette bruger');
             }
         } catch (err) {
             console.error('Delete error:', err);
+            // Rollback ved fejl
+            await this.loadSeamUsers();
             await Modal.error('Fejl', 'Fejl ved sletning: ' + err.message);
+        } finally {
+            this.stopProcessing(actionId);
         }
     },
 

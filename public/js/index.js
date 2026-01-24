@@ -23,7 +23,8 @@ async function loadDashboardData() {
     await Promise.all([
         loadDashboardStats(),
         loadWeeklyMenu(),
-        loadNotes()
+        loadNotes(),
+        loadActivities()
     ]);
 }
 
@@ -608,6 +609,115 @@ async function deleteNote(noteId) {
         console.error('Error deleting note:', error);
         Modal.error('Fejl', 'Der opstod en fejl ved sletning af note');
     }
+}
+
+// ============================================
+// Activity Feed
+// ============================================
+async function loadActivities() {
+    try {
+        const response = await fetch('/api/activities?limit=20');
+        const data = await response.json();
+
+        if (data.success) {
+            renderActivities(data.activities || []);
+        } else {
+            renderEmptyActivities('Kunne ikke hente aktiviteter');
+        }
+    } catch (error) {
+        console.error('Error loading activities:', error);
+        renderEmptyActivities('Fejl ved indlæsning');
+    }
+}
+
+function renderActivities(activities) {
+    const container = document.getElementById('activity-container');
+    if (!container) return;
+
+    if (activities.length === 0) {
+        renderEmptyActivities('Ingen aktiviteter endnu');
+        return;
+    }
+
+    const actionIcons = {
+        'create': { icon: 'fa-plus', color: 'text-green-400', bg: 'bg-green-500/20' },
+        'update': { icon: 'fa-pen', color: 'text-yellow-400', bg: 'bg-yellow-500/20' },
+        'delete': { icon: 'fa-trash', color: 'text-red-400', bg: 'bg-red-500/20' },
+        'login': { icon: 'fa-right-to-bracket', color: 'text-blue-400', bg: 'bg-blue-500/20' },
+        'logout': { icon: 'fa-right-from-bracket', color: 'text-gray-400', bg: 'bg-gray-500/20' },
+        'view': { icon: 'fa-eye', color: 'text-purple-400', bg: 'bg-purple-500/20' },
+        'export': { icon: 'fa-download', color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
+        'import': { icon: 'fa-upload', color: 'text-orange-400', bg: 'bg-orange-500/20' },
+        'sync': { icon: 'fa-arrows-rotate', color: 'text-indigo-400', bg: 'bg-indigo-500/20' }
+    };
+
+    const actionLabels = {
+        'create': 'oprettede',
+        'update': 'opdaterede',
+        'delete': 'slettede',
+        'login': 'loggede ind',
+        'logout': 'loggede ud',
+        'view': 'så',
+        'export': 'eksporterede',
+        'import': 'importerede',
+        'sync': 'synkroniserede'
+    };
+
+    const html = activities.map(activity => {
+        const actionStyle = actionIcons[activity.action_type] || actionIcons['update'];
+        const actionLabel = actionLabels[activity.action_type] || activity.action_type;
+        const timeAgo = formatTimeAgo(activity.created_at);
+
+        return `
+            <div class="flex items-start gap-3 py-3 border-b border-white/5 last:border-0">
+                <div class="w-8 h-8 rounded-lg ${actionStyle.bg} flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid ${actionStyle.icon} ${actionStyle.color} text-xs"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-text-primary">
+                        <span class="font-medium">${escapeHtml(activity.user_name || 'System')}</span>
+                        <span class="text-text-secondary"> ${actionLabel} </span>
+                        ${activity.resource_name ? `<span class="font-medium">${escapeHtml(activity.resource_name)}</span>` : ''}
+                        ${activity.resource_type ? `<span class="text-text-secondary text-xs">(${activity.resource_type})</span>` : ''}
+                    </p>
+                    ${activity.description ? `<p class="text-xs text-text-secondary mt-0.5 truncate">${escapeHtml(activity.description)}</p>` : ''}
+                </div>
+                <span class="text-xs text-text-secondary whitespace-nowrap">${timeAgo}</span>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
+function renderEmptyActivities(message) {
+    const container = document.getElementById('activity-container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-8 text-center">
+            <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+                <i class="fa-solid fa-chart-line text-text-secondary text-lg"></i>
+            </div>
+            <p class="text-text-secondary">${message}</p>
+        </div>
+    `;
+}
+
+function formatTimeAgo(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Lige nu';
+    if (diffMins < 60) return `${diffMins} min siden`;
+    if (diffHours < 24) return `${diffHours} time${diffHours > 1 ? 'r' : ''} siden`;
+    if (diffDays < 7) return `${diffDays} dag${diffDays > 1 ? 'e' : ''} siden`;
+    return formatDate(dateString);
 }
 
 // ============================================
