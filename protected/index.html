@@ -41,36 +41,36 @@
 <body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
 
 <!-- Header -->
-<header class="h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-8 z-[99]">
-    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn">
+<header class="h-[60px] md:h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-4 md:px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn" onclick="toggleMobileNav()">
         <i class="fa-solid fa-bars"></i>
     </button>
     <div class="text-text-secondary">
-        <h1 class="font-semibold uppercase text-[13px] tracking-wide">Generelt / Hjem</h1>
+        <h1 class="font-semibold uppercase text-[11px] md:text-[13px] tracking-wide">Generelt / Hjem</h1>
     </div>
-    <div class="text-right flex items-center gap-4">
-        <div>
+    <div class="text-right flex items-center gap-2 md:gap-4">
+        <div class="hidden sm:block">
             <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
             <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
         </div>
-        <img src="/img/user.png" class="h-[50px] w-[50px] rounded-full object-cover">
+        <img src="/img/user.png" class="h-[40px] w-[40px] md:h-[50px] md:w-[50px] rounded-full object-cover">
     </div>
 </header>
 
 <div class="flex flex-1">
     <!-- Navigation -->
     <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
-    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]" onclick="closeMobileNav()"></div>
 
     <!-- Main Content -->
-    <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
+    <main class="fixed top-[60px] md:top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-4 md:p-8 overflow-y-auto">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
             <div>
                 <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Velkommen tilbage</h1>
                 <p class="text-base text-text-secondary">Her er et overblik over dagens aktiviteter.</p>
             </div>
-            <button class="flex items-center gap-2.5 py-3 px-6 bg-transparent border border-primary rounded-xl text-primary text-[15px] font-medium cursor-pointer transition-all hover:bg-primary hover:text-white" onclick="loadDashboardData()">
-                <span class="text-xl">↻</span> Opdater data
+            <button class="flex items-center gap-2 py-2 px-4 md:py-3 md:px-6 bg-transparent border border-primary rounded-xl text-primary text-sm md:text-[15px] font-medium cursor-pointer transition-all hover:bg-primary hover:text-white w-full sm:w-auto justify-center" onclick="loadDashboardData()">
+                <span class="text-lg md:text-xl">↻</span> Opdater data
             </button>
         </div>
 
