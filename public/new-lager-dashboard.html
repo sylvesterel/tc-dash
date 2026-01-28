@@ -55,8 +55,8 @@
             justify-content: space-between;
             border-bottom: 1px solid #283039;
             background: #111418;
-            padding: 12px 24px;
-            height: 60px;
+            padding: 16px 32px;
+            height: 80px;
         }
 
         .header-left {
@@ -66,10 +66,10 @@
         }
 
         .header-icon {
-            width: 44px;
-            height: 44px;
+            width: 52px;
+            height: 52px;
             background: rgba(19, 127, 236, 0.2);
-            border-radius: 12px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -77,14 +77,14 @@
         }
 
         .header-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
             color: white;
             margin: 0;
         }
 
         .header-subtitle {
-            font-size: 11px;
+            font-size: 12px;
             color: #6b7280;
             margin: 0;
             text-transform: uppercase;
@@ -142,7 +142,7 @@
         }
 
         .header-time {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             color: white;
             font-variant-numeric: tabular-nums;
@@ -155,13 +155,30 @@
             letter-spacing: 0.1em;
         }
 
+        .header-refresh {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 14px;
+            border-radius: 8px;
+        }
+
+        .refresh-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            font-variant-numeric: tabular-nums;
+            min-width: 36px;
+        }
+
         .grid-container {
             flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
-            gap: 4px;
-            padding: 4px;
+            gap: 8px;
+            padding: 8px;
             box-sizing: border-box;
             background: #1a1f26;
             overflow: hidden;
@@ -182,13 +199,13 @@
 
         .panel-label {
             position: absolute;
-            top: 8px;
-            left: 8px;
+            top: 12px;
+            left: 12px;
             background: rgba(0,0,0,0.7);
             color: #9dabb9;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 10px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
@@ -280,7 +297,7 @@
         }
 
         .lager-column-header {
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-bottom: 1px solid #283039;
             display: flex;
             align-items: center;
@@ -294,27 +311,27 @@
         }
 
         .lager-column-header h3 {
-            font-size: 13px;
+            font-size: 20px;
             font-weight: 700;
             color: white;
             margin: 0;
         }
 
         .lager-column-header .material-symbols-outlined {
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .lager-badge {
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 9999px;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 700;
             border: 1px solid;
         }
 
         .lager-column-content {
             flex: 1;
-            padding: 8px;
+            padding: 10px;
             overflow: hidden;
             background: rgba(0,0,0,0.2);
         }
@@ -323,28 +340,29 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            height: 100%;
         }
 
         .lager-item {
             background: #1c252e;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            border-left: 3px solid;
+            gap: 12px;
+            border-left: 4px solid;
+            height: 94px;
+            flex-shrink: 0;
         }
 
         .lager-item-letter {
-            width: 32px;
-            height: 32px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: #283039;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 700;
             color: #9dabb9;
             border: 1px solid #3b4754;
@@ -362,11 +380,12 @@
         .lager-item-info {
             display: flex;
             flex-direction: column;
+            gap: 1px;
             min-width: 0;
         }
 
         .lager-item-name {
-            font-size: 13px;
+            font-size: 18px;
             font-weight: 700;
             color: white;
             white-space: nowrap;
@@ -375,7 +394,7 @@
         }
 
         .lager-item-project {
-            font-size: 10px;
+            font-size: 12px;
             color: #6b7280;
             text-transform: uppercase;
             white-space: nowrap;
@@ -384,7 +403,7 @@
         }
 
         .lager-item-date {
-            font-size: 10px;
+            font-size: 14px;
             font-weight: 600;
             color: #6b7280;
             text-align: right;
@@ -411,7 +430,7 @@
         .sluse-panel {
             display: flex;
             flex-direction: column;
-            padding: 12px;
+            padding: 16px;
         }
 
         .sluse-grid {
@@ -419,12 +438,12 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 8px;
+            gap: 12px;
         }
 
         .sluse-card {
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -442,16 +461,16 @@
         }
 
         .sluse-card-name {
-            font-size: 10px;
+            font-size: 18px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             opacity: 0.8;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .sluse-card-customer {
-            font-size: 16px;
+            font-size: 32px;
             font-weight: 700;
             line-height: 1.2;
             flex: 1;
@@ -460,14 +479,14 @@
         }
 
         .sluse-card-details {
-            font-size: 10px;
+            font-size: 13px;
             opacity: 0.8;
             margin-top: auto;
         }
 
         .sluse-card-empty .sluse-card-customer {
             color: #6b7280;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 500;
         }
     </style>
@@ -478,7 +497,7 @@
         <header class="universal-header">
             <div class="header-left">
                 <div class="header-icon">
-                    <span class="material-symbols-outlined" style="font-size: 28px;">inventory_2</span>
+                    <span class="material-symbols-outlined" style="font-size: 32px;">inventory_2</span>
                 </div>
                 <div>
                     <h1 class="header-title">TOURCARE</h1>
@@ -486,6 +505,10 @@
                 </div>
             </div>
             <div class="header-right">
+                <div class="header-refresh">
+                    <span class="material-symbols-outlined" style="font-size: 18px; color: #6b7280;">refresh</span>
+                    <span class="refresh-text" id="refresh-timer">--s</span>
+                </div>
                 <div class="header-live">
                     <div class="live-dot"></div>
                     <span class="live-text">Live</span>
@@ -593,7 +616,7 @@
             // Camera configuration
             cameraType: 'iframe', // 'img' for MJPEG/image streams, 'iframe' for web-based cameras
             cameraZoom: true, // Zoom camera feed to 150%
-            itemsPerList: 6, // Number of items to show per list
+            itemsPerList: 7, // Number of items to show per list
             rotateInterval: 30, // Seconds between page rotations
             fetchInterval: 120, // Seconds between data fetches
             sluseFetchInterval: 30 // Seconds between sluse fetches
@@ -652,7 +675,8 @@
             sluse: [],
             countdown: CONFIG.rotateInterval,
             lastFetch: 0,
-            lastSluseFetch: 0
+            lastSluseFetch: 0,
+            refreshCountdown: CONFIG.fetchInterval
         };
 
         /* =======================
@@ -750,17 +774,17 @@
         function updateCounters() {
             const s = state;
             document.getElementById('count-confirmed-top').textContent =
-                s.confirmed.pages.length > 1 ? `${s.confirmed.current + 1}/${s.confirmed.pages.length}` :
-                (s.confirmed.pages[0]?.length || 0);
+                s.confirmed.pages.length > 1 ? `Side ${s.confirmed.current + 1}/${s.confirmed.pages.length}` :
+                `Antal: ${s.confirmed.pages[0]?.length || 0}`;
             document.getElementById('count-prepped-top').textContent =
-                s.prepped.pages.length > 1 ? `${s.prepped.current + 1}/${s.prepped.pages.length}` :
-                (s.prepped.pages[0]?.length || 0);
+                s.prepped.pages.length > 1 ? `Side ${s.prepped.current + 1}/${s.prepped.pages.length}` :
+                    `Antal: ${s.prepped.pages[0]?.length || 0}`;
             document.getElementById('count-onlocation').textContent =
-                s.onlocation.pages.length > 1 ? `${s.onlocation.current + 1}/${s.onlocation.pages.length}` :
-                (s.onlocation.pages[0]?.length || 0);
+                s.onlocation.pages.length > 1 ? `Side ${s.onlocation.current + 1}/${s.onlocation.pages.length}` :
+                    `Antal: ${s.onlocation.pages[0]?.length || 0}`;
             document.getElementById('count-delayed').textContent =
-                s.delayed.pages.length > 1 ? `${s.delayed.current + 1}/${s.delayed.pages.length}` :
-                (s.delayed.pages[0]?.length || 0);
+                s.delayed.pages.length > 1 ? `Side ${s.delayed.current + 1}/${s.delayed.pages.length}` :
+                    `Antal: ${s.delayed.pages[0]?.length || 0}`;
         }
 
         function renderLager() {
@@ -888,9 +912,18 @@
         /* =======================
            MAIN LOOP
         ======================= */
+        function updateRefreshTimer() {
+            const timerEl = document.getElementById('refresh-timer');
+            if (timerEl) {
+                timerEl.textContent = `${state.refreshCountdown}s`;
+            }
+        }
+
         setInterval(() => {
             updateClock();
             state.countdown--;
+            state.refreshCountdown--;
+            updateRefreshTimer();
 
             if (state.countdown <= 0) {
                 // Rotate pages
@@ -903,14 +936,11 @@
                 state.countdown = CONFIG.rotateInterval;
             }
 
-            // Refetch lager data periodically
-            if (Date.now() - state.lastFetch > CONFIG.fetchInterval * 1000) {
+            // Refetch data periodically
+            if (state.refreshCountdown <= 0) {
                 fetchLagerData();
-            }
-
-            // Refetch sluse data periodically
-            if (Date.now() - state.lastSluseFetch > CONFIG.sluseFetchInterval * 1000) {
                 fetchSluseData();
+                state.refreshCountdown = CONFIG.fetchInterval;
             }
         }, 1000);
 
