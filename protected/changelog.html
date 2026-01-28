@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Appcare | Changelog</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+        /* Timeline styling */
+        .timeline-item { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; }
+        .timeline-item:nth-child(1) { animation-delay: 0.05s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.15s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(5) { animation-delay: 0.25s; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .timeline-dot-pulse::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        .change-item { transition: all 0.2s ease; }
+        .change-item:hover { transform: translateX(4px); }
+
+        .type-badge { backdrop-filter: blur(8px); }
+    </style>
+</head>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
+
+<header class="h-[60px] md:h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-4 md:px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn" onclick="toggleMobileNav()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[11px] md:text-[13px] tracking-wide">System / Changelog</h1>
+    </div>
+    <div class="text-right flex items-center gap-2 md:gap-4">
+        <div class="hidden sm:block">
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
+        </div>
+        <img src="/img/user.png" class="h-[40px] w-[40px] md:h-[50px] md:w-[50px] rounded-full object-cover">
+    </div>
+</header>
+
+<div class="flex flex-1">
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]" onclick="closeMobileNav()"></div>
+
+    <main class="fixed top-[60px] md:top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-4 md:p-8 overflow-y-auto">
+        <!-- Hero Header -->
+        <div class="relative mb-10">
+            <div class="absolute inset-0 bg-gradient-to-r from-primary/10 via-purple-500/5 to-transparent rounded-2xl"></div>
+            <div class="relative p-6 md:p-8">
+                <a href="/indstillinger" class="text-text-secondary hover:text-primary transition-colors text-sm mb-4 inline-flex items-center gap-2 group">
+                    <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                    Tilbage til indstillinger
+                </a>
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20">
+                                <i class="fa-solid fa-code-branch text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-[2rem] font-bold text-text-primary leading-tight">Changelog</h1>
+                                <p class="text-sm text-text-secondary">v0.10 · Appcare Dashboard</p>
+                            </div>
+                        </div>
+                        <p class="text-base text-text-secondary max-w-lg">Hold styr på alle ændringer, nye funktioner og fejlrettelser i systemet.</p>
+                    </div>
+                    <button onclick="openAddModal()" class="flex items-center gap-2 py-3 px-6 bg-gradient-to-r from-primary to-primary-hover border-none rounded-xl text-white text-[15px] font-semibold cursor-pointer transition-all hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0">
+                        <i class="fa-solid fa-plus"></i>
+                        Tilføj ændring
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+            <div class="group bg-dark-card border border-[#333] rounded-xl p-4 hover:border-success/50 transition-all cursor-default">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-plus text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-text-primary text-sm">Tilføjet</h3>
+                        <p class="text-xs text-text-secondary">Nye funktioner</p>
+                    </div>
+                </div>
+            </div>
+            <div class="group bg-dark-card border border-[#333] rounded-xl p-4 hover:border-info/50 transition-all cursor-default">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-pen text-info"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-text-primary text-sm">Ændret</h3>
+                        <p class="text-xs text-text-secondary">Forbedringer</p>
+                    </div>
+                </div>
+            </div>
+            <div class="group bg-dark-card border border-[#333] rounded-xl p-4 hover:border-error/50 transition-all cursor-default">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-bug text-error"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-text-primary text-sm">Fixed</h3>
+                        <p class="text-xs text-text-secondary">Fejlrettelser</p>
+                    </div>
+                </div>
+            </div>
+            <div class="group bg-dark-card border border-[#333] rounded-xl p-4 hover:border-warning/50 transition-all cursor-default">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-flask text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-text-primary text-sm">Beta</h3>
+                        <p class="text-xs text-text-secondary">Eksperimentelt</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Container -->
+        <div class="relative" id="changelogContainer">
+            <!-- Timeline line -->
+            <div class="absolute left-[23px] md:left-[31px] top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-[#333] to-transparent timeline-line hidden"></div>
+
+            <div class="flex items-center justify-center py-16">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-text-secondary"></i>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add Modal -->
+<div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
+    <div class="bg-dark-card border border-[#333] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex justify-between items-center p-6 border-b border-[#1a1a1a]">
+            <h2 class="text-xl font-semibold text-text-primary">Tilføj ændringer</h2>
+            <button class="w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary text-xl flex items-center justify-center hover:bg-error hover:border-error hover:text-white transition-all" onclick="closeAddModal()">×</button>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1">
+            <p class="text-text-secondary text-sm mb-4">Tilføj en eller flere ændringer til dagens changelog.</p>
+
+            <div class="space-y-3" id="changesInputContainer">
+                <!-- Dynamisk tilføjede ændringer -->
+            </div>
+
+            <button type="button" onclick="addChangeInput()" class="mt-4 w-full py-3 px-4 border border-dashed border-[#444] rounded-xl text-text-secondary hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus"></i>
+                Tilføj endnu en ændring
+            </button>
+        </div>
+
+        <div class="flex gap-3 p-6 border-t border-[#1a1a1a]">
+            <button type="button" onclick="closeAddModal()" class="flex-1 py-3 px-4 bg-dark-hover border border-[#333] rounded-xl text-text-secondary font-medium hover:bg-[#252f3a] transition-all">
+                Annuller
+            </button>
+            <button type="button" onclick="saveChanges()" id="saveBtn" class="flex-1 py-3 px-4 bg-primary border-none rounded-xl text-white font-medium hover:bg-primary-hover transition-all">
+                Gem ændringer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Global Modal -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4" id="globalModalOverlay">
+    <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>
+        <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
+        <div class="flex gap-3 justify-center" id="globalModalButtons">
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors bg-white/5 hover:bg-white/10 text-text-secondary border border-white/10" id="globalModalCancel">Annuller</button>
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors" id="globalModalConfirm">Bekræft</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/modal.js"></script>
+<script src="/js/generel.js"></script>
+<script>
+    const typeConfig = {
+        added: { label: 'Tilføjet', color: 'success', icon: 'fa-plus' },
+        changed: { label: 'Ændret', color: 'info', icon: 'fa-pen' },
+        fixed: { label: 'Fixed', color: 'error', icon: 'fa-bug' },
+        beta: { label: 'Beta', color: 'warning', icon: 'fa-flask' }
+    };
+
+    let changeInputCount = 0;
+
+    // Load changelog on page load
+    document.addEventListener('DOMContentLoaded', loadChangelog);
+
+    async function loadChangelog() {
+        try {
+            const res = await fetch('/api/changelog');
+            const data = await res.json();
+
+            if (data.success) {
+                renderChangelog(data.changelog);
+            }
+        } catch (err) {
+            console.error('Error loading changelog:', err);
+            document.getElementById('changelogContainer').innerHTML = `
+                <div class="text-center py-16 text-text-secondary">
+                    <i class="fa-solid fa-exclamation-triangle text-2xl mb-4"></i>
+                    <p>Kunne ikke indlæse changelog</p>
+                </div>
+            `;
+        }
+    }
+
+    function renderChangelog(changelog) {
+        const container = document.getElementById('changelogContainer');
+
+        if (!changelog || changelog.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-20">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/10 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/10">
+                        <i class="fa-solid fa-rocket text-primary text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-text-primary mb-2">Ingen ændringer endnu</h3>
+                    <p class="text-text-secondary mb-6 max-w-md mx-auto">Start med at dokumentere ændringer til systemet ved at klikke på knappen ovenfor.</p>
+                    <button onclick="openAddModal()" class="inline-flex items-center gap-2 py-2.5 px-5 bg-primary/10 border border-primary/30 rounded-xl text-primary text-sm font-medium hover:bg-primary/20 transition-all">
+                        <i class="fa-solid fa-plus"></i>
+                        Tilføj første ændring
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        // Show timeline line
+        const timelineLine = container.querySelector('.timeline-line');
+        if (timelineLine) timelineLine.classList.remove('hidden');
+
+        const timelineHtml = `
+            <div class="absolute left-[23px] md:left-[31px] top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-[#333] to-transparent"></div>
+            <div class="space-y-8">
+                ${changelog.map((day, index) => {
+                    const date = new Date(day.date);
+                    const isToday = day.date === new Date().toISOString().split('T')[0];
+                    const isYesterday = day.date === new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                    const formattedDate = date.toLocaleDateString('da-DK', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+
+                    // Group changes by type
+                    const byType = { added: [], changed: [], fixed: [], beta: [] };
+                    day.changes.forEach(c => {
+                        if (byType[c.type]) byType[c.type].push(c);
+                    });
+
+                    const dayLabel = isToday ? 'I dag' : isYesterday ? 'I går' : '';
+
+                    return `
+                        <div class="timeline-item relative pl-14 md:pl-20">
+                            <!-- Timeline dot -->
+                            <div class="absolute left-0 md:left-2 top-2 w-12 h-12 md:w-14 md:h-14 rounded-2xl ${isToday ? 'bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/30' : 'bg-dark-card border border-[#333]'} flex items-center justify-center z-10">
+                                ${isToday ? `
+                                    <div class="relative">
+                                        <div class="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
+                                        <i class="fa-solid fa-star text-white text-lg relative"></i>
+                                    </div>
+                                ` : `
+                                    <span class="text-lg font-bold text-text-secondary">${date.getDate()}</span>
+                                `}
+                            </div>
+
+                            <!-- Content Card -->
+                            <div class="bg-dark-card border border-[#333] rounded-2xl overflow-hidden hover:border-[#444] transition-all">
+                                <!-- Header -->
+                                <div class="px-5 py-4 bg-gradient-to-r from-white/[0.02] to-transparent border-b border-[#222]">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="flex items-center gap-3">
+                                                <h3 class="font-semibold text-text-primary capitalize">${formattedDate}</h3>
+                                                ${dayLabel ? `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${isToday ? 'bg-primary/20 text-primary' : 'bg-white/5 text-text-secondary'}">${dayLabel}</span>` : ''}
+                                            </div>
+                                            <p class="text-xs text-text-secondary mt-0.5">${day.changes.length} ændring${day.changes.length !== 1 ? 'er' : ''}</p>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            ${Object.entries(byType).filter(([_, items]) => items.length > 0).map(([type, items]) => `
+                                                <span class="type-badge w-8 h-8 rounded-lg bg-${typeConfig[type].color}/10 flex items-center justify-center" title="${typeConfig[type].label}: ${items.length}">
+                                                    <i class="fa-solid ${typeConfig[type].icon} text-${typeConfig[type].color} text-xs"></i>
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Changes -->
+                                <div class="p-5 space-y-5">
+                                    ${Object.entries(byType).filter(([_, items]) => items.length > 0).map(([type, items]) => `
+                                        <div>
+                                            <div class="flex items-center gap-2 mb-3">
+                                                <div class="w-6 h-6 rounded-md bg-${typeConfig[type].color}/10 flex items-center justify-center">
+                                                    <i class="fa-solid ${typeConfig[type].icon} text-${typeConfig[type].color} text-[10px]"></i>
+                                                </div>
+                                                <span class="text-sm font-semibold text-${typeConfig[type].color}">${typeConfig[type].label}</span>
+                                                <span class="text-xs text-text-secondary">(${items.length})</span>
+                                            </div>
+                                            <div class="space-y-2 ml-1">
+                                                ${items.map(item => `
+                                                    <div class="change-item flex items-start gap-3 group p-2.5 rounded-lg hover:bg-white/[0.02]">
+                                                        <div class="w-1.5 h-1.5 rounded-full bg-${typeConfig[type].color}/50 mt-2 flex-shrink-0"></div>
+                                                        <span class="flex-1 text-text-primary text-[15px] leading-relaxed">${escapeHtml(item.description)}</span>
+                                                        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                                            <button onclick="openEditModal(${item.id}, '${type}', '${escapeHtml(item.description).replace(/'/g, "\\'")}')" class="w-7 h-7 rounded-md bg-white/5 text-text-secondary hover:bg-info/20 hover:text-info transition-all flex items-center justify-center" title="Rediger">
+                                                                <i class="fa-solid fa-pen text-[10px]"></i>
+                                                            </button>
+                                                            <button onclick="deleteChange(${item.id})" class="w-7 h-7 rounded-md bg-white/5 text-text-secondary hover:bg-error/20 hover:text-error transition-all flex items-center justify-center" title="Slet">
+                                                                <i class="fa-solid fa-trash text-[10px]"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        container.innerHTML = timelineHtml;
+    }
+
+    function openAddModal() {
+        document.getElementById('addModal').classList.remove('hidden');
+        document.getElementById('addModal').classList.add('flex');
+        document.getElementById('changesInputContainer').innerHTML = '';
+        changeInputCount = 0;
+        addChangeInput();
+    }
+
+    function closeAddModal() {
+        document.getElementById('addModal').classList.add('hidden');
+        document.getElementById('addModal').classList.remove('flex');
+    }
+
+    function addChangeInput() {
+        changeInputCount++;
+        const container = document.getElementById('changesInputContainer');
+        const div = document.createElement('div');
+        div.className = 'flex gap-3 items-start change-input-row';
+        div.id = `change-row-${changeInputCount}`;
+        div.innerHTML = `
+            <select class="change-type px-3 py-3 bg-dark-hover border border-[#333] rounded-lg text-text-primary focus:outline-none focus:border-primary transition-colors w-32 flex-shrink-0">
+                <option value="added">Tilføjet</option>
+                <option value="changed">Ændret</option>
+                <option value="fixed">Fixed</option>
+                <option value="beta">Beta</option>
+            </select>
+            <input type="text" class="change-description flex-1 px-4 py-3 bg-dark-hover border border-[#333] rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary transition-colors" placeholder="Beskriv ændringen...">
+            ${changeInputCount > 1 ? `
+                <button type="button" onclick="removeChangeInput(${changeInputCount})" class="w-10 h-10 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-error hover:border-error hover:text-white transition-all flex-shrink-0">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            ` : '<div class="w-10"></div>'}
+        `;
+        container.appendChild(div);
+
+        // Focus the new input
+        div.querySelector('.change-description').focus();
+    }
+
+    function removeChangeInput(id) {
+        const row = document.getElementById(`change-row-${id}`);
+        if (row) row.remove();
+    }
+
+    async function saveChanges() {
+        const rows = document.querySelectorAll('.change-input-row');
+        const changes = [];
+
+        rows.forEach(row => {
+            const type = row.querySelector('.change-type').value;
+            const description = row.querySelector('.change-description').value.trim();
+            if (description) {
+                changes.push({ type, description });
+            }
+        });
+
+        if (changes.length === 0) {
+            showModal('error', 'Fejl', 'Tilføj mindst én ændring med en beskrivelse');
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gemmer...';
+
+        try {
+            const res = await fetch('/api/changelog', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ changes })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                closeAddModal();
+                loadChangelog();
+                showModal('success', 'Gemt', data.message || 'Ændringer tilføjet');
+            } else {
+                showModal('error', 'Fejl', data.error || 'Kunne ikke gemme ændringer');
+            }
+        } catch (err) {
+            console.error('Error saving changes:', err);
+            showModal('error', 'Fejl', 'Kunne ikke gemme ændringer');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Gem ændringer';
+        }
+    }
+
+    async function deleteChange(id) {
+        const confirmed = await Modal.confirm(
+            'Slet ændring',
+            'Er du sikker på at du vil slette denne ændring?',
+            'warning'
+        );
+        if (!confirmed) return;
+
+        try {
+            const res = await fetch(`/api/changelog/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+
+            if (data.success) {
+                loadChangelog();
+            } else {
+                showModal('error', 'Fejl', data.error || 'Kunne ikke slette ændring');
+            }
+        } catch (err) {
+            console.error('Error deleting change:', err);
+            showModal('error', 'Fejl', 'Kunne ikke slette ændring');
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

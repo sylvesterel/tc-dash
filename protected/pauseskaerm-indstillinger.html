@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Appcare | Pauseskærm Indstillinger</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    </style>
+</head>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
+
+<header class="h-[60px] md:h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-4 md:px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn" onclick="toggleMobileNav()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[11px] md:text-[13px] tracking-wide">System / Pauseskærm Indstillinger</h1>
+    </div>
+    <div class="text-right flex items-center gap-2 md:gap-4">
+        <div class="hidden sm:block">
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
+        </div>
+        <img src="/img/user.png" class="h-[40px] w-[40px] md:h-[50px] md:w-[50px] rounded-full object-cover">
+    </div>
+</header>
+
+<div class="flex flex-1">
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]" onclick="closeMobileNav()"></div>
+
+    <main class="fixed top-[60px] md:top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-4 md:p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <a href="/indstillinger" class="text-text-secondary hover:text-primary transition-colors text-sm mb-2 inline-flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Tilbage til indstillinger
+                </a>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Pauseskærm Indstillinger</h1>
+                <p class="text-base text-text-secondary">Indstil hvornår pauseskærmen vises på lager- og kontordashboards</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Nuværende status -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-circle-info text-cyan-400"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-text-primary">Nuværende Status</h2>
+                </div>
+
+                <div class="space-y-4" id="statusContainer">
+                    <div class="flex items-center justify-center py-8">
+                        <i class="fa-solid fa-spinner fa-spin text-2xl text-text-secondary"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tidsrum indstillinger -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                        <i class="fa-solid fa-clock text-primary"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-text-primary">Tidsrum</h2>
+                </div>
+
+                <p class="text-text-secondary mb-4">
+                    Pauseskærmen er <strong class="text-text-primary">slået fra</strong> i dette tidsrum.
+                    Uden for tidsrummet vises pauseskærmen automatisk.
+                </p>
+
+                <form id="settingsForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="activeStart" class="block text-sm font-medium text-text-secondary mb-2">Fra kl.</label>
+                            <input type="time" id="activeStart" name="activeStart"
+                                class="w-full px-4 py-3 bg-dark-bg border border-[#333] rounded-lg text-text-primary focus:border-primary focus:outline-none transition-colors"
+                                value="08:30">
+                        </div>
+                        <div>
+                            <label for="activeEnd" class="block text-sm font-medium text-text-secondary mb-2">Til kl.</label>
+                            <input type="time" id="activeEnd" name="activeEnd"
+                                class="w-full px-4 py-3 bg-dark-bg border border-[#333] rounded-lg text-text-primary focus:border-primary focus:outline-none transition-colors"
+                                value="18:00">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="saveBtn"
+                        class="w-full px-4 py-3 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-save"></i>
+                        Gem indstillinger
+                    </button>
+                </form>
+
+                <div class="mt-4 text-xs text-text-secondary" id="lastUpdated"></div>
+            </div>
+
+            <!-- Manuel override -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 lg:col-span-2">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center">
+                        <i class="fa-solid fa-moon text-warning"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-text-primary">Manuel Override</h2>
+                </div>
+
+                <p class="text-text-secondary mb-4">
+                    Hvis du arbejder sent, kan du slå pauseskærmen fra manuelt.
+                    Den vil automatisk blive slået til igen næste dag ved arbejdstidens start.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4" id="overrideContainer">
+                    <button id="overrideBtn"
+                        class="px-6 py-3 bg-warning/20 hover:bg-warning/30 text-warning font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-toggle-off"></i>
+                        <span>Slå pauseskærm fra nu</span>
+                    </button>
+                    <button id="removeOverrideBtn"
+                        class="hidden px-6 py-3 bg-success/20 hover:bg-success/30 text-success font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-toggle-on"></i>
+                        <span>Slå pauseskærm til igen</span>
+                    </button>
+                </div>
+
+                <div id="overrideStatus" class="mt-4 hidden p-4 bg-warning/10 border border-warning/30 rounded-lg">
+                    <div class="flex items-center gap-2 text-warning">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span id="overrideStatusText"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="bg-dark-card border border-[#333] rounded-xl p-6 lg:col-span-2">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-info/20 flex items-center justify-center">
+                        <i class="fa-solid fa-question-circle text-info"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-text-primary">Hvordan virker det?</h2>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 text-text-secondary">
+                    <div>
+                        <h3 class="font-medium text-text-primary mb-2">Arbejdstid</h3>
+                        <p>I det angivne tidsrum vises dashboards som normalt. Pauseskærmen er slået fra.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-text-primary mb-2">Uden for arbejdstid</h3>
+                        <p>Efter arbejdstid vises en sort pauseskærm for at spare strøm og undgå screen burn-in.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-text-primary mb-2">Manuel override</h3>
+                        <p>Hvis du arbejder sent, kan du midlertidigt slå pauseskærmen fra. Den aktiveres automatisk næste dag.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Global Modal -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4" id="globalModalOverlay">
+    <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>
+        <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
+        <div class="flex gap-3 justify-center" id="globalModalButtons">
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors bg-white/5 hover:bg-white/10 text-text-secondary border border-white/10" id="globalModalCancel">Annuller</button>
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors" id="globalModalConfirm">Bekræft</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/modal.js"></script>
+<script src="/js/generel.js"></script>
+<script>
+    let currentSettings = null;
+
+    // Hent indstillinger ved load
+    async function fetchSettings() {
+        try {
+            const res = await fetch('/api/screensaver/settings');
+            const data = await res.json();
+
+            if (data.success) {
+                currentSettings = data.settings;
+                updateUI();
+            }
+        } catch (err) {
+            console.error('Error fetching settings:', err);
+            showModal('error', 'Fejl', 'Kunne ikke hente indstillinger');
+        }
+    }
+
+    // Hent live status
+    async function fetchStatus() {
+        try {
+            const res = await fetch('/api/screensaver/status');
+            const data = await res.json();
+
+            if (data.success) {
+                updateStatusUI(data);
+            }
+        } catch (err) {
+            console.error('Error fetching status:', err);
+        }
+    }
+
+    function updateUI() {
+        if (!currentSettings) return;
+
+        // Opdater form fields
+        document.getElementById('activeStart').value = currentSettings.active_start;
+        document.getElementById('activeEnd').value = currentSettings.active_end;
+
+        // Opdater last updated
+        const lastUpdated = document.getElementById('lastUpdated');
+        if (currentSettings.updated_by_name && currentSettings.updated_at) {
+            const date = new Date(currentSettings.updated_at);
+            lastUpdated.textContent = `Sidst opdateret af ${currentSettings.updated_by_name} d. ${date.toLocaleDateString('da-DK')} kl. ${date.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        // Opdater override status
+        updateOverrideUI();
+    }
+
+    function updateStatusUI(data) {
+        const container = document.getElementById('statusContainer');
+
+        const statusIcon = data.should_show_screensaver
+            ? '<i class="fa-solid fa-moon text-warning text-2xl"></i>'
+            : '<i class="fa-solid fa-sun text-success text-2xl"></i>';
+
+        const statusText = data.should_show_screensaver
+            ? 'Pauseskærm er aktiv'
+            : 'Pauseskærm er slået fra';
+
+        const statusBadge = data.should_show_screensaver
+            ? '<span class="px-3 py-1 bg-warning/20 text-warning text-sm font-medium rounded-full">Aktiv</span>'
+            : '<span class="px-3 py-1 bg-success/20 text-success text-sm font-medium rounded-full">Inaktiv</span>';
+
+        let reasonText = '';
+        if (data.is_work_hours) {
+            reasonText = 'Inden for arbejdstid';
+        } else if (data.has_manual_override) {
+            reasonText = 'Manuel override aktiv';
+        } else {
+            reasonText = 'Uden for arbejdstid';
+        }
+
+        container.innerHTML = `
+            <div class="flex items-center justify-between p-4 bg-dark-bg rounded-lg">
+                <div class="flex items-center gap-4">
+                    ${statusIcon}
+                    <div>
+                        <div class="font-medium text-text-primary">${statusText}</div>
+                        <div class="text-sm text-text-secondary">${reasonText}</div>
+                    </div>
+                </div>
+                ${statusBadge}
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div class="p-4 bg-dark-bg rounded-lg text-center">
+                    <div class="text-2xl font-bold text-text-primary">${data.active_start.substring(0, 5)}</div>
+                    <div class="text-sm text-text-secondary">Start tid</div>
+                </div>
+                <div class="p-4 bg-dark-bg rounded-lg text-center">
+                    <div class="text-2xl font-bold text-text-primary">${data.active_end.substring(0, 5)}</div>
+                    <div class="text-sm text-text-secondary">Slut tid</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function updateOverrideUI() {
+        const overrideBtn = document.getElementById('overrideBtn');
+        const removeOverrideBtn = document.getElementById('removeOverrideBtn');
+        const overrideStatus = document.getElementById('overrideStatus');
+        const overrideStatusText = document.getElementById('overrideStatusText');
+
+        if (currentSettings.manual_override_until) {
+            const overrideDate = new Date(currentSettings.manual_override_until);
+            const now = new Date();
+
+            if (overrideDate > now) {
+                // Override er aktiv
+                overrideBtn.classList.add('hidden');
+                removeOverrideBtn.classList.remove('hidden');
+                overrideStatus.classList.remove('hidden');
+                overrideStatusText.textContent = `Pauseskærm er slået fra indtil ${overrideDate.toLocaleDateString('da-DK')} kl. ${overrideDate.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })}`;
+            } else {
+                // Override er udløbet
+                overrideBtn.classList.remove('hidden');
+                removeOverrideBtn.classList.add('hidden');
+                overrideStatus.classList.add('hidden');
+            }
+        } else {
+            overrideBtn.classList.remove('hidden');
+            removeOverrideBtn.classList.add('hidden');
+            overrideStatus.classList.add('hidden');
+        }
+    }
+
+    // Gem indstillinger
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const activeStart = document.getElementById('activeStart').value;
+        const activeEnd = document.getElementById('activeEnd').value;
+
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gemmer...';
+
+        try {
+            const res = await fetch('/api/screensaver/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active_start: activeStart, active_end: activeEnd })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showModal('success', 'Gemt', 'Indstillinger er blevet opdateret');
+                fetchSettings();
+                fetchStatus();
+            } else {
+                showModal('error', 'Fejl', data.error || 'Kunne ikke gemme indstillinger');
+            }
+        } catch (err) {
+            console.error('Error saving settings:', err);
+            showModal('error', 'Fejl', 'Kunne ikke gemme indstillinger');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fa-solid fa-save"></i> Gem indstillinger';
+        }
+    });
+
+    // Manuel override
+    document.getElementById('overrideBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('overrideBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Slår fra...';
+
+        try {
+            const res = await fetch('/api/screensaver/override', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showModal('success', 'Pauseskærm slået fra', `Pauseskærmen er slået fra indtil i morgen kl. ${currentSettings.active_start}`);
+                fetchSettings();
+                fetchStatus();
+            } else {
+                showModal('error', 'Fejl', data.error || 'Kunne ikke slå pauseskærm fra');
+            }
+        } catch (err) {
+            console.error('Error setting override:', err);
+            showModal('error', 'Fejl', 'Kunne ikke slå pauseskærm fra');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-toggle-off"></i> <span>Slå pauseskærm fra nu</span>';
+        }
+    });
+
+    // Fjern override
+    document.getElementById('removeOverrideBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('removeOverrideBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Slår til...';
+
+        try {
+            const res = await fetch('/api/screensaver/override', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showModal('success', 'Pauseskærm slået til', 'Pauseskærmen følger nu de normale indstillinger');
+                fetchSettings();
+                fetchStatus();
+            } else {
+                showModal('error', 'Fejl', data.error || 'Kunne ikke fjerne override');
+            }
+        } catch (err) {
+            console.error('Error removing override:', err);
+            showModal('error', 'Fejl', 'Kunne ikke fjerne override');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-toggle-on"></i> <span>Slå pauseskærm til igen</span>';
+        }
+    });
+
+    // Init
+    fetchSettings();
+    fetchStatus();
+
+    // Opdater status hvert 30. sekund
+    setInterval(fetchStatus, 30000);
+</script>
+</body>
+</html>
