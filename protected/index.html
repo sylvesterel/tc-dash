@@ -41,36 +41,36 @@
 <body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
 
 <!-- Header -->
-<header class="h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-8 z-[99]">
-    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn">
+<header class="h-[60px] md:h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-4 md:px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn" onclick="toggleMobileNav()">
         <i class="fa-solid fa-bars"></i>
     </button>
     <div class="text-text-secondary">
-        <h1 class="font-semibold uppercase text-[13px] tracking-wide">Generelt / Hjem</h1>
+        <h1 class="font-semibold uppercase text-[11px] md:text-[13px] tracking-wide">Generelt / Hjem</h1>
     </div>
-    <div class="text-right flex items-center gap-4">
-        <div>
+    <div class="text-right flex items-center gap-2 md:gap-4">
+        <div class="hidden sm:block">
             <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
             <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
         </div>
-        <img src="/img/user.png" class="h-[50px] w-[50px] rounded-full object-cover">
+        <img src="/img/user.png" class="h-[40px] w-[40px] md:h-[50px] md:w-[50px] rounded-full object-cover">
     </div>
 </header>
 
 <div class="flex flex-1">
     <!-- Navigation -->
     <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
-    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"></div>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]" onclick="closeMobileNav()"></div>
 
     <!-- Main Content -->
-    <main class="fixed top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-8 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
+    <main class="fixed top-[60px] md:top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-4 md:p-8 overflow-y-auto">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
             <div>
                 <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Velkommen tilbage</h1>
                 <p class="text-base text-text-secondary">Her er et overblik over dagens aktiviteter.</p>
             </div>
-            <button class="flex items-center gap-2.5 py-3 px-6 bg-transparent border border-primary rounded-xl text-primary text-[15px] font-medium cursor-pointer transition-all hover:bg-primary hover:text-white" onclick="loadDashboardData()">
-                <span class="text-xl">↻</span> Opdater data
+            <button class="flex items-center gap-2 py-2 px-4 md:py-3 md:px-6 bg-transparent border border-primary rounded-xl text-primary text-sm md:text-[15px] font-medium cursor-pointer transition-all hover:bg-primary hover:text-white w-full sm:w-auto justify-center" onclick="loadDashboardData()">
+                <span class="text-lg md:text-xl">↻</span> Opdater data
             </button>
         </div>
 
@@ -79,7 +79,6 @@
             <div class="bg-dark-card border border-[#333] rounded-xl p-6 transition-all hover:border-primary hover:-translate-y-0.5">
                 <div class="flex justify-between items-center mb-4">
                     <div class="w-[52px] h-[52px] rounded-xl bg-primary/10 flex items-center justify-center text-2xl text-primary"><i class="fa-solid fa-headphones"></i></div>
-                    <span class="badge px-3 py-1.5 rounded-full text-xs font-semibold bg-text-secondary/10 text-text-secondary" id="projects-badge">-</span>
                 </div>
                 <p class="text-sm text-text-secondary font-medium">Ugens projekter</p>
                 <h2 class="text-[2.8rem] font-semibold text-text-primary mt-4 mb-3" id="projects-count">-</h2>
@@ -141,6 +140,22 @@
                 </div>
             </div>
         </div>
+
+        <!-- Activity Feed -->
+        <div class="mt-6 bg-dark-card border border-[#333] rounded-xl p-6">
+            <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-lg font-semibold text-text-primary">Seneste Aktivitet</h3>
+                    <span class="px-2 py-0.5 text-xs rounded-full bg-info/20 text-info" id="activity-badge">24 timer</span>
+                </div>
+                <button class="flex items-center gap-2 py-2 px-4 bg-white/5 border border-[#333] rounded-lg text-text-secondary text-sm font-medium hover:bg-white/10 transition-all" onclick="loadActivities()">
+                    <i class="fa-solid fa-arrows-rotate text-xs"></i> Opdater
+                </button>
+            </div>
+            <div id="activity-container" class="max-h-[400px] overflow-y-auto">
+                <div class="text-center py-8 text-text-secondary">Indlæser aktiviteter...</div>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -167,7 +182,7 @@
 </div>
 
 <!-- Global Modal -->
-<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="globalModalOverlay">
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4" id="globalModalOverlay">
     <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
         <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
         <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>

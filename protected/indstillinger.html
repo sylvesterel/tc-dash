@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Appcare | Indstillinger</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#137FEC', hover: '#0F63C1', active: '#0B4490' },
+                        dark: { bg: '#101922', card: '#111418', hover: '#191e24' },
+                        text: { primary: '#E0E0E0', secondary: '#9DABB9' },
+                        success: '#00E676', warning: '#FFC107', error: '#FF5252', info: '#29B6F6'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101922; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    </style>
+</head>
+<body class="font-sans text-sm text-text-primary bg-dark-bg flex flex-col h-screen">
+
+<header class="h-[60px] md:h-[70px] fixed left-0 lg:left-[280px] right-0 border-b border-[#333] bg-dark-card flex justify-between items-center px-4 md:px-8 z-[99]">
+    <button class="lg:hidden bg-transparent border-none text-text-primary text-2xl cursor-pointer p-2 rounded-lg hover:bg-dark-hover" id="hamburgerBtn" onclick="toggleMobileNav()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="text-text-secondary">
+        <h1 class="font-semibold uppercase text-[11px] md:text-[13px] tracking-wide">System / Indstillinger</h1>
+    </div>
+    <div class="text-right flex items-center gap-2 md:gap-4">
+        <div class="hidden sm:block">
+            <h1 class="text-xs font-medium text-text-secondary">Velkommen tilbage</h1>
+            <h2 class="text-[15px] font-semibold text-text-primary" id="user-name">...</h2>
+        </div>
+        <img src="/img/user.png" class="h-[40px] w-[40px] md:h-[50px] md:w-[50px] rounded-full object-cover">
+    </div>
+</header>
+
+<div class="flex flex-1">
+    <nav id="navbar" class="fixed h-full w-[280px] bg-dark-card py-6 flex flex-col justify-between border-r border-[#333] overflow-y-auto z-[100] transition-transform lg:translate-x-0 -translate-x-full"></nav>
+    <div id="navOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]" onclick="closeMobileNav()"></div>
+
+    <main class="fixed top-[60px] md:top-[70px] left-0 lg:left-[280px] right-0 bottom-0 p-4 md:p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-[2rem] font-semibold text-text-primary mb-2">Indstillinger</h1>
+                <p class="text-base text-text-secondary">Administrer din konto og systemindstillinger</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Profil -->
+            <a href="/profil" class="group bg-dark-card border border-[#333] rounded-xl p-6 hover:border-primary/50 transition-all">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                        <i class="fa-solid fa-user text-primary text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-text-primary mb-1 group-hover:text-primary transition-colors">Profil</h3>
+                        <p class="text-sm text-text-secondary">Administrer dine personlige oplysninger og adgangskode</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-text-secondary group-hover:text-primary transition-colors"></i>
+                </div>
+            </a>
+
+            <!-- Brugere -->
+            <a href="/users" class="group bg-dark-card border border-[#333] rounded-xl p-6 hover:border-primary/50 transition-all">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                        <i class="fa-solid fa-users text-green-400 text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-text-primary mb-1 group-hover:text-green-400 transition-colors">Brugere</h3>
+                        <p class="text-sm text-text-secondary">Se og administrer alle brugere i systemet</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-text-secondary group-hover:text-green-400 transition-colors"></i>
+                </div>
+            </a>
+
+            <!-- Integration -->
+            <a href="/integration" class="group bg-dark-card border border-[#333] rounded-xl p-6 hover:border-primary/50 transition-all">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                        <i class="fa-solid fa-plug text-purple-400 text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-text-primary mb-1 group-hover:text-purple-400 transition-colors">Integration</h3>
+                        <p class="text-sm text-text-secondary">Se info om integration mellem HubSpot og Rentman</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-text-secondary group-hover:text-purple-400 transition-colors"></i>
+                </div>
+            </a>
+
+            <!-- Admin (kun synlig for admins) -->
+            <a href="/admin" id="adminSettingsLink" class="hidden group bg-dark-card border border-[#333] rounded-xl p-6 hover:border-yellow-500/50 transition-all">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center group-hover:bg-yellow-500/30 transition-colors">
+                        <i class="fa-solid fa-shield-halved text-yellow-400 text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-text-primary mb-1 group-hover:text-yellow-400 transition-colors">Administration</h3>
+                        <p class="text-sm text-text-secondary">Systemindstillinger og avancerede funktioner</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-text-secondary group-hover:text-yellow-400 transition-colors"></i>
+                </div>
+            </a>
+        </div>
+    </main>
+</div>
+
+<!-- Global Modal -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4" id="globalModalOverlay">
+    <div class="bg-dark-card border border-white/10 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl" id="globalModal">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4" id="globalModalIcon">!</div>
+        <h3 class="text-xl font-semibold text-text-primary mb-2" id="globalModalTitle">Title</h3>
+        <p class="text-text-secondary mb-6" id="globalModalMessage">Message</p>
+        <div class="flex gap-3 justify-center" id="globalModalButtons">
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors bg-white/5 hover:bg-white/10 text-text-secondary border border-white/10" id="globalModalCancel">Annuller</button>
+            <button class="px-5 py-2.5 rounded-lg font-medium transition-colors" id="globalModalConfirm">Bekræft</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/modal.js"></script>
+<script src="/js/generel.js"></script>
+<script>
+    // Vis admin link hvis bruger er admin
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const res = await fetch('/me');
+            const data = await res.json();
+            if (data.user && data.user.rolle === 'admin') {
+                const adminLink = document.getElementById('adminSettingsLink');
+                if (adminLink) {
+                    adminLink.classList.remove('hidden');
+                }
+            }
+        } catch (err) {
+            console.error('Error checking admin status:', err);
+        }
+    });
+</script>
+</body>
+</html>

@@ -277,6 +277,18 @@ router.get("/webhook/status", async (req, res) => {
 router.post("/weekly-reset", authMiddleware, async (req, res) => {
     try {
         await slusePool.query('UPDATE infoskaerm SET Kunde = "", Detaljer = "", Dato = ""');
+
+        // Log aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, description)
+                VALUES (?, ?, 'delete', 'sluse', 'Ugentlig nulstilling af alle sluser')
+            `, [
+                req.session.user.id,
+                `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`
+            ]);
+        } catch (logErr) { console.error('Log error:', logErr); }
+
         res.json({ success: true, message: "Ugentlig nulstilling gennemført" });
     } catch (err) {
         console.error('Error performing weekly reset:', err);
@@ -314,6 +326,20 @@ router.put("/:slusenavn", authMiddleware, async (req, res) => {
             'UPDATE infoskaerm SET Kunde = ?, Detaljer = ?, Dato = ? WHERE slusenavn = ?',
             [Kunde || '', Detaljer || '', Dato || '', slusenavn]
         );
+
+        // Log aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, resource_name, description)
+                VALUES (?, ?, 'update', 'sluse', ?, ?)
+            `, [
+                req.session.user.id,
+                `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`,
+                slusenavn,
+                Kunde ? `Opdaterede ${slusenavn}: ${Kunde}` : `Ryddede ${slusenavn}`
+            ]);
+        } catch (logErr) { console.error('Log error:', logErr); }
+
         res.json({ success: true, message: "Sluse opdateret" });
     } catch (err) {
         console.error('Error updating sluse:', err);
@@ -339,6 +365,20 @@ router.post("/save-all", authMiddleware, async (req, res) => {
                 );
             }
             await connection.commit();
+
+            // Log aktivitet
+            try {
+                const updatedCount = data.filter(d => d.Kunde && d.Kunde.trim()).length;
+                await pool.query(`
+                    INSERT INTO activity_log (user_id, user_name, action_type, resource_type, description)
+                    VALUES (?, ?, 'update', 'sluse', ?)
+                `, [
+                    req.session.user.id,
+                    `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`,
+                    `Gemte alle sluser (${updatedCount} med indhold)`
+                ]);
+            } catch (logErr) { console.error('Log error:', logErr); }
+
             res.json({ success: true, message: "Alle sluse data gemt!" });
         } catch (err) {
             await connection.rollback();
@@ -360,6 +400,20 @@ router.delete("/:slusenavn/clear", authMiddleware, async (req, res) => {
             'UPDATE infoskaerm SET Kunde = "", Detaljer = "", Dato = "" WHERE slusenavn = ?',
             [slusenavn]
         );
+
+        // Log aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, resource_name, description)
+                VALUES (?, ?, 'delete', 'sluse', ?, ?)
+            `, [
+                req.session.user.id,
+                `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`,
+                slusenavn,
+                `Ryddede ${slusenavn}`
+            ]);
+        } catch (logErr) { console.error('Log error:', logErr); }
+
         res.json({ success: true, message: "Sluse ryddet" });
     } catch (err) {
         console.error('Error clearing sluse:', err);

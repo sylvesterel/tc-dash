@@ -34,6 +34,16 @@ router.post("/login", async (req, res) => {
 
         await pool.query('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);
 
+        // Log login aktivitet
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, description)
+                VALUES (?, ?, 'login', 'session', 'Bruger loggede ind')
+            `, [user.id, `${user.fornavn} ${user.efternavn}`]);
+        } catch (logErr) {
+            console.error('Error logging login activity:', logErr);
+        }
+
         req.session.user = {
             id: user.id,
             brugernavn: user.brugernavn,
@@ -59,7 +69,19 @@ router.post("/login", async (req, res) => {
 });
 
 // Logout
-router.post("/logout", (req, res) => {
+router.post("/logout", async (req, res) => {
+    // Log logout aktivitet før session destroyes
+    if (req.session?.user) {
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, description)
+                VALUES (?, ?, 'logout', 'session', 'Bruger loggede ud')
+            `, [req.session.user.id, `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`]);
+        } catch (logErr) {
+            console.error('Error logging logout activity:', logErr);
+        }
+    }
+
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({ error: "Kunne ikke logge ud" });

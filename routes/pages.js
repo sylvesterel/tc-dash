@@ -25,6 +25,10 @@ router.get("/profil", authMiddleware, (req, res) => {
     res.sendFile(path.join(process.cwd(), "protected", "profil.html"));
 });
 
+router.get("/indstillinger", authMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "protected", "indstillinger.html"));
+});
+
 router.get("/users", authMiddleware, (req, res) => {
     res.sendFile(path.join(process.cwd(), "protected", "users.html"));
 });
