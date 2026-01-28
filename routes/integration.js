@@ -4,6 +4,9 @@ import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
+// Rentman integration server URL
+const RENTMAN_INTEGRATION_URL = process.env.RENTMAN_INTEGRATION_URL || 'https://hubspot.tourcare.dk';
+
 router.get("/dashboard", authMiddleware, async (req, res) => {
     try {
         // Get sync status
