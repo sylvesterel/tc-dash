@@ -132,7 +132,9 @@ router.get("/delayed", displayKeyApiMiddleware, (req, res) => {
                subproject_name AS displayname,
                sp_start_up,
                sp_end_pp,
-               project_name AS project
+               project_name AS project,
+               (SELECT letter FROM crew WHERE rentman_id = wh_out) AS wh_out_letter,
+               (SELECT letter FROM crew WHERE rentman_id = wh_in) AS wh_in_letter
         FROM project_with_sp
         WHERE sp_status IN (4,5)
           AND sp_end_pp BETWEEN ? AND ?

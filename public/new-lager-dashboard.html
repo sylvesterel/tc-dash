@@ -39,16 +39,132 @@
             font-family: 'Inter', sans-serif;
         }
 
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background: #0a0f14;
+        }
+
+        /* Universal Header */
+        .universal-header {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #283039;
+            background: #111418;
+            padding: 12px 24px;
+            height: 60px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(19, 127, 236, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #137fec;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: #6b7280;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-live {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-dot {
+            position: relative;
+            width: 10px;
+            height: 10px;
+        }
+
+        .live-dot::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .live-dot::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .live-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #22c55e;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .header-time {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .header-date {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
         .grid-container {
+            flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
-            height: 100vh;
-            width: 100vw;
             gap: 4px;
             padding: 4px;
             box-sizing: border-box;
             background: #1a1f26;
+            overflow: hidden;
         }
 
         .panel {
@@ -81,7 +197,7 @@
         }
 
         /* Left panels - Lager Dashboard embedded */
-        .lager-top, .lager-bottom {
+        .lager-panel {
             display: flex;
             flex-direction: column;
         }
@@ -122,59 +238,27 @@
             object-fit: cover;
         }
 
+        /* Zoomed camera feed container */
+        .camera-panel {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .camera-feed-zoomed {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 66.67%;
+            height: 66.67%;
+            transform: translate(-52%, -48%) scale(1.8);
+            transform-origin: center center;
+            border: none;
+        }
+
         /* For embedded lager content */
         .lager-content {
             height: 100%;
             overflow: hidden;
-        }
-
-        .lager-header {
-            flex: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #283039;
-            background: #151b23;
-            padding: 12px 16px;
-        }
-
-        .lager-header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .lager-header-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(19, 127, 236, 0.2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #137fec;
-        }
-
-        .lager-header h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: white;
-            margin: 0;
-        }
-
-        .lager-header p {
-            font-size: 10px;
-            color: #6b7280;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .lager-time {
-            font-size: 20px;
-            font-weight: 700;
-            color: white;
-            font-variant-numeric: tabular-nums;
         }
 
         .lager-main {
@@ -248,25 +332,55 @@
             border-radius: 8px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 10px;
             border-left: 3px solid;
+        }
+
+        .lager-item-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #283039;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #9dabb9;
+            border: 1px solid #3b4754;
+            flex-shrink: 0;
+        }
+
+        .lager-item-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 0;
         }
 
         .lager-item-info {
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .lager-item-name {
             font-size: 13px;
             font-weight: 700;
             color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .lager-item-project {
             font-size: 10px;
             color: #6b7280;
             text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .lager-item-date {
@@ -274,6 +388,8 @@
             font-weight: 600;
             color: #6b7280;
             text-align: right;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .border-yellow { border-left-color: #eab308; }
@@ -290,24 +406,100 @@
         .bg-blue { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); }
         .bg-green { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.2); }
         .bg-orange { background: rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.2); }
+
+        /* Sluse/Bays Panel Styles */
+        .sluse-panel {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+        }
+
+        .sluse-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .sluse-card {
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sluse-card-empty {
+            background: #1c252e;
+            border: 1px dashed #3b4754;
+            opacity: 0.6;
+        }
+
+        .sluse-card-occupied {
+            border: none;
+        }
+
+        .sluse-card-name {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+
+        .sluse-card-customer {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.2;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .sluse-card-details {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: auto;
+        }
+
+        .sluse-card-empty .sluse-card-customer {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
-    <div class="grid-container">
-        <!-- Top Left: Lager Dashboard - Skal pakkes & Er pakket -->
-        <div class="panel lager-top" id="panel-lager-top">
-            <div class="lager-header">
-                <div class="lager-header-left">
-                    <div class="lager-header-icon">
-                        <span class="material-symbols-outlined">inventory_2</span>
-                    </div>
-                    <div>
-                        <h2>TOURCARE</h2>
-                        <p>Lager Dashboard</p>
-                    </div>
+    <div class="main-container">
+        <!-- Universal Header -->
+        <header class="universal-header">
+            <div class="header-left">
+                <div class="header-icon">
+                    <span class="material-symbols-outlined" style="font-size: 28px;">inventory_2</span>
                 </div>
-                <span class="lager-time" id="time-top">--:--</span>
+                <div>
+                    <h1 class="header-title">TOURCARE</h1>
+                    <p class="header-subtitle">Lager Dashboard</p>
+                </div>
             </div>
+            <div class="header-right">
+                <div class="header-live">
+                    <div class="live-dot"></div>
+                    <span class="live-text">Live</span>
+                </div>
+                <div style="text-align: right;">
+                    <div class="header-time" id="header-time">--:--</div>
+                    <div class="header-date" id="header-date">--- --, ----</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid-container">
+        <!-- Top Left: Lager Dashboard - Skal pakkes & Er pakket -->
+        <div class="panel lager-panel" id="panel-lager-top">
             <div class="lager-main">
                 <!-- Skal pakkes -->
                 <div class="lager-column">
@@ -338,26 +530,16 @@
             </div>
         </div>
 
-        <!-- Top Right: Sluse Display (Baser) -->
-        <div class="panel">
+        <!-- Top Right: Sluse/Bays Overview (embedded, not iframe) -->
+        <div class="panel sluse-panel" id="panel-sluse">
             <span class="panel-label">Sluse Overblik</span>
-            <iframe src="/display.html" title="Sluse Display"></iframe>
+            <div class="sluse-grid" id="sluse-grid">
+                <!-- JS render -->
+            </div>
         </div>
 
         <!-- Bottom Left: Lager Dashboard - Kommer hjem & Forsinket -->
-        <div class="panel lager-bottom" id="panel-lager-bottom">
-            <div class="lager-header">
-                <div class="lager-header-left">
-                    <div class="lager-header-icon">
-                        <span class="material-symbols-outlined">local_shipping</span>
-                    </div>
-                    <div>
-                        <h2>TOURCARE</h2>
-                        <p>Returneringer</p>
-                    </div>
-                </div>
-                <span class="lager-time" id="time-bottom">--:--</span>
-            </div>
+        <div class="panel lager-panel" id="panel-lager-bottom">
             <div class="lager-main">
                 <!-- Kommer hjem -->
                 <div class="lager-column">
@@ -401,6 +583,7 @@
             <iframe id="camera-iframe" class="camera-feed" src="" style="display: none;"></iframe>
         </div>
     </div>
+    </div>
 
     <script>
         /* =======================
@@ -408,16 +591,30 @@
         ======================= */
         const CONFIG = {
             // Camera configuration
-            cameraUrl: 'https://monitor.ui.com/f7869b1e-efe9-434d-bbc4-9694af8d770d',
             cameraType: 'iframe', // 'img' for MJPEG/image streams, 'iframe' for web-based cameras
+            cameraZoom: true, // Zoom camera feed to 150%
             itemsPerList: 6, // Number of items to show per list
             rotateInterval: 30, // Seconds between page rotations
-            fetchInterval: 120 // Seconds between data fetches
+            fetchInterval: 120, // Seconds between data fetches
+            sluseFetchInterval: 30 // Seconds between sluse fetches
         };
 
         // Hent display key fra URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const displayKey = urlParams.get('key') || '';
+
+        // Sluse display names and colors
+        const sluseDisplayNames = {
+            'Sluse1': 'BAS 01', 'Sluse2': 'BAS 02', 'Sluse3': 'BAS 03',
+            'Sluse4': 'BAS 04', 'Sluse5': 'BAS 05', 'Sluse6': 'BAS 06',
+            'Sluse7': 'BAS 07', 'Reol1': 'REOL 01', 'Reol2': 'REOL 02',
+        };
+
+        const sluseColors = {
+            'Sluse1': '#703817', 'Sluse2': '#b91c1c', 'Sluse3': '#ea580c',
+            'Sluse4': '#ca8a04', 'Sluse5': '#16a34a', 'Sluse6': '#2563eb',
+            'Sluse7': '#9333ea', 'Reol1': '#4b5563', 'Reol2': '#1f2937',
+        };
 
         /* =======================
            CLOCK
@@ -428,8 +625,20 @@
             const minutes = now.getMinutes().toString().padStart(2, '0');
             const timeStr = `${hours}:${minutes}`;
 
-            document.getElementById('time-top').textContent = timeStr;
-            document.getElementById('time-bottom').textContent = timeStr;
+            const timeEl = document.getElementById('header-time');
+            const dateEl = document.getElementById('header-date');
+
+            if (timeEl) timeEl.textContent = timeStr;
+
+            if (dateEl) {
+                const danishMonths = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+                const danishDays = ['son','man','tir','ons','tor','fre','lor'];
+                const day = danishDays[now.getDay()];
+                const date = now.getDate();
+                const month = danishMonths[now.getMonth()];
+                const year = now.getFullYear();
+                dateEl.textContent = `${day} ${date}. ${month} ${year}`;
+            }
         }
 
         /* =======================
@@ -440,8 +649,10 @@
             prepped: { pages: [], current: 0 },
             onlocation: { pages: [], current: 0 },
             delayed: { pages: [], current: 0 },
+            sluse: [],
             countdown: CONFIG.rotateInterval,
-            lastFetch: 0
+            lastFetch: 0,
+            lastSluseFetch: 0
         };
 
         /* =======================
@@ -481,6 +692,16 @@
             return `${date.getDate()}. ${months[date.getMonth()]} ${hours}:${mins}`;
         }
 
+        // Calculate text color based on background luminance
+        function getTextColor(bgColor) {
+            const hex = bgColor.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+
         /* =======================
            SECURITY
         ======================= */
@@ -492,22 +713,38 @@
         }
 
         /* =======================
-           RENDER
+           RENDER LAGER LISTS
         ======================= */
-        function renderList(containerId, items, borderClass) {
+        function renderList(containerId, items, borderClass, type) {
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            container.innerHTML = items.map(item => `
+            container.innerHTML = items.map(item => {
+                // Determine which letter to show based on type
+                let letter = '';
+                if (type === 'confirmed' || type === 'prepped') {
+                    letter = item.wh_out_letter || '';
+                } else if (type === 'onlocation') {
+                    letter = item.wh_in_letter || '';
+                }
+                // delayed has no letter
+
+                const letterHtml = letter ?
+                    `<div class="lager-item-letter">${esc(letter)}</div>` : '';
+
+                return `
                 <div class="lager-item ${borderClass}">
-                    <div class="lager-item-info">
-                        <span class="lager-item-name">${esc(item.displayname || '')}</span>
-                        ${item.project && item.project !== item.displayname ?
-                            `<span class="lager-item-project">${esc(item.project)}</span>` : ''}
+                    ${letterHtml}
+                    <div class="lager-item-content">
+                        <div class="lager-item-info">
+                            <span class="lager-item-name">${esc(item.displayname || '')}</span>
+                            ${item.project && item.project !== item.displayname ?
+                                `<span class="lager-item-project">${esc(item.project)}</span>` : ''}
+                        </div>
+                        <span class="lager-item-date">${formatDate(item.sp_start_up || item.sp_end_pp)}</span>
                     </div>
-                    <span class="lager-item-date">${formatDate(item.sp_start_up || item.sp_end_pp)}</span>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function updateCounters() {
@@ -526,18 +763,64 @@
                 (s.delayed.pages[0]?.length || 0);
         }
 
-        function render() {
-            renderList('list-confirmed-top', state.confirmed.pages[state.confirmed.current] || [], 'border-yellow');
-            renderList('list-prepped-top', state.prepped.pages[state.prepped.current] || [], 'border-blue');
-            renderList('list-onlocation', state.onlocation.pages[state.onlocation.current] || [], 'border-green');
-            renderList('list-delayed', state.delayed.pages[state.delayed.current] || [], 'border-orange');
+        function renderLager() {
+            renderList('list-confirmed-top', state.confirmed.pages[state.confirmed.current] || [], 'border-yellow', 'confirmed');
+            renderList('list-prepped-top', state.prepped.pages[state.prepped.current] || [], 'border-blue', 'prepped');
+            renderList('list-onlocation', state.onlocation.pages[state.onlocation.current] || [], 'border-green', 'onlocation');
+            renderList('list-delayed', state.delayed.pages[state.delayed.current] || [], 'border-orange', 'delayed');
             updateCounters();
+        }
+
+        /* =======================
+           RENDER SLUSE/BAYS
+        ======================= */
+        function renderSluse() {
+            const grid = document.getElementById('sluse-grid');
+            if (!grid) return;
+
+            // Create 9 slots (3x3 grid)
+            const slots = [];
+            const sluseNames = ['Sluse1', 'Sluse2', 'Sluse3', 'Sluse4', 'Sluse5', 'Sluse6', 'Sluse7', 'Reol1', 'Reol2'];
+
+            sluseNames.forEach((name, index) => {
+                const sluseData = state.sluse.find(s => s.slusenavn === name);
+                const displayName = sluseDisplayNames[name] || name;
+                const bgColor = sluseColors[name] || '#1c252e';
+                const textColor = getTextColor(bgColor);
+
+                if (sluseData && sluseData.Kunde && sluseData.Kunde.trim()) {
+                    // Occupied bay
+                    slots.push(`
+                        <div class="sluse-card sluse-card-occupied" style="background: ${bgColor}; color: ${textColor};">
+                            <div class="sluse-card-name">${esc(displayName)}</div>
+                            <div class="sluse-card-customer">${esc(sluseData.Kunde)}</div>
+                            ${sluseData.Detaljer || sluseData.Dato ? `
+                                <div class="sluse-card-details">
+                                    ${sluseData.Detaljer ? esc(sluseData.Detaljer) : ''}
+                                    ${sluseData.Detaljer && sluseData.Dato ? ' | ' : ''}
+                                    ${sluseData.Dato ? esc(sluseData.Dato) : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `);
+                } else {
+                    // Empty bay
+                    slots.push(`
+                        <div class="sluse-card sluse-card-empty">
+                            <div class="sluse-card-name" style="color: #6b7280;">${esc(displayName)}</div>
+                            <div class="sluse-card-customer">Ledig</div>
+                        </div>
+                    `);
+                }
+            });
+
+            grid.innerHTML = slots.join('');
         }
 
         /* =======================
            FETCH DATA
         ======================= */
-        async function fetchData() {
+        async function fetchLagerData() {
             const [confirmed, prepped, onlocation, delayed] = await Promise.all([
                 safeFetch('/projects/confirmed'),
                 safeFetch('/projects/prepped'),
@@ -551,22 +834,40 @@
             state.delayed.pages = chunk(delayed, CONFIG.itemsPerList);
 
             state.lastFetch = Date.now();
-            render();
+            renderLager();
+        }
+
+        async function fetchSluseData() {
+            try {
+                const result = await safeFetch('/api/sluse/public');
+                if (result.success && result.data) {
+                    state.sluse = result.data;
+                } else if (Array.isArray(result)) {
+                    state.sluse = result;
+                }
+                state.lastSluseFetch = Date.now();
+                renderSluse();
+            } catch (e) {
+                console.error('Sluse fetch error:', e);
+            }
         }
 
         /* =======================
            CAMERA SETUP
         ======================= */
-        function setupCamera() {
-            if (!CONFIG.cameraUrl) return;
+        async function setupCamera() {
+            const camUrl = await safeFetch("/api/unfi/cam")
+            if (!camUrl) return;
 
             const placeholder = document.getElementById('camera-placeholder');
             const panel = document.getElementById('panel-camera');
 
+            if (!placeholder || !panel) return;
+
             if (CONFIG.cameraType === 'img') {
                 const img = document.createElement('img');
-                img.className = 'camera-feed';
-                img.src = CONFIG.cameraUrl;
+                img.className = CONFIG.cameraZoom ? 'camera-feed-zoomed' : 'camera-feed';
+                img.src = camUrl.url;
                 img.alt = 'Kamera Feed';
                 img.onerror = () => {
                     img.style.display = 'none';
@@ -576,8 +877,8 @@
                 panel.appendChild(img);
             } else {
                 const iframe = document.createElement('iframe');
-                iframe.className = 'camera-feed';
-                iframe.src = CONFIG.cameraUrl;
+                iframe.className = CONFIG.cameraZoom ? 'camera-feed-zoomed' : 'camera-feed';
+                iframe.src = camUrl.url;
                 iframe.title = 'Kamera Feed';
                 placeholder.style.display = 'none';
                 panel.appendChild(iframe);
@@ -598,13 +899,18 @@
                 state.onlocation.current = (state.onlocation.current + 1) % Math.max(1, state.onlocation.pages.length);
                 state.delayed.current = (state.delayed.current + 1) % Math.max(1, state.delayed.pages.length);
 
-                render();
+                renderLager();
                 state.countdown = CONFIG.rotateInterval;
             }
 
-            // Refetch data periodically
+            // Refetch lager data periodically
             if (Date.now() - state.lastFetch > CONFIG.fetchInterval * 1000) {
-                fetchData();
+                fetchLagerData();
+            }
+
+            // Refetch sluse data periodically
+            if (Date.now() - state.lastSluseFetch > CONFIG.sluseFetchInterval * 1000) {
+                fetchSluseData();
             }
         }, 1000);
 
@@ -618,7 +924,8 @@
         ======================= */
         updateClock();
         setupCamera();
-        fetchData();
+        fetchLagerData();
+        fetchSluseData();
     </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 import express from "express";
 import { pool, crmPool } from "../config/database.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { authMiddleware, displayKeyApiMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -161,6 +161,16 @@ router.delete("/notes/:id", authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Error deleting note:', error);
         res.status(500).json({ error: 'Kunne ikke slette note', message: error.message });
+    }
+});
+
+router.get("/unfi/cam", displayKeyApiMiddleware, async (req, res) => {
+    try {
+        const url = process.env.UNIF_MONIOTR_SLUSE_URL
+        res.json({ success: true,  url: url });
+    } catch (error) {
+        console.error('Error fetching URL', error);
+        res.status(500).json({ error: 'Kunne ikke fetche URL', message: error.message });
     }
 });
 
