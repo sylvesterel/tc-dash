@@ -186,7 +186,7 @@ const AccessManager = {
             }
 
             if (credentialId) {
-                this.updateStatus('Poller for pinkode...', 'info');
+                this.updateStatus('Poller for pinkode... (VENT MIN. 30-45 SEKUNDER)', 'info');
                 await this.pollForPin(credentialId);
             }
 
@@ -216,7 +216,7 @@ const AccessManager = {
                 attempts++;
 
                 if (attempts > maxAttempts) {
-                    this.updateStatus('Timeout - pinkode blev ikke genereret i tide', 'error');
+                    this.updateStatus('Timeout - pinkode blev ikke genereret i tide og brugeren kunne ikke oprettes. Gå til salto KS og opret manuelt. Send følgende fejlkode til Sylvester: ', 'error');
                     clearInterval(interval);
                     resolve();
                     return;
