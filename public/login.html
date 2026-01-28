@@ -205,7 +205,7 @@
                     </div>
 
                     <!-- Form -->
-                    <form id="loginForm" class="space-y-5">
+                    <form id="loginForm" class="space-y-5" name="appcare_login">
                         <div class="space-y-2">
                             <label for="username" class="block text-sm font-medium text-text-secondary">Brugernavn</label>
                             <div class="relative">
@@ -215,9 +215,10 @@
                                 <input
                                     type="text"
                                     id="username"
+                                    name="appcare_username"
                                     placeholder="Indtast brugernavn"
                                     required
-                                    autocomplete="username"
+                                    autocomplete="section-appcare username"
                                     class="w-full pl-12 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-text-primary placeholder-text-secondary/50 transition-all duration-300 focus:outline-none focus:border-primary/50 focus:bg-white/10 input-glow"
                                 >
                             </div>
@@ -232,9 +233,10 @@
                                 <input
                                     type="password"
                                     id="password"
+                                    name="appcare_password"
                                     placeholder="Indtast adgangskode"
                                     required
-                                    autocomplete="current-password"
+                                    autocomplete="section-appcare current-password"
                                     class="w-full pl-12 pr-12 py-4 rounded-xl bg-white/5 border border-white/10 text-text-primary placeholder-text-secondary/50 transition-all duration-300 focus:outline-none focus:border-primary/50 focus:bg-white/10 input-glow"
                                 >
                                 <button
@@ -345,7 +347,12 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    window.location.href = '/';
+                    // Check if user must change password
+                    if (data.mustChangePassword) {
+                        window.location.href = '/change-password.html';
+                    } else {
+                        window.location.href = '/';
+                    }
                 } else {
                     showError(data.error || 'Login fejlede. Prøv igen.');
                     setLoading(false);

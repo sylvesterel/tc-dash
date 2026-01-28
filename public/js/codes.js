@@ -5,6 +5,8 @@ const API_URL = '/api';
 let passwords = [];
 let deleteId = null;
 let activeFilter = 'all';
+let currentEntryType = 'login';
+let editMode = false;
 
 // ============================================
 // Security: HTML Escaping
@@ -62,21 +64,68 @@ function setupEventListeners() {
 
     document.getElementById('confirmDelete').onclick = handleDelete;
 
-    // Toggle password visibility
+    // Toggle password visibility (using CSS masking to avoid autofill)
     if (togglePassword) {
         togglePassword.onclick = () => {
             const pwInput = document.getElementById('password');
             const icon = togglePassword.querySelector('i');
-            if (pwInput.type === 'password') {
-                pwInput.type = 'text';
+            const isHidden = pwInput.style.webkitTextSecurity === 'disc' || pwInput.style.webkitTextSecurity === '';
+
+            if (isHidden) {
+                pwInput.style.webkitTextSecurity = 'none';
+                pwInput.classList.remove('masked');
+                pwInput.classList.add('visible');
                 icon.classList.remove('fa-eye');
                 icon.classList.add('fa-eye-slash');
             } else {
-                pwInput.type = 'password';
+                pwInput.style.webkitTextSecurity = 'disc';
+                pwInput.classList.remove('visible');
+                pwInput.classList.add('masked');
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
             }
         };
+    }
+
+    // Type selection buttons
+    const typeLogin = document.getElementById('typeLogin');
+    const typePartner = document.getElementById('typePartner');
+
+    if (typeLogin) {
+        typeLogin.onclick = () => setEntryType('login');
+    }
+    if (typePartner) {
+        typePartner.onclick = () => setEntryType('partner');
+    }
+}
+
+// ============================================
+// Entry Type Handling
+// ============================================
+function setEntryType(type) {
+    currentEntryType = type;
+
+    const typeLogin = document.getElementById('typeLogin');
+    const typePartner = document.getElementById('typePartner');
+    const loginFields = document.getElementById('loginFields');
+    const partnerFields = document.getElementById('partnerFields');
+
+    if (type === 'login') {
+        typeLogin.classList.remove('bg-dark-hover', 'border-[#333]', 'text-text-secondary');
+        typeLogin.classList.add('bg-primary/10', 'border-primary', 'text-primary');
+        typePartner.classList.remove('bg-info/10', 'border-info', 'text-info');
+        typePartner.classList.add('bg-dark-hover', 'border-[#333]', 'text-text-secondary');
+
+        loginFields.classList.remove('hidden');
+        partnerFields.classList.add('hidden');
+    } else {
+        typePartner.classList.remove('bg-dark-hover', 'border-[#333]', 'text-text-secondary');
+        typePartner.classList.add('bg-info/10', 'border-info', 'text-info');
+        typeLogin.classList.remove('bg-primary/10', 'border-primary', 'text-primary');
+        typeLogin.classList.add('bg-dark-hover', 'border-[#333]', 'text-text-secondary');
+
+        loginFields.classList.add('hidden');
+        partnerFields.classList.remove('hidden');
     }
 }
 
@@ -168,13 +217,20 @@ function extractDomain(url) {
     return url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
 }
 
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 function render(searchFilter = "") {
     passwordContainer.innerHTML = "";
 
     // Filter passwords
     let filtered = passwords.filter(p =>
         p.siteName.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        p.username.toLowerCase().includes(searchFilter.toLowerCase())
+        (p.username && p.username.toLowerCase().includes(searchFilter.toLowerCase())) ||
+        (p.partnerId && p.partnerId.toLowerCase().includes(searchFilter.toLowerCase()))
     );
 
     // Apply alphabet filter
@@ -234,12 +290,36 @@ function render(searchFilter = "") {
         groups[letter].forEach(p => {
             const domain = extractDomain(p.url);
             const icon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            const isPartner = p.entryType === 'partner';
 
             const item = document.createElement('div');
-            item.className = 'flex items-center justify-between p-4 bg-dark-hover rounded-xl border border-transparent hover:border-[#333] transition-all group';
+            item.className = 'grid grid-cols-[200px_1fr_180px_160px] gap-4 items-center p-4 bg-dark-hover rounded-xl border border-transparent hover:border-[#333] transition-all group';
+
+            // Build credential display based on type
+            let credentialHtml = '';
+            if (isPartner) {
+                credentialHtml = `
+                    <div class="flex flex-col text-right">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-info/10 text-info text-xs font-medium rounded-lg justify-end w-fit ml-auto">
+                            <i class="fa-solid fa-handshake text-[10px]"></i>
+                            Samarbejde
+                        </span>
+                        <p class="font-mono text-sm text-text-primary mt-1 truncate">${escapeHtml(p.partnerId)}</p>
+                    </div>
+                `;
+            } else {
+                credentialHtml = `
+                    <div class="flex flex-col text-right">
+                        <p class="text-sm text-text-primary truncate">${escapeHtml(p.username)}</p>
+                        <p class="font-mono text-text-secondary">••••••••</p>
+                    </div>
+                `;
+            }
+
             item.innerHTML = `
-                <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <img src="${escapeHtml(icon)}" class="w-10 h-10 rounded-lg object-contain bg-white/5 p-1"
+                <!-- Kolonne 1: Ikon + Navn -->
+                <div class="flex items-center gap-3 min-w-0">
+                    <img src="${escapeHtml(icon)}" class="w-10 h-10 rounded-lg object-contain bg-white/5 p-1 flex-shrink-0"
                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🔒</text></svg>'">
                     <div class="min-w-0">
                         <h4 class="text-text-primary font-medium text-sm truncate">${escapeHtml(p.siteName)}</h4>
@@ -247,25 +327,46 @@ function render(searchFilter = "") {
                     </div>
                 </div>
 
-                <!-- Note + oprettet af + brugernavn -->
-                <div class="flex-1 flex justify-between items-center min-w-0 gap-4">
-                    <div class="flex flex-col truncate text-text-secondary text-xs min-w-0">
-                        <p class="text-text-secondary text-sm truncate">${escapeHtml(p.note)}</p>
-                        <p class="mt-1 text-[10px] text-text-tertiary truncate">Oprettet af: ${escapeHtml(p.user)}</p>
-                    </div>
-                    <div class="flex flex-col text-right text-text-secondary text-xs min-w-[80px]">
-                        <p class="truncate">${escapeHtml(p.username)}</p>
-                        <p class="font-mono">••••••••</p>
+                <!-- Kolonne 2: Note + Oprettet af -->
+                <div class="flex flex-col justify-center min-w-0">
+                    ${p.note ? `
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid fa-sticky-note text-warning/60 text-xs mt-0.5 flex-shrink-0"></i>
+                            <p class="text-sm text-text-secondary truncate">${escapeHtml(p.note)}</p>
+                        </div>
+                    ` : '<div class="text-text-secondary/30 text-sm">—</div>'}
+                    <div class="flex items-center gap-3 mt-1">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] text-text-secondary/70">
+                            <i class="fa-solid fa-user-pen text-[10px]"></i>
+                            ${escapeHtml(p.user)}
+                        </span>
+                        ${p.createdAt ? `
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-text-secondary/70">
+                                <i class="fa-regular fa-calendar text-[10px]"></i>
+                                ${formatDate(p.createdAt)}
+                            </span>
+                        ` : ''}
                     </div>
                 </div>
-                <div class="flex items-center gap-2 ml-3">
-                    <button class="copy-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all" title="Kopiér adgangskode">
-                        <i class="fa-regular fa-copy"></i>
-                    </button>
+
+                <!-- Kolonne 3: Credentials -->
+                ${credentialHtml}
+
+                <!-- Kolonne 4: Actions -->
+                <div class="flex items-center gap-2 justify-end">
+                    ${!isPartner ? `
+                        <button class="copy-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all" title="Kopiér adgangskode">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    ` : `
+                        <button class="copy-id-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-info hover:border-info hover:text-white transition-all" title="Kopiér ID">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    `}
                     <button class="link-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-info hover:border-info hover:text-white transition-all" title="Åbn link">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </button>
-                    <button class="copy-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all" title="Kopiér adgangskode">
+                    <button class="edit-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-warning hover:border-warning hover:text-white transition-all" title="Rediger">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button class="delete-btn w-9 h-9 rounded-lg bg-transparent border border-[#333] text-text-secondary flex items-center justify-center hover:bg-error hover:border-error hover:text-white transition-all" title="Slet">
@@ -275,10 +376,22 @@ function render(searchFilter = "") {
             `;
 
             // Copy password
-            item.querySelector('.copy-btn').onclick = () => {
-                navigator.clipboard.writeText(p.password);
-                showToast('Adgangskode kopieret!', 'success');
-            };
+            const copyBtn = item.querySelector('.copy-btn');
+            if (copyBtn) {
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(p.password);
+                    showToast('Adgangskode kopieret!', 'success');
+                };
+            }
+
+            // Copy partner ID
+            const copyIdBtn = item.querySelector('.copy-id-btn');
+            if (copyIdBtn) {
+                copyIdBtn.onclick = () => {
+                    navigator.clipboard.writeText(p.partnerId);
+                    showToast('Partner ID kopieret!', 'success');
+                };
+            }
 
             // Open link
             item.querySelector('.link-btn').onclick = () => {
@@ -287,6 +400,11 @@ function render(searchFilter = "") {
                     url = 'https://' + url;
                 }
                 window.open(url, '_blank');
+            };
+
+            // Edit
+            item.querySelector('.edit-btn').onclick = () => {
+                openEditModal(p.id);
             };
 
             // Delete
@@ -310,25 +428,33 @@ function render(searchFilter = "") {
 function updateStats() {
     document.getElementById('totalCountBadge').textContent = passwords.length;
     document.getElementById('totalValue').textContent = passwords.length;
-    let amn = 0
-    passwords.forEach(pass => amn += pass.password.length);
-   
+
+    // Calculate average password length for login types only
+    const loginPasswords = passwords.filter(p => p.entryType !== 'partner' && p.password);
+    let amn = 0;
+    loginPasswords.forEach(pass => amn += (pass.password?.length || 0));
+
     const unique = new Set(passwords.map(p => extractDomain(p.url))).size;
     document.getElementById('uniqueSites').textContent = unique;
 
     const score = document.getElementById('securityScore');
-    if (amn / passwords.length > 16) {
+    const avgLength = loginPasswords.length > 0 ? amn / loginPasswords.length : 0;
+
+    if (avgLength > 16) {
         score.textContent = "Høj";
         score.className = "text-[2.8rem] font-semibold text-success mb-3";
-    } else if (amn / passwords.length > 12) {
+    } else if (avgLength > 12) {
         score.textContent = "God";
         score.className = "text-[2.8rem] font-semibold text-info mb-3";
-    } else if (amn / passwords.length > 8) {
+    } else if (avgLength > 8) {
         score.textContent = "Middel";
         score.className = "text-[2.8rem] font-semibold text-warning mb-3";
+    } else if (loginPasswords.length === 0) {
+        score.textContent = "-";
+        score.className = "text-[2.8rem] font-semibold text-text-secondary mb-3";
     } else {
         score.textContent = "Lav";
-        score.className = "text-[2.8rem] font-semibold text-text-primary mb-3";
+        score.className = "text-[2.8rem] font-semibold text-error mb-3";
     }
 }
 
@@ -336,20 +462,71 @@ function updateStats() {
 // Modal Functions
 // ============================================
 function openModal() {
+    editMode = false;
+    document.getElementById('editId').value = '';
+    document.getElementById('modalTitle').textContent = 'Tilføj ny adgangskode';
+    document.getElementById('submitBtn').textContent = 'Gem adgangskode';
+    document.getElementById('passwordHint').classList.add('hidden');
+
+    // Reset form
+    passwordForm.reset();
+    setEntryType('login');
+
     modalOverlay.classList.remove('hidden');
     modalOverlay.classList.add('flex');
     document.getElementById('siteName').focus();
+}
+
+async function openEditModal(id) {
+    editMode = true;
+
+    try {
+        const res = await fetch(`${API_URL}/passwords/${id}`);
+        if (!res.ok) throw new Error('Kunne ikke hente data');
+
+        const data = await res.json();
+
+        document.getElementById('editId').value = id;
+        document.getElementById('modalTitle').textContent = 'Rediger adgangskode';
+        document.getElementById('submitBtn').textContent = 'Gem ændringer';
+        document.getElementById('passwordHint').classList.remove('hidden');
+
+        // Fill form
+        document.getElementById('siteName').value = data.siteName || '';
+        document.getElementById('siteUrl').value = data.url || '';
+        document.getElementById('username').value = data.username || '';
+        document.getElementById('password').value = ''; // Don't show existing password
+        document.getElementById('partnerId').value = data.partnerId || '';
+        document.getElementById('note').value = data.note || '';
+
+        // Set type
+        setEntryType(data.entryType || 'login');
+
+        modalOverlay.classList.remove('hidden');
+        modalOverlay.classList.add('flex');
+        document.getElementById('siteName').focus();
+
+    } catch (err) {
+        console.error(err);
+        showToast('Kunne ikke hente adgangskode', 'error');
+    }
 }
 
 function closeModalFn() {
     modalOverlay.classList.remove('flex');
     modalOverlay.classList.add('hidden');
     passwordForm.reset();
+    editMode = false;
+    document.getElementById('editId').value = '';
 
-    // Reset password visibility
+    // Reset password visibility (using CSS masking)
     const pwInput = document.getElementById('password');
     const icon = togglePassword?.querySelector('i');
-    if (pwInput) pwInput.type = 'password';
+    if (pwInput) {
+        pwInput.style.webkitTextSecurity = 'disc';
+        pwInput.classList.remove('visible');
+        pwInput.classList.add('masked');
+    }
     if (icon) {
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
@@ -362,17 +539,52 @@ function closeModalFn() {
 async function handleSubmit(e) {
     e.preventDefault();
 
+    const editId = document.getElementById('editId').value;
+    const isEdit = editMode && editId;
+
     const data = {
+        entryType: currentEntryType,
         siteName: document.getElementById('siteName').value.trim(),
         url: document.getElementById('siteUrl').value.trim(),
-        username: document.getElementById('username').value.trim(),
-        password: document.getElementById('password').value,
-        note: document.getElementById('note').value
+        note: document.getElementById('note').value.trim()
     };
 
+    // Add type-specific fields
+    if (currentEntryType === 'login') {
+        data.username = document.getElementById('username').value.trim();
+        const passwordValue = document.getElementById('password').value;
+        // Only include password if it's filled (for edits, empty means keep existing)
+        if (passwordValue || !isEdit) {
+            data.password = passwordValue;
+        }
+    } else {
+        data.partnerId = document.getElementById('partnerId').value.trim();
+    }
+
+    // Validation
+    if (!data.siteName || !data.url) {
+        showToast('Udfyld venligst navn og URL', 'error');
+        return;
+    }
+
+    if (currentEntryType === 'login' && !isEdit) {
+        if (!data.username || !data.password) {
+            showToast('Udfyld venligst brugernavn og adgangskode', 'error');
+            return;
+        }
+    }
+
+    if (currentEntryType === 'partner' && !data.partnerId) {
+        showToast('Udfyld venligst Partner ID', 'error');
+        return;
+    }
+
     try {
-        const res = await fetch(`${API_URL}/passwords`, {
-            method: 'POST',
+        const url = isEdit ? `${API_URL}/passwords/${editId}` : `${API_URL}/passwords`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
@@ -380,13 +592,14 @@ async function handleSubmit(e) {
         if (res.ok) {
             closeModalFn();
             loadData();
-            showToast('Adgangskode gemt!', 'success');
+            showToast(isEdit ? 'Adgangskode opdateret!' : 'Adgangskode gemt!', 'success');
         } else {
-            throw new Error('Kunne ikke gemme');
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Kunne ikke gemme');
         }
     } catch (err) {
         console.error(err);
-        showToast('Kunne ikke gemme adgangskode', 'error');
+        showToast(err.message || 'Kunne ikke gemme adgangskode', 'error');
     }
 }
 

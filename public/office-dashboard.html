@@ -486,8 +486,8 @@
             color: rgba(139, 148, 158, 0.95);
         }
 
-        /* Pauseskærm overlay (fra sluse infoskærm) */
-        .pauseskaerm {
+        /* Pauseskærm overlay */
+        .screensaver {
             display: none;
             position: fixed;
             inset: 0;
@@ -495,7 +495,7 @@
             height: 100vh;
             background: #000;
             color: #fff;
-            z-index: 3000;
+            z-index: 9999;
             align-items: center;
             justify-content: center;
             text-align: center;
@@ -504,24 +504,56 @@
             letter-spacing: 0.03em;
         }
 
-        .pauseskaerm.show {
+        .screensaver.show {
             display: flex;
-            animation: pauseFadeIn 10s ease;
+            animation: screensaverFadeIn 2s ease;
         }
 
-        @keyframes pauseFadeIn {
+        @keyframes screensaverFadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        .pause-subtitle {
-            margin-top: 14px;
+        .screensaver-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .screensaver-icon {
+            font-size: 64px;
+            opacity: 0.6;
+        }
+
+        .screensaver-title {
+            font-weight: 700;
+        }
+
+        .screensaver-subtitle {
             font-size: clamp(16px, 2vw, 24px);
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .screensaver-time {
+            font-size: clamp(48px, 8vw, 96px);
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body class="bg-background-dark text-white min-h-screen">
+
+<!-- Pauseskærm -->
+<div class="screensaver" id="screensaver">
+    <div class="screensaver-content">
+        <span class="screensaver-icon material-symbols-outlined">dark_mode</span>
+        <div class="screensaver-title">Dashboard er i dvale</div>
+        <div class="screensaver-subtitle">Aktiveres automatisk i arbejdstiden</div>
+        <div class="screensaver-time" id="screensaver-time">--:--</div>
+    </div>
+</div>
 
 <!-- Access Popup Container -->
 <div class="access-popup-container" id="accessPopupContainer"></div>
@@ -1660,91 +1692,64 @@ document.addEventListener('keydown', (e) => {
 console.log('Dashboard loaded. Press T to test access popup, press L to test lunch popup.');
 
 // ============================================
-// Pauseskærm (inkorporeret fra sluse view.php)
-// Viser en sort overlay efter 10 min. når body
-// har klassen "liveclosed". Klassen kan toggles
-// af ekstern logik, så dashboardet kan dele status.
+// Screensaver (pauseskærm baseret på indstillinger)
+// Viser en sort overlay uden for arbejdstid
 // ============================================
 
-(function initPauseScreen() {
-    const pauseScreen = document.createElement('div');
-    pauseScreen.id = 'pauseScreen';
-    pauseScreen.className = 'pauseskaerm';
-    pauseScreen.innerHTML = `
-        <div>
-            <div>Alarm er udsat i øjeblikket</div>
-            <div class="pause-subtitle">Systemet vågner automatisk når slusen åbner</div>
-        </div>
-    `;
-    document.body.appendChild(pauseScreen);
+let screensaverActive = false;
 
-    const PAUSE_DELAY_MS = 10 * 60 * 1000; // 10 minutter
-    let startTime = null;
-    let checkInterval = null;
-
-    function showPause() {
-        pauseScreen.classList.add('show');
+function updateScreensaverClock() {
+    const el = document.getElementById('screensaver-time');
+    if (el) {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        el.textContent = `${hours}:${minutes}`;
     }
+}
 
-    function hidePause() {
-        pauseScreen.classList.remove('show');
+function showScreensaver() {
+    const el = document.getElementById('screensaver');
+    if (el && !screensaverActive) {
+        el.classList.add('show');
+        screensaverActive = true;
+        updateScreensaverClock();
     }
+}
 
-    function startTimer() {
-        if (checkInterval) return;
-        startTime = Date.now();
-        checkInterval = setInterval(() => {
-            if (Date.now() - startTime >= PAUSE_DELAY_MS) {
-                showPause();
-                clearInterval(checkInterval);
-                checkInterval = null;
-            }
-        }, 1000);
+function hideScreensaver() {
+    const el = document.getElementById('screensaver');
+    if (el && screensaverActive) {
+        el.classList.remove('show');
+        screensaverActive = false;
     }
+}
 
-    function stopTimer() {
-        if (checkInterval) {
-            clearInterval(checkInterval);
-            checkInterval = null;
-        }
-        startTime = null;
-        hidePause();
-    }
+async function checkScreensaverStatus() {
+    try {
+        const res = await fetch(`/api/screensaver/status?key=${encodeURIComponent(displayKey)}`);
+        const data = await res.json();
 
-    function isClosed() {
-        return document.body.classList.contains('liveclosed');
-    }
-
-    function handleState() {
-        if (isClosed() && !startTime) {
-            startTimer();
-        } else if (!isClosed() && startTime !== null) {
-            stopTimer();
-        }
-    }
-
-    // Lyt på klasseændringer (matcher view.php logik)
-    const observer = new MutationObserver(mutations => {
-        for (const m of mutations) {
-            if (m.attributeName === 'class') {
-                handleState();
+        if (data.success) {
+            if (data.should_show_screensaver) {
+                showScreensaver();
+            } else {
+                hideScreensaver();
             }
         }
-    });
-    observer.observe(document.body, { attributes: true });
+    } catch (e) {
+        console.error('Error checking screensaver status:', e);
+    }
+}
 
-    // Initial vurdering
-    handleState();
+// Opdater screensaver ur hvert sekund
+setInterval(updateScreensaverClock, 1000);
 
-    // Brug aktivitet til at skjule skærmen hvis brugeren vender tilbage
-    ['mousemove', 'keydown', 'touchstart'].forEach(eventName => {
-        document.addEventListener(eventName, () => {
-            if (!isClosed()) {
-                stopTimer();
-            }
-        });
-    });
-})();
+// Tjek screensaver status hvert 10. sekund
+setInterval(checkScreensaverStatus, 10000);
+
+// Tjek screensaver status ved start
+checkScreensaverStatus();
 </script>
 
 </body>

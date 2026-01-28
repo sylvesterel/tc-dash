@@ -370,11 +370,21 @@ const UsersManager = {
                         </div>
                     </div>
 
+                    ${isEdit ? `
                     <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1.5">${isEdit ? 'Ny adgangskode (lad stå tom for at beholde)' : 'Adgangskode *'}</label>
-                        <input type="password" id="userPassword" ${isEdit ? '' : 'required'} minlength="8" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
+                        <label class="block text-sm font-medium text-text-secondary mb-1.5">Ny adgangskode (lad stå tom for at beholde)</label>
+                        <input type="password" id="userPassword" minlength="8" class="w-full px-4 py-2.5 bg-dark-bg border border-white/10 rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
                         <span class="text-xs text-text-secondary mt-1 block">Mindst 8 tegn</span>
                     </div>
+                    ` : `
+                    <div class="p-4 bg-primary/10 border border-primary/20 rounded-xl">
+                        <div class="flex items-center gap-2 text-primary mb-1">
+                            <i class="fa-solid fa-key"></i>
+                            <span class="font-medium">Automatisk adgangskode</span>
+                        </div>
+                        <p class="text-sm text-text-secondary">Der genereres automatisk en sikker adgangskode. Brugeren skal skifte adgangskode ved første login.</p>
+                    </div>
+                    `}
 
                     ${isAdmin ? `
                         <div>
@@ -451,8 +461,11 @@ const UsersManager = {
             title: document.getElementById('userTitle').value.trim() || null,
         };
 
-        const password = document.getElementById('userPassword').value;
-        if (password) userData.password = password;
+        const passwordField = document.getElementById('userPassword');
+        if (passwordField) {
+            const password = passwordField.value;
+            if (password) userData.password = password;
+        }
 
         if (!isEdit) {
             userData.brugernavn = document.getElementById('userBrugernavn').value.trim();
@@ -468,16 +481,78 @@ const UsersManager = {
                 await this.updateUser(userId, userData);
             } else {
                 const result = await this.createUser(userData);
-                if (userData.sendEmail) {
+                this.closeUserModal();
+
+                if (result.generatedPassword) {
+                    // Show password modal if email wasn't sent
+                    this.showGeneratedPasswordModal(result.user, result.generatedPassword);
+                } else if (userData.sendEmail) {
                     this.showNotification(result.emailSent ? 'Bruger oprettet og email sendt!' : 'Bruger oprettet (email kunne ikke sendes)', result.emailSent ? 'success' : 'warning');
                 } else {
                     this.showNotification('Bruger oprettet!', 'success');
                 }
+                return;
             }
             this.closeUserModal();
         } catch (error) {
             // Error already shown
         }
+    },
+
+    showGeneratedPasswordModal(user, password) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4';
+        modal.id = 'passwordModal';
+        modal.innerHTML = `
+            <div class="bg-dark-card border border-white/10 rounded-2xl w-full max-w-md p-6 text-center animate-fade-in-up">
+                <div class="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-check text-green-400 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-text-primary mb-2">Bruger oprettet!</h3>
+                <p class="text-text-secondary mb-4">${this.escapeHtml(user.fornavn)} ${this.escapeHtml(user.efternavn)} er nu oprettet.</p>
+
+                <div class="bg-dark-bg border border-white/10 rounded-xl p-4 mb-4 text-left">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm text-text-secondary">Brugernavn:</span>
+                        <span class="text-text-primary font-mono">${this.escapeHtml(user.brugernavn)}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-text-secondary">Adgangskode:</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-text-primary font-mono" id="generatedPassword">${this.escapeHtml(password)}</span>
+                            <button type="button" class="p-1.5 hover:bg-white/10 rounded-lg transition-colors" onclick="UsersManager.copyPassword()" title="Kopiér">
+                                <i class="fa-solid fa-copy text-text-secondary"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-xs text-yellow-400 mb-4">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                    Gem denne adgangskode - den vises kun én gang!
+                </p>
+
+                <button class="w-full px-4 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl font-medium transition-colors" onclick="UsersManager.closePasswordModal()">
+                    OK, jeg har gemt adgangskoden
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    },
+
+    copyPassword() {
+        const passwordEl = document.getElementById('generatedPassword');
+        if (passwordEl) {
+            navigator.clipboard.writeText(passwordEl.textContent).then(() => {
+                this.showNotification('Adgangskode kopieret!', 'success');
+            });
+        }
+    },
+
+    closePasswordModal() {
+        const modal = document.getElementById('passwordModal');
+        if (modal) modal.remove();
     },
 
     // ============================================

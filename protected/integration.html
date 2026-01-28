@@ -139,7 +139,13 @@
                 <div class="bg-dark-card border border-[#333] rounded-xl p-6">
                     <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#1a1a1a]">
                         <h3 class="text-lg font-semibold text-text-primary">Seneste Fejl</h3>
-                        <span class="text-sm text-primary font-semibold cursor-pointer hover:underline" onclick="showAllErrors()">Se alle</span>
+                        <div class="flex items-center gap-4">
+                            <button class="text-sm text-success font-semibold cursor-pointer hover:underline flex items-center gap-1.5" onclick="resolveAllErrors()" id="resolveAllBtn">
+                                <i class="fas fa-check-double text-xs"></i>
+                                Løs alle
+                            </button>
+                            <span class="text-sm text-primary font-semibold cursor-pointer hover:underline" onclick="showAllErrors()">Se alle</span>
+                        </div>
                     </div>
                     <div class="flex flex-col gap-3 max-h-[500px] overflow-y-auto" id="errorList">
                         <div class="flex items-center justify-center py-16">

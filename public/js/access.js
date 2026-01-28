@@ -252,14 +252,10 @@ const AccessManager = {
                             <span class="text-text-secondary text-sm">Pinkode:</span>
                             <span class="text-2xl font-bold text-green-400 font-mono">${pin} + #</span>
                         </div>
-                        <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors text-sm" onclick="AccessManager.copyPin('${pin}')">
+                        <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors text-sm" onclick="AccessManager.copyPin('${pin} + #')">
                             <i class="fa-solid fa-copy mr-2"></i>Kopier
                         </button>
                     </div>
-                    <button class="w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2" onclick="AccessManager.downloadPDF('${pin}', '${name.replace(/'/g, "\\'")}')">
-                        <i class="fa-solid fa-file-pdf"></i>
-                        Download Adgangsvejledning (PDF)
-                    </button>
                 </div>
             `;
             pinDisplay.style.display = 'block';

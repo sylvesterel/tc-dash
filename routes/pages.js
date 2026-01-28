@@ -53,4 +53,12 @@ router.get("/admin", authMiddleware, adminMiddleware, (req, res) => {
     res.sendFile(path.join(process.cwd(), "protected", "admin.html"));
 });
 
+router.get("/pauseskaerm-indstillinger", authMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "protected", "pauseskaerm-indstillinger.html"));
+});
+
+router.get("/changelog", authMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "protected", "changelog.html"));
+});
+
 export default router;

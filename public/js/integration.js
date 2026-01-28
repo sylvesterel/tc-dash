@@ -453,6 +453,36 @@ async function resolveError(errorId) {
     }
 }
 
+// Resolve all errors
+async function resolveAllErrors() {
+    const confirmed = await Modal.confirm(
+        'Løs alle fejl',
+        'Er du sikker på at du vil markere alle fejl som løst?',
+        'warning'
+    );
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch('/api/integration/errors/resolve-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+
+        if (!response.ok) {
+            throw new Error('Kunne ikke løse fejl');
+        }
+
+        const data = await response.json();
+        showSuccess(`${data.resolvedCount || 'Alle'} fejl markeret som løst`);
+        refreshDashboard();
+
+    } catch (error) {
+        console.error('Error resolving all errors:', error);
+        showError(error.message);
+    }
+}
+
 // Show all errors (can be expanded to modal or separate page)
 function showAllErrors() {
     // For now, just refresh with all errors visible

@@ -171,6 +171,46 @@ router.post("/errors/:id/resolve", authMiddleware, async (req, res) => {
     }
 });
 
+// POST /errors/resolve-all - Resolve all unresolved errors
+router.post("/errors/resolve-all", authMiddleware, async (req, res) => {
+    try {
+        const resolvedBy = req.session.user.brugernavn || 'dashboard';
+
+        // Get count of unresolved errors first
+        const [[countResult]] = await crmPool.query(
+            'SELECT COUNT(*) as count FROM integration_errors WHERE resolved = FALSE'
+        );
+        const unresolvedCount = countResult.count;
+
+        if (unresolvedCount === 0) {
+            return res.json({ success: true, message: 'Ingen uløste fejl', resolvedCount: 0 });
+        }
+
+        // Resolve all unresolved errors
+        await crmPool.query(`
+            UPDATE integration_errors
+            SET resolved = TRUE, resolved_at = CURRENT_TIMESTAMP, resolved_by = ?, resolution_notes = 'Løst via "Løs alle"'
+            WHERE resolved = FALSE
+        `, [resolvedBy]);
+
+        // Update today's statistics
+        const today = new Date().toISOString().split('T')[0];
+        await crmPool.query(`
+            UPDATE error_statistics
+            SET resolved_count = resolved_count + ?, unresolved_count = 0
+            WHERE date = ?
+        `, [unresolvedCount, today]);
+
+        res.json({ success: true, message: `${unresolvedCount} fejl markeret som løst`, resolvedCount: unresolvedCount });
+    } catch (error) {
+        console.error('Error resolving all errors:', error);
+        res.status(500).json({
+            error: 'Kunne ikke markere alle fejl som løst',
+            message: error.message
+        });
+    }
+});
+
 // GET /history - Get sync history
 router.get("/history", authMiddleware, async (req, res) => {
     try {

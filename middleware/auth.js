@@ -1,7 +1,26 @@
 // Authentication Middleware
 export const authMiddleware = (req, res, next) => {
-    if (req.session.user) return next();
-    return res.redirect("/login.html");
+    if (!req.session.user) {
+        return res.redirect("/login.html");
+    }
+
+    // Check if user must change password (allow access to password change endpoint)
+    if (req.session.user.mustChangePassword) {
+        const allowedPaths = ['/api/force-change-password', '/me', '/logout'];
+        if (!allowedPaths.includes(req.path)) {
+            // For HTML requests, redirect to change password page
+            if (req.accepts('html')) {
+                return res.redirect('/change-password.html');
+            }
+            // For API requests, return error
+            return res.status(403).json({
+                error: 'Du skal ændre din adgangskode før du kan fortsætte',
+                mustChangePassword: true
+            });
+        }
+    }
+
+    return next();
 };
 
 // Admin Middleware

@@ -21,6 +21,8 @@ import integrationRouter from "./routes/integration.js";
 import passwordsRouter from "./routes/passwords.js";
 import storageRouter from "./routes/storage.js";
 import pageStatusRouter from "./routes/pageStatus.js";
+import screensaverRouter from "./routes/screensaver.js";
+import changelogRouter from "./routes/changelog.js";
 
 dotenv.config();
 
@@ -190,6 +192,25 @@ async function initDatabase() {
             )
         `);
 
+        // Initialize screensaver settings table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS screensaver_settings (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                active_start TIME NOT NULL DEFAULT '08:30:00',
+                active_end TIME NOT NULL DEFAULT '18:00:00',
+                manual_override_until DATETIME DEFAULT NULL,
+                updated_by INT DEFAULT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Insert default screensaver settings if not exists
+        await pool.query(`
+            INSERT IGNORE INTO screensaver_settings (id, active_start, active_end)
+            VALUES (1, '08:30:00', '18:00:00')
+        `);
+
         console.log('Database tables initialized');
     } catch (error) {
         console.error('Error initializing database:', error);
@@ -244,6 +265,8 @@ app.use("/api/integration", integrationRouter);
 app.use("/api/passwords", passwordsRouter);
 app.use("/api/storage", storageRouter);
 app.use("/api/page-status", pageStatusRouter);
+app.use("/api/screensaver", screensaverRouter);
+app.use("/api/changelog", changelogRouter);
 
 // Project routes (public lager dashboard endpoints)
 app.use("/projects", projectRoutes);

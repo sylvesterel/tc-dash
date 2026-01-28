@@ -52,22 +52,42 @@ router.get("/:id", authMiddleware, async (req, res) => {
     }
 });
 
+// Generate random password
+function generatePassword(length = 12) {
+    const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lowercase = 'abcdefghjkmnpqrstuvwxyz';
+    const numbers = '23456789';
+    const symbols = '!@#$%&*';
+    const allChars = uppercase + lowercase + numbers + symbols;
+
+    // Ensure at least one of each type
+    let password = '';
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += symbols[Math.floor(Math.random() * symbols.length)];
+
+    // Fill the rest randomly
+    for (let i = password.length; i < length; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    // Shuffle the password
+    return password.split('').sort(() => Math.random() - 0.5).join('');
+}
+
 // POST /api/users - Create new user (Admin only)
 router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        const { fornavn, efternavn, brugernavn, email, telefon, password, title, rolle, sendEmail: shouldSendEmail } = req.body;
+        const { fornavn, efternavn, brugernavn, email, telefon, title, rolle, sendEmail: shouldSendEmail } = req.body;
 
-        if (!fornavn || !efternavn || !brugernavn || !email || !password) {
-            return res.status(400).json({ error: 'Fornavn, efternavn, brugernavn, email og adgangskode er påkrævet' });
+        if (!fornavn || !efternavn || !brugernavn || !email) {
+            return res.status(400).json({ error: 'Fornavn, efternavn, brugernavn og email er påkrævet' });
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Ugyldig email-adresse' });
-        }
-
-        if (password.length < 8) {
-            return res.status(400).json({ error: 'Adgangskode skal være mindst 8 tegn' });
         }
 
         const [existingUsername] = await pool.query('SELECT id FROM users WHERE brugernavn = ?', [brugernavn]);
@@ -80,11 +100,13 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Email er allerede i brug' });
         }
 
-        const password_hash = await bcrypt.hash(password, 10);
+        // Auto-generate password
+        const generatedPassword = generatePassword(12);
+        const password_hash = await bcrypt.hash(generatedPassword, 10);
 
         const [result] = await pool.query(`
-            INSERT INTO users (fornavn, efternavn, brugernavn, email, telefon, password_hash, title, rolle, created_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (fornavn, efternavn, brugernavn, email, telefon, password_hash, title, rolle, created_by, must_change_password)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)
         `, [fornavn, efternavn, brugernavn, email, telefon || null, password_hash, title || null, rolle || 'standard', req.session.user.id]);
 
         const [newUser] = await pool.query(
@@ -94,13 +116,14 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
 
         let emailSent = false;
         if (shouldSendEmail) {
-            emailSent = await sendWelcomeEmail(email, fornavn, brugernavn, password);
+            emailSent = await sendWelcomeEmail(email, fornavn, brugernavn, generatedPassword);
         }
 
         res.status(201).json({
             success: true,
             message: emailSent ? 'Bruger oprettet og velkomst-email sendt' : 'Bruger oprettet',
             user: newUser[0],
+            generatedPassword: !shouldSendEmail ? generatedPassword : undefined,
             emailSent
         });
     } catch (error) {

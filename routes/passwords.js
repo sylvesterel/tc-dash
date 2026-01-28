@@ -54,20 +54,24 @@ router.get("/", async (req, res) => {
     try {
         // All logged-in users can see all passwords
         const [rows] = await pool.query(
-            `SELECT id, (SELECT fornavn FROM users as u WHERE u.id = p.user_id) as fornavn, (SELECT efternavn FROM users as u WHERE u.id = p.user_id) as efternavn, site_name, url, username, password, note, created_at, updated_at
-             FROM passwords as p
-             ORDER BY site_name ASC`
+            `SELECT p.id, p.entry_type, p.site_name, p.url, p.username, p.password, p.partner_id, p.note, p.created_at, p.updated_at,
+                    u.fornavn, u.efternavn
+             FROM passwords p
+             LEFT JOIN users u ON u.id = p.user_id
+             ORDER BY p.site_name ASC`
         );
 
         // Decrypt passwords before sending
         const passwords = rows.map(row => ({
             id: row.id,
+            entryType: row.entry_type || 'login',
             siteName: row.site_name,
-            user: `${row.fornavn} ${row.efternavn || ""}`,
+            user: row.fornavn ? `${row.fornavn} ${row.efternavn || ""}`.trim() : 'Ukendt',
             url: row.url,
-            username: row.username,
-            password: decrypt(row.password) || '********',
-            note: row.note,
+            username: row.username || '',
+            password: row.password ? (decrypt(row.password) || '********') : '',
+            partnerId: row.partner_id || '',
+            note: row.note || '',
             createdAt: row.created_at,
             updatedAt: row.updated_at
         }));
@@ -85,26 +89,50 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const userId = req.session.user.id;
-        const { siteName, url, username, password, note } = req.body;
+        const { entryType, siteName, url, username, password, partnerId, note } = req.body;
 
-        if (!siteName || !url || !username || !password) {
-            return res.status(400).json({ error: 'Alle felter er påkrævet' });
+        if (!siteName || !url) {
+            return res.status(400).json({ error: 'Navn og URL er påkrævet' });
         }
 
-        // Encrypt the password before storing
-        const encryptedPassword = encrypt(password);
+        const type = entryType || 'login';
+
+        // Validate based on type
+        if (type === 'login') {
+            if (!username || !password) {
+                return res.status(400).json({ error: 'Brugernavn og adgangskode er påkrævet for login-type' });
+            }
+        } else if (type === 'partner') {
+            if (!partnerId) {
+                return res.status(400).json({ error: 'Partner ID er påkrævet for samarbejdspartner-type' });
+            }
+        }
+
+        // Encrypt the password if provided
+        const encryptedPassword = password ? encrypt(password) : null;
 
         const [result] = await pool.query(
-            `INSERT INTO passwords (user_id, site_name, url, username, password, note)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [userId, siteName.trim(), url.trim(), username.trim(), encryptedPassword, note]
+            `INSERT INTO passwords (user_id, entry_type, site_name, url, username, password, partner_id, note)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                userId,
+                type,
+                siteName.trim(),
+                url.trim(),
+                username ? username.trim() : null,
+                encryptedPassword,
+                partnerId ? partnerId.trim() : null,
+                note || null
+            ]
         );
 
         res.status(201).json({
             id: result.insertId,
+            entryType: type,
             siteName,
             url,
             username,
+            partnerId,
             note,
             message: 'Adgangskode gemt'
         });
@@ -115,16 +143,51 @@ router.post("/", async (req, res) => {
 });
 
 // ============================================
+// GET /api/passwords/:id - Get single password for editing
+// ============================================
+router.get("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [rows] = await pool.query(
+            `SELECT p.id, p.entry_type, p.site_name, p.url, p.username, p.password, p.partner_id, p.note
+             FROM passwords p
+             WHERE p.id = ?`,
+            [id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Adgangskode ikke fundet' });
+        }
+
+        const row = rows[0];
+        res.json({
+            id: row.id,
+            entryType: row.entry_type || 'login',
+            siteName: row.site_name,
+            url: row.url,
+            username: row.username || '',
+            password: row.password ? (decrypt(row.password) || '') : '',
+            partnerId: row.partner_id || '',
+            note: row.note || ''
+        });
+    } catch (error) {
+        console.error('Error fetching password:', error);
+        res.status(500).json({ error: 'Kunne ikke hente adgangskode' });
+    }
+});
+
+// ============================================
 // PUT /api/passwords/:id - Update password
 // ============================================
 router.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { siteName, url, username, password } = req.body;
+        const { entryType, siteName, url, username, password, partnerId, note } = req.body;
 
         // Verify password exists
         const [existing] = await pool.query(
-            'SELECT id FROM passwords WHERE id = ?',
+            'SELECT id, entry_type FROM passwords WHERE id = ?',
             [id]
         );
 
@@ -132,29 +195,46 @@ router.put("/:id", async (req, res) => {
             return res.status(404).json({ error: 'Adgangskode ikke fundet' });
         }
 
-        // Build update query dynamically
-        const updates = [];
-        const values = [];
+        const type = entryType || existing[0].entry_type || 'login';
 
-        if (siteName) {
+        // Build update query dynamically
+        const updates = ['entry_type = ?'];
+        const values = [type];
+
+        if (siteName !== undefined) {
             updates.push('site_name = ?');
             values.push(siteName.trim());
         }
-        if (url) {
+        if (url !== undefined) {
             updates.push('url = ?');
             values.push(url.trim());
         }
-        if (username) {
-            updates.push('username = ?');
-            values.push(username.trim());
-        }
-        if (password) {
-            updates.push('password = ?');
-            values.push(encrypt(password));
+
+        // Handle type-specific fields
+        if (type === 'login') {
+            if (username !== undefined) {
+                updates.push('username = ?');
+                values.push(username ? username.trim() : null);
+            }
+            if (password !== undefined && password !== '') {
+                updates.push('password = ?');
+                values.push(encrypt(password));
+            }
+            // Clear partner_id for login type
+            updates.push('partner_id = NULL');
+        } else if (type === 'partner') {
+            if (partnerId !== undefined) {
+                updates.push('partner_id = ?');
+                values.push(partnerId ? partnerId.trim() : null);
+            }
+            // Clear login fields for partner type
+            updates.push('username = NULL');
+            updates.push('password = NULL');
         }
 
-        if (updates.length === 0) {
-            return res.status(400).json({ error: 'Ingen felter at opdatere' });
+        if (note !== undefined) {
+            updates.push('note = ?');
+            values.push(note || null);
         }
 
         updates.push('updated_at = NOW()');

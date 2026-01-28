@@ -207,6 +207,13 @@ async function loadUserInfo() {
 
         if (data.user) {
             currentUser = data.user;
+
+            // Check if user must change password
+            if (data.user.mustChangePassword) {
+                window.location.href = '/change-password.html';
+                return;
+            }
+
             const userNameEl = document.getElementById('user-name');
             if (userNameEl) {
                 userNameEl.textContent = data.user.fornavn;

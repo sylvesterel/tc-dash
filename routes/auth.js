@@ -51,7 +51,8 @@ router.post("/login", async (req, res) => {
             efternavn: user.efternavn,
             email: user.email,
             rolle: user.rolle,
-            title: user.title
+            title: user.title,
+            mustChangePassword: user.must_change_password || false
         };
 
         res.json({
@@ -60,7 +61,8 @@ router.post("/login", async (req, res) => {
                 fornavn: user.fornavn,
                 efternavn: user.efternavn,
                 rolle: user.rolle
-            }
+            },
+            mustChangePassword: user.must_change_password || false
         });
     } catch (error) {
         console.error('Login error:', error);
@@ -93,6 +95,60 @@ router.post("/logout", async (req, res) => {
 // Get current user
 router.get("/me", authMiddleware, (req, res) => {
     res.json({ user: req.session.user });
+});
+
+// Force change password (first login)
+router.post("/api/force-change-password", async (req, res) => {
+    try {
+        // Check if user is logged in
+        if (!req.session?.user) {
+            return res.status(401).json({ error: "Ikke autoriseret" });
+        }
+
+        // Only allow if user must change password
+        if (!req.session.user.mustChangePassword) {
+            return res.status(403).json({ error: "Du har allerede ændret din adgangskode" });
+        }
+
+        const { newPassword, confirmPassword } = req.body;
+
+        if (!newPassword || !confirmPassword) {
+            return res.status(400).json({ error: "Alle felter er påkrævet" });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ error: "Adgangskoderne matcher ikke" });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ error: "Adgangskode skal være mindst 8 tegn" });
+        }
+
+        // Update password and clear must_change_password flag
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        await pool.query(
+            'UPDATE users SET password_hash = ?, must_change_password = FALSE WHERE id = ?',
+            [newPasswordHash, req.session.user.id]
+        );
+
+        // Update session
+        req.session.user.mustChangePassword = false;
+
+        // Log activity
+        try {
+            await pool.query(`
+                INSERT INTO activity_log (user_id, user_name, action_type, resource_type, description)
+                VALUES (?, ?, 'update', 'user', 'Bruger ændrede adgangskode (første login)')
+            `, [req.session.user.id, `${req.session.user.fornavn} ${req.session.user.efternavn || ''}`]);
+        } catch (logErr) {
+            console.error('Error logging password change:', logErr);
+        }
+
+        res.json({ success: true, message: "Adgangskode ændret" });
+    } catch (error) {
+        console.error('Force change password error:', error);
+        res.status(500).json({ error: "Serverfejl. Prøv igen." });
+    }
 });
 
 // Request password reset
